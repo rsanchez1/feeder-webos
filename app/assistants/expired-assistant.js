@@ -1,2 +1,0 @@
-ExpiredAssistant = Class.create(BaseAssistant, {
-})

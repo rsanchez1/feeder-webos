@@ -1,6 +1,0 @@
-.git
-Rakefile
-spec
-framework
-screenshots
-
