@@ -32,15 +32,31 @@ enyo.kind({
 
     confirmClick: function() {
         enyo.log("clicked OK");
-        this.$.loginError.show();
+        //this.$.loginError.show();
         this.$.spinner.show();
+        var api = new Greeder.API();
+        api.login({mail: this.$.email.getValue(), password: this.$.password.getValue()}, this.loginSuccess.bind(this), this.loginFailure.bind(this));
         //this.$.loginLabel.applyStyle("padding-top", "0.5em");
         //this.doConfirm();
+    },
+
+    loginSuccess: function(response) {
+        enyo.log("login success: ", response);
+        this.$.spinner.hide();
+        this.doConfirm();
+    },
+
+    loginFailure: function(response) {
+        enyo.log("login failure: ", response);
+        this.$.loginError.show();
+        this.$.spinner.hide();
     },
 
     cancelClick: function() {
         enyo.log("clicked Cancel");
         //this.$.close();
+        this.$.spinner.hide();
+        this.$.loginError.hide();
         this.doCancel();
     }
 });

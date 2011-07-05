@@ -3,5 +3,6 @@ enyo.depends(
     "source/Search.js",
     "source/Login.js",
     "source/Test.js",
+    "source/API.js",
 	"css/FeedReader.css"
 );

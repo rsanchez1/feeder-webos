@@ -64,6 +64,9 @@ enyo.kind({
     },
 
     post: function(url, parameters, success, failure, requestHeaders) {
+        enyo.log("post url: ", url);
+        enyo.log("parameters: ", parameters);
+        enyo.log("request headers: ", requestHeaders);
         if (!requestHeaders) {
             requestHeaders = {};
         }
@@ -73,32 +76,52 @@ enyo.kind({
             },
             requestHeaders: requestHeaders
         });
-    }
+    },
 
     get: function(url, parameters, success, failure, requestHeaders) {
+        enyo.log("get url: ", url);
+        enyo.log("parameters: ", parameters);
+        enyo.log("request headers: ", requestHeaders);
         if (!!requestHeaders) {
-            requestHeaders = {};
+            requestHeaders = null;
+        }
+        var isFirst = true;
+        var separator = "?";
+        for (i in parameters) {
+            url = url + separator + i + "=" + parameters[i];
+            if (isFirst) {
+                isFirst = false;
+                separator = "&";
+            }
         }
         enyo.xhrGet({
             url: url,
             load: function(responseText, xhrObject) {
+                success(responseText);
             },
             requestHeaders: requestHeaders
         });
-    }
+    },
 
     login: function(credentials, success, failure) {
         var authSuccess = function(response) {
-            var authMatch = response.responseText.match(/Auth\=(.*)/);
+            enyo.log("auth success: ", response);
+            enyo.log(response);
+            var authMatch = response.match(/Auth\=(.*)/);
             this.auth = authMatch ? authMatch[1] : '';
-            success(this.auth);
+            if (this.auth) {
+                success(this.auth);
+            } else {
+                failure(this.auth);
+            }
         }.bind(this);
         this.get("https://www.google.com/accounts/ClientLogin", {
             service: "reader",
             Email: credentials.mail,
-            Passwd: credentials.password
+            Passwd: credentials.password,
+            accountType: "GOOGLE"
         }, authSuccess, failure);
-    }
+    },
 
     getTags: function(success, failure) {
         this.get(this.BASE_URL + "tag/list", {
@@ -200,7 +223,7 @@ enyo.kind({
 
     titleFor: function(id) {
         return this.titles[id];
-    }
+    },
 
     getUnreadCounts: function(success, failure) {
         var successFunc = function(response) {
