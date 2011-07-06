@@ -1,8 +1,9 @@
 enyo.depends(
-	"source/FeedReader.js",
-    "source/Search.js",
+    "source/Main.js",
+    "source/FeedsView.js",
+    "source/ArticlesView.js",
+    "source/SingleArticleView.js",
     "source/Login.js",
-    "source/Test.js",
     "source/API.js",
 	"css/FeedReader.css"
 );

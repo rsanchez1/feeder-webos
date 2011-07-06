@@ -1,5 +1,5 @@
 enyo.kind({
-    name: "FeedReader.Login",
+    name: "Greeder.Login",
     kind: "ModalDialog",
     caption: "Google Login",
     style: "top: 50%; height: auto; background-color: transparent",
