@@ -1,11 +1,12 @@
 enyo.kind({
-    name: "Greeder.Login",
+    name: "TouchFeeds.Login",
     kind: "ModalDialog",
     caption: "Google Login",
     style: "top: 50%; height: auto; background-color: transparent",
     events: {
         onConfirm: "",
-        onCancel: ""
+        onCancel: "",
+        onLogin: "",
     },
     components: [
         {layoutKind: "HFlexLayout", pack: "center", components: [{name: "loginError", kind: "HtmlContent", showing: false, content: "Login failed. Try again.", className: "enyo-text-error warning-icon"}]},
@@ -23,6 +24,11 @@ enyo.kind({
         ]}
     ],
 
+    constructor: function() {
+        this.inherited(arguments);
+        this.app = enyo.application.app;
+    },
+
     create: function() {
         enyo.log("creating dialog box");
         this.inherited(arguments);
@@ -34,7 +40,7 @@ enyo.kind({
         enyo.log("clicked OK");
         //this.$.loginError.show();
         this.$.spinner.show();
-        var api = new Greeder.API();
+        var api = this.app.api;
         api.login({mail: this.$.email.getValue(), password: this.$.password.getValue()}, this.loginSuccess.bind(this), this.loginFailure.bind(this));
         //this.$.loginLabel.applyStyle("padding-top", "0.5em");
         //this.doConfirm();
@@ -43,7 +49,8 @@ enyo.kind({
     loginSuccess: function(response) {
         enyo.log("login success: ", response);
         this.$.spinner.hide();
-        this.doConfirm();
+        //this.doConfirm();
+        this.doLogin();
     },
 
     loginFailure: function(response) {

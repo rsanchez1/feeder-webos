@@ -1,7 +1,13 @@
 enyo.kind({
-    name: "Greeder.API",
+    name: "TouchFeeds.API",
     BASE_URL: "http://www.google.com/reader/api/0/",
     create: function() {
+        this.inherited(arguments);
+    },
+
+    constructor: function() {
+        this.inherited(arguments);
+        this.app = enyo.application.app;
     },
 
     _requestHeaders: function() {
@@ -12,17 +18,17 @@ enyo.kind({
         if (this.editToken && (new Date().getTime() - this.editTokenTime < 120000)) {
             success(this.editToken);
         } else {
-            var successFunction = function(response) {
+            var successFunction = enyo.bind(this, function(response) {
                 this.editToken = response.responseText;
                 this.editTokenTime = new Date().getTime();
                 success(this.editToken);
-            }.bind(this);
+            });
             this.get(this.BASE_URL + "token", {}, successFunction, failure);
         }
     },
 
     _editTage: function(articleId, subscriptionId, addTag, removeTag, success, failure) {
-        this._getEditToken(function(token) {
+        this._getEditToken(enyo.bind(this, function(token) {
             var parameters = {
                 T: token,
                 i: articleId,
@@ -38,13 +44,13 @@ enyo.kind({
             }
 
             this.post(this.BASE_URL + "edit-tag", parameters, success, failure, this.requestHeaders());
-        }.bind(this),
+        }),
         failure);
     },
 
     _getArticles: function(id, exclude, continuation, success, failure) {
         var parameters = {output: "json", n: 40};
-        var prefs = new Greeder.Preferences;
+        var prefs = this.app.prefs;
         if (id != "user/-/state/com.google/starred" && id != "user/-/state/com.google/broadcast" && prefs.isOldestFirst()) {
             parameters.r = "o";
         }
@@ -104,7 +110,7 @@ enyo.kind({
     },
 
     login: function(credentials, success, failure) {
-        var authSuccess = function(response) {
+        var authSuccess = enyo.bind(this, function(response) {
             enyo.log("auth success: ", response);
             enyo.log(response);
             var authMatch = response.match(/Auth\=(.*)/);
@@ -114,7 +120,7 @@ enyo.kind({
             } else {
                 failure(this.auth);
             }
-        }.bind(this);
+        });
         this.get("https://www.google.com/accounts/ClientLogin", {
             service: "reader",
             Email: credentials.mail,
@@ -136,7 +142,7 @@ enyo.kind({
     },
 
     setSortOrder: function(sortOrder, stream) {
-        this._getEditToken(function(token) {
+        this._getEditToken(enyo.bind(this, function(token) {
             var parameters = {
                 T: token,
                 s: stream || "user/-/state/com.google/root",
@@ -144,14 +150,14 @@ enyo.kind({
                 v: sortOrder
             };
             this.post(this.BASE_URL + "preferences/stream/set", parameters, function() {}, function() {}, this.requestHeaders());
-        }.bind(this));
+        }));
     },
 
     unsubscribe: function(feed, success) {
         if (feed.constructor == Folder) {
             this.removeLabel(feed);
         } else {
-            this._getEditToken(function(token) {
+            this._getEditToken(enyo.bind(this, function(token) {
                 var parameters = {
                     T: token,
                     s: feed.id,
@@ -160,12 +166,12 @@ enyo.kind({
                 };
 
                 this.post(this.BASE_URL + "subscription/edit", parameters, ssuccess, function() {}, this.requestHeaders());
-            }.bind(this));
+            }));
         }
     },
 
     removeLabel: function(folder, success) {
-        this._getEditToken(function(token) {
+        this._getEditToken(enyo.bind(this, function(token) {
             var parameters = {
                 T: token,
                 s: folder.id,
@@ -173,7 +179,7 @@ enyo.kind({
             };
 
             this.post(this.BASE_URL + "disable-tag", parameters, success, function() {}, this.requestHeaders());
-        }.bind(this));
+        }));
     },
 
     searchSubscriptions: function(query, success, failure) {
@@ -184,7 +190,7 @@ enyo.kind({
     },
 
     addSubscription: function(url, success, failure) {
-        this._getEditToken(function(token) {
+        this._getEditToken(enyo.bind(this, function(token) {
             var parameters = {
                 T: token,
                 quickadd: url
@@ -200,15 +206,15 @@ enyo.kind({
             };
 
             this.post(this.BASE_URL + "subscription/quickadd", parameters, successFunc, function() {}, this.requestHeaders());
-        }.bind(this));
+        }));
     },
 
     getAllSubscriptions: function(success, failure) {
-        var successFunc = function(response) {
+        var successFunc = enyo.bind(this, function(response) {
             var subscriptions = response.responseText.evalJSON().subscriptions;
             this.cacheTitles(subscriptions);
             success(subscriptions);
-        }.bind(this);
+        });
         this.get(this.BASE_URL + "subscription/list", {
             output: "json"
         }, successFunc, failure, this.requestHeaders());
@@ -216,9 +222,9 @@ enyo.kind({
 
     cacheTitles: function(subscriptions) {
         this.titles = {};
-        subscriptions.each(function(subscription) {
+        subscriptions.each(enyo.bind(this, function(subscription) {
             this.titles[subscriptions.id] = subscription.title;
-        }.bind(this));
+        }));
     },
 
     titleFor: function(id) {
@@ -240,7 +246,8 @@ enyo.kind({
     },
 
     getAllArticles: function(continuation, success, failure) {
-        var prefs = new Greeder.Preferences;
+        //var prefs = new TouchFeeds.Preferences;
+        var prefs = this.app.prefs;
         this._getArticles("user/-/state/com.google/reading-list", prefs.hideReadArticles() ? "user/-/state/com.google/read" : null, continuation, success, failure);
     },
 
@@ -253,19 +260,20 @@ enyo.kind({
     },
 
     getAllArticlesFor: function(id, continuation, success, failure) {
-        var prefs = new Greeder.Preferences;
+        //var prefs = new TouchFeeds.Preferences;
+        var prefs = this.app.prefs;
         this._getArticles(id, prefs.hideReadArticles() ? "user/-/state/com.google/read" : null, continuation, success, failure);
     },
 
     markAllRead: function(id, success, failure) {
-        this._getEditToken(function(token) {
+        this._getEditToken(enyo.bind(this, function(token) {
             var parameters = {
                 T: token,
                 s: id
             };
 
             this.post(this.BASE_URL + "mark-all-as-read", parameters, success, failure, this.requestHeaders());
-        }.bind(this), failure);
+        }), failure);
     },
 
     search: function(query, id, success, failure) {
@@ -279,14 +287,14 @@ enyo.kind({
         }
 
 
-        this.get(this.BASE_URL + "search/items/ids", parameters, this.searchItemsFound.bind(this, success, failure), failure, this.requestHeaders());
+        this.get(this.BASE_URL + "search/items/ids", parameters, enyo.bind(this, this.searchItemsFound, success, failure), failure, this.requestHeaders());
     },
 
     searchItemsFound: function(success, failure, response) {
         var ids = response.responseText.evalJSON().results;
 
         if (ids.length) {
-            this._getEditToken(function(token) {
+            this._getEditToken(enyo.bind(this, function(token) {
                 var parameters = {
                     T: token,
                     i: ids.map(function(n) {return n.id})
@@ -296,7 +304,7 @@ enyo.kind({
                     var articles = response.responseText.evalJSON();
                     success(articles.items, articles.id, articles.continuation);
                 }, failure, this.requestHeaders());
-            }.bind(this));
+            }));
         } else {
             success([], "", false);
         }

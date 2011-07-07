@@ -1,5 +1,5 @@
 enyo.kind({
-    name: "Greeder.SingleArticleView",
+    name: "TouchFeeds.SingleArticleView",
         kind: "VFlexBox",
     className: "enyo-bg",
     published: {
