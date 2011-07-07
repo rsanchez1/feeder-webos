@@ -8,7 +8,15 @@ enyo.kind({
     components: [
         {name: "header", kind: "Header"},
         {kind: "Scroller", flex: 1, components: [
-            {name: "client"}
+            {name: "feedsList", kind: "VirtualRepeater", onSetupRow: "getFeedItem", components: [
+                {kind: "SwipeableItem", layoutKind: "VFlexLayout", components: [
+                    {name: "title"},
+                    {name: "unreadCountDisplay"}
+                    ],
+                    onclick: "listItemClick"
+                }
+            ]
+            }
         ]},
         {kind: "Toolbar", components: []}
     ],
@@ -18,5 +26,5 @@ enyo.kind({
     },
     headerContentChanged: function() {
         this.$.header.setContent(this.headerContent);
-    }
+    },
 });
