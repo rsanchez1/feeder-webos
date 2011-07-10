@@ -27,6 +27,7 @@ enyo.kind({
     constructor: function() {
         this.inherited(arguments);
         this.app = enyo.application.app;
+        this.credentials = this.app.credentials;
     },
 
     create: function() {
@@ -41,7 +42,7 @@ enyo.kind({
         //this.$.loginError.show();
         this.$.spinner.show();
         var api = this.app.api;
-        api.login({mail: this.$.email.getValue(), password: this.$.password.getValue()}, this.loginSuccess.bind(this), this.loginFailure.bind(this));
+        api.login({email: this.$.email.getValue(), password: this.$.password.getValue()}, this.loginSuccess.bind(this), this.loginFailure.bind(this));
         //this.$.loginLabel.applyStyle("padding-top", "0.5em");
         //this.doConfirm();
     },
@@ -49,6 +50,9 @@ enyo.kind({
     loginSuccess: function(response) {
         enyo.log("login success: ", response);
         this.$.spinner.hide();
+        this.credentials.email = this.$.email.getValue();
+        this.credentials.password = this.$.password.getValue();
+        this.credentials.save();
         //this.doConfirm();
         this.doLogin();
     },

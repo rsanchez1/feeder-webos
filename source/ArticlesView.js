@@ -3,7 +3,8 @@ enyo.kind({
     kind: "VFlexBox",
     className: "enyo-bg",
     published: {
-        headerContent: ""
+        headerContent: "",
+        articles: []
     },
     components: [
         {name: "header", kind: "Header"},
@@ -20,6 +21,17 @@ enyo.kind({
     },
     headerContentChanged: function() {
         this.$.header.setContent(this.headerContent);
+    },
+    articlesChanged: function() {
+        var articles = this.articles;
+        this.articles.reset();
+        enyo.log("got articles");
+        this.articles.findArticles(this.foundArticles.bind(this), function() {enyo.log("failed to find articles");});
+    },
+    foundArticles: function() {
+        enyo.log("Found articles");
+        enyo.log(this.articles.items);
+        //enyo.log("Found articles: ", this.articles);
     }
 });
 
