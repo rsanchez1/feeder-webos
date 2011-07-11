@@ -11,10 +11,10 @@ enyo.kind({
     components: [
         {layoutKind: "HFlexLayout", pack: "center", components: [{name: "loginError", kind: "HtmlContent", showing: false, content: "Login failed. Try again.", className: "enyo-text-error warning-icon"}]},
         {kind: "RowGroup", caption: "EMAIL", components: [
-            {kind: "Input", name: "email", hint: "", value: ""}
+            {kind: "Input", name: "email", hint: "", value: "", onkeypress: "inputChange"}
         ]},
         {kind: "RowGroup", caption: "PASSWORD", components: [
-            {kind: "PasswordInput", name: "password", hint: "", value: ""}
+            {kind: "PasswordInput", name: "password", hint: "", value: "", onkeypress: "inputChange"}
         ]},
         {layoutKind: "HFlexLayout", pack: "center", components: [
             {kind: "Button", caption: "Login", flex: 1, style: "height: 2.0em !important;", className: "enyo-button-dark", onclick: "confirmClick", components: [
@@ -69,5 +69,15 @@ enyo.kind({
         this.$.spinner.hide();
         this.$.loginError.hide();
         this.doCancel();
+    },
+
+    inputChange: function(source, event) {
+        enyo.log("called the input change event");
+        if (event.keyCode == 13) {
+            enyo.log("pressed enter button, submit form");
+            this.$.spinner.show();
+            var api = this.app.api;
+            api.login({email: this.$.email.getValue(), password: this.$.password.getValue()}, this.loginSuccess.bind(this), this.loginFailure.bind(this));
+        }
     }
 });
