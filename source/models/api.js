@@ -238,7 +238,7 @@ var Api = Class.create({
   },
 
   _getArticles: function(id, exclude, continuation, success, failure) {
-    var parameters = {output: "json", n: 40}
+    var parameters = {output: "json", n: 5000}
 
     if(id != "user/-/state/com.google/starred" &&
        id != "user/-/state/com.google/broadcast" &&
@@ -342,6 +342,7 @@ var Api = Class.create({
   },
 
   setArticleRead: function(articleId, subscriptionId, success, failure) {
+    enyo.log("setting article read");
     this._editTag(
       articleId,
       subscriptionId,

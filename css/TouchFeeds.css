@@ -1,0 +1,46 @@
+.tfHeaderWrapper {
+    width: 90%;
+}
+
+.tfHeader {
+    display: inline-block;
+    height: 1.1rem;
+    line-height: 1rem;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tfSpinner {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+}
+
+.articleSummary {
+    color: #333;
+    margin: 10px;
+    padding: 5px;
+    line-height: 1.3rem;
+}
+
+.articleSummary.small, .articleSummary.small p {
+    font-size: 15px !important;
+    line-height: 18px !important;
+}
+
+.articleSummary.medium, .articleSummary.medium p {
+    font-size: 17px !important;
+    line-height: 21px !important;
+}
+
+.articleSummary.large, .articleSummary.large p {
+    font-size: 21px !important;
+    line-height: 25px !important;
+}
+
+.articleSummary p {
+    padding: 0 !important;
+    padding-bottom: 15px !important;
+}

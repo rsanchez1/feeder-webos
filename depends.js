@@ -1,5 +1,6 @@
 enyo.depends(
     //START DEPENDS
+    "source/encoder.js",
     "source/prototype.js",
     "source/models/api.js",
     "source/models/preferences.js",
@@ -28,5 +29,5 @@ enyo.depends(
     "source/ArticlesView.js",
     "source/SingleArticleView.js",
     "source/Login.js",
-	"css/FeedReader.css"
+	"css/TouchFeeds.css"
 );

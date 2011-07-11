@@ -34,6 +34,7 @@ var AllSources = Class.create({
       function() {
         enyo.log("called success from all sorts");
         var hideReadFeeds = Preferences.hideReadFeeds()
+        enyo.log("should hide read feeds? ", hideReadFeeds);
 
         self.subscriptions.items.each(function(subscription) {
           if(!hideReadFeeds || (hideReadFeeds && subscription.unreadCount)) {

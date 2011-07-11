@@ -48,7 +48,7 @@ enyo.kind({
     },
 
     loginSuccess: function(response) {
-        enyo.log("login success: ", response);
+        enyo.log("login success");
         this.$.spinner.hide();
         this.credentials.email = this.$.email.getValue();
         this.credentials.password = this.$.password.getValue();
@@ -58,7 +58,7 @@ enyo.kind({
     },
 
     loginFailure: function(response) {
-        enyo.log("login failure: ", response);
+        enyo.log("login failure");
         this.$.loginError.show();
         this.$.spinner.hide();
     },

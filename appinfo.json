@@ -1,9 +1,9 @@
 {
-	"id": "com.palm.feedreader",
-	"version": "1.0.0",
-	"vendor": "HP",
+	"id": "com.sanchezapps.touchfeedsbeta",
+	"version": "0.0.1",
+	"vendor": "Sanchez Apps",
 	"type": "web",
 	"main": "index.html",
-	"title": "Enyo FeedReader",
+	"title": "TouchFeeds Beta",
 	"uiRevision": "2"
 }
