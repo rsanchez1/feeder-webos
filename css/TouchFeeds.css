@@ -44,3 +44,7 @@
     padding: 0 !important;
     padding-bottom: 15px !important;
 }
+
+.articleSummary img {
+    max-width: 100% !important;
+}
