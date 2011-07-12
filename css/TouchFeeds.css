@@ -48,3 +48,11 @@
 .articleSummary img {
     max-width: 100% !important;
 }
+
+.firstRow {
+    border-top: none;
+}
+
+.lastRow {
+    border-bottom: none;
+}

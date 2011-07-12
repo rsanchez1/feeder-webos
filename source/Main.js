@@ -10,7 +10,7 @@ enyo.kind({
                 {name: "articlesView", kind: "TouchFeeds.ArticlesView", headerContent: "All Items", flex: 1, components: [], onArticleClicked: "articleClicked", onArticleRead: "articleRead"}
             ]},
             {name: "singleArticle", flex: 1, dismissible: true, onHide: "hideArticle", onShow: "showArticle", onResize: "slidingResize", components: [
-                {name: "singleArticleView", kind: "TouchFeeds.SingleArticleView", flex: 1, components: []},
+                {name: "singleArticleView", kind: "TouchFeeds.SingleArticleView", flex: 1, components: [], onSelectArticle: "selectArticle"},
             ]},
             {name: "login", className: "enyo-bg", kind: "TouchFeeds.Login", onCancel: "closeDialog", onConfirm: "confirmDialog", onLogin: "handleLogin"}
         ]},
@@ -128,13 +128,16 @@ enyo.kind({
         this.$.articlesView.setArticles(item); //pushing all articles to articles view
     },
 
-    articleClicked: function(thing, article) {
+    articleClicked: function(thing, article, index, maxIndex) {
         this.$.singleArticleView.setArticle(article);
+        this.$.singleArticleView.setIndex(index);
+        this.$.singleArticleView.setMaxIndex(maxIndex);
     },
 
-    articleRead: function(thing, article) {
+    articleRead: function(thing, article, index) {
         enyo.log("marked an article read");
         this.sources.articleRead(article.subscriptionId);
+        this.$.articlesView.finishArticleRead(index);
         enyo.log("article title: ", article.title);
         enyo.log("article subscription id: ", article.subscriptionId);
         //this.$.feedsView.reloadFeeds();
@@ -154,5 +157,9 @@ enyo.kind({
             this.$.feedsView.setStickySources(this.sources.stickySources);
             this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
         }.bind(this), function() {enyo.log("error sorting and filtering");});
+    },
+    selectArticle: function(thing, index) {
+        enyo.log("selecting article: ", index);
+        this.$.articlesView.selectArticle(index);
     }
 });
