@@ -15,11 +15,14 @@ enyo.kind({
         //{name: "header", kind: "Header"},
         {name: "header", kind: "PageHeader", components: [
             {name: "sourceButton", kind: "Button", caption: "Source", onclick: "sourceClick", style: "position: relative; left: 0px; margin: 0; margin-bottom: -10px; bottom: 5px; margin-right: 10px;"},
-            {kind: "Scroller", flex: 1, style: "height: 1.2rem;", vertical: false, autoVertical: false, components: [
-                {name: "headerContent", content: "Welcome to TouchFeeds", style: "display:inline-block; height: 1.2rem; line-height: 1.1rem; width: 5000px; overflow: hidden; text-overflow: ellipsis;"}
+            {name: "headerScroller", kind: "Scroller", flex: 1, style: "height: 1.2rem;", vertical: false, autoVertical: false, components: [
+                {name: "headerWrapper", style: "width: 5000px;", components: [
+                    {name: "headerContent", content: "Welcome to TouchFeeds", style: "display:inline-block; height: 1.2rem; line-height: 1.1rem;"}
+                ]}
             ]}
         ]},
         {name: "articleScroller", kind: "Scroller", flex: 1, components: [
+            {name: "about", style: "padding: 15px 15px 0 15px; color: #777; font-size: 0.8rem; margin-bottom: -10px;"},
             {name: "summary", className: "articleSummary", kind: "HtmlContent", onLinkClick: "articleLinkClicked"},
         ]},
         {kind: "Toolbar", components: [
@@ -35,14 +38,52 @@ enyo.kind({
         this.$.sourceButton.hide();
     },
     articleChanged: function() {
-        this.$.starButton.setIcon("images/starred-footer.png");
+        for (var i in this.article) {
+            if (this.article.hasOwnProperty(i)) {
+                enyo.log("property of article: ", i);
+            }
+        }
+        if (this.article.isStarred) {
+            this.$.starButton.setIcon("images/starred-footer-on.png");
+        } else {
+            this.$.starButton.setIcon("images/starred-footer.png");
+        }
         this.$.headerContent.setContent(Encoder.htmlDecode(this.article.title));
+        // Adjust width of scroller to scroll through title without scrolling off page
+        this.$.headerScroller.setScrollLeft(0);
+        this.$.headerWrapper.applyStyle("width", "5000px !important");
+        var width = (this.$.headerContent.node.clientWidth + 1) + "px !important";
+        enyo.log("new width for header will be: " + width);
+        this.$.headerWrapper.applyStyle("width", width);
         this.$.summary.setContent(Encoder.htmlDecode(this.article.summary));
+        this.$.about.setContent("by " + this.article.author + " on " + this.article.origin);
         this.$.sourceButton.show();
-        this.$.articleScroller.scrollTo(0, 0);
+        var scrollTo = 0;
+        /*
+        if (this.$.articleScroller.getScrollTop() > 200) {
+            scrollTo = -200;
+        }
+        */
+        this.$.articleScroller.scrollTo(0, scrollTo);
         //set author/feed, everything else in article-assistant.js
     },
     indexChanged: function() {
+        this.handleIndexChange();
+    },
+    maxIndexChanged: function() {
+        this.handleIndexChange();
+    },
+    handleIndexChange: function() {
+        if (this.index == 0) {
+            this.$.previousButton.setIcon("images/previous-article-disabled.png");
+        } else {
+            this.$.previousButton.setIcon("images/previous-article.png");
+        }
+        if (this.index >= this.maxIndex) {
+            this.$.nextButton.setIcon("images/next-article-disabled.png");
+        } else {
+            this.$.nextButton.setIcon("images/next-article.png");
+        }
     },
     subscriptionsChanged: function() {
     },
@@ -56,9 +97,15 @@ enyo.kind({
     },
     starClick: function() {
         if (!!this.article.title) {
-            enyo.log("starring article");
-            this.$.starButton.setIcon("images/starred-footer-on.png");
-            this.article.turnStarOn(function() {enyo.log("successfully starred article");}, function() {enyo.log("failed to star article");});
+            if (this.article.isStarred) {
+                enyo.log("removing star");
+                this.article.turnStarOff(function() {enyo.log("successfully removed star");}, function() {enyo.log("failed to remove star");});
+                this.$.starButton.setIcon("images/starred-footer.png");
+            } else {
+                enyo.log("starring article");
+                this.article.turnStarOn(function() {enyo.log("successfully starred article");}, function() {enyo.log("failed to star article");});
+                this.$.starButton.setIcon("images/starred-footer-on.png");
+            }
         }
     },
     previousClick: function() {

@@ -23,6 +23,7 @@ enyo.kind({
             {name: "articlesList", kind: "VirtualList", onSetupRow: "getListArticles", components: [
                 {name: "articleItem", kind: "Item", layoutKind: "VFlexLayout", components: [
                     {name: "title", style: "font-size: 0.7rem; font-weight: 500; height: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"},
+                    {name: "origin", style: "font-size: 0.5rem; height: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-top: 5px; color: #777;"},
                     {name: "starred"}
                 ], onclick: "articleItemClick"}
             ]}
@@ -92,15 +93,16 @@ enyo.kind({
                 } else {
                     this.$.articleItem.removeClass("firstRow");
                 }
+                if (this.articles.showOrigin) {
+                    this.$.origin.setContent(Encoder.htmlDecode(r.origin));
+                    this.$.origin.show();
+                } else {
+                    this.$.origin.setContent("");
+                    this.$.origin.hide();
+                }
                 return true;
             }
         }
-        /*
-        if (inIndex < 100) {
-            this.$.title.setContent("I am item: " + inIndex);
-            return true;
-        }
-        */
     },
     articleItemClick: function(inSender, inEvent) {
         this.selectArticle(inEvent.rowIndex);

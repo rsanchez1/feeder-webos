@@ -2,14 +2,14 @@ enyo.kind({
     name: "TouchFeeds.Main",
     kind: enyo.VFlexBox,
     components: [
-        {name: "slidingPange", kind: "SlidingPane", flex: 1, onSelectView: "slidingSelected", components: [
-            {name: "feeds", width: "320px", components: [
+        {name: "slidingPange", kind: "SlidingPane", fixedWidth: true, flex: 1, onSelectView: "slidingSelected", components: [
+            {name: "feeds", width: "320px", fixedWidth: true, components: [
                 {name: "feedsView", kind: "TouchFeeds.FeedsView", headerContent: "TouchFeeds", flex: 1, components: [], onFeedClicked: "feedClicked"}
             ]},
             {name: "articles", width: "320px", fixedWidth: true, components: [
                 {name: "articlesView", kind: "TouchFeeds.ArticlesView", headerContent: "All Items", flex: 1, components: [], onArticleClicked: "articleClicked", onArticleRead: "articleRead"}
             ]},
-            {name: "singleArticle", flex: 1, dismissible: true, onHide: "hideArticle", onShow: "showArticle", onResize: "slidingResize", components: [
+            {name: "singleArticle", flex: 1, dismissible: false, onHide: "hideArticle", onShow: "showArticle", onResize: "slidingResize", components: [
                 {name: "singleArticleView", kind: "TouchFeeds.SingleArticleView", flex: 1, components: [], onSelectArticle: "selectArticle"},
             ]},
             {name: "login", className: "enyo-bg", kind: "TouchFeeds.Login", onCancel: "closeDialog", onConfirm: "confirmDialog", onLogin: "handleLogin"}
