@@ -10,6 +10,7 @@ enyo.kind({
         onArticleClicked: "",
         onArticleRead: ""
     },
+    isRendered: false,
     components: [
         //{name: "header", kind: "Header"},
         {name: "header", kind: "PageHeader", components: [
@@ -19,7 +20,7 @@ enyo.kind({
             {kind: "Spinner", showing: true, className: "tfSpinner",}
         ]},
         {kind: "Scroller", flex: 1, components: [
-            {name: "articlesList", kind: "VirtualRepeater", onSetupRow: "getListArticles", components: [
+            {name: "articlesList", kind: "VirtualList", onSetupRow: "getListArticles", components: [
                 {name: "articleItem", kind: "Item", layoutKind: "VFlexLayout", components: [
                     {name: "title", style: "font-size: 0.7rem; font-weight: 500; height: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"},
                     {name: "starred"}
@@ -43,7 +44,12 @@ enyo.kind({
         this.articles.reset();
         enyo.log("got articles");
         this.articles.items = [];
-        this.$.articlesList.render();
+        if (this.isRendered) {
+            this.$.articlesList.refresh();
+        } else {
+            this.isRendered = true;
+            this.$.articlesList.render();
+        }
         this.$.spinner.show();
         this.$.spinner.applyStyle("display", "inline-block");
         //this.$.spinner.show();
@@ -54,7 +60,12 @@ enyo.kind({
         //enyo.log(this.articles.items);
         //enyo.log("Found articles: ", this.articles);
         this.$.spinner.hide();
-        this.$.articlesList.render();
+        if (this.isRendered) {
+            this.$.articlesList.refresh();
+        } else {
+            this.isRendered = true;
+            this.$.articlesList.render();
+        }
     },
     getListArticles: function(inSender, inIndex) {
         if (!!this.articles.items) {
@@ -66,12 +77,20 @@ enyo.kind({
                 this.$.title.setContent(Encoder.htmlDecode(r.title));
                 if (!r.isRead) {
                     this.$.title.applyStyle("font-weight", 700);
+                } else {
+                    this.$.title.applyStyle("font-weight", 500);
                 }
                 if (inIndex + 1 >= this.articles.items.length) {
-                    this.$.articleItem.applyStyle("border-bottom", "none");
+                    enyo.log("removing bottom border: ", inIndex);
+                    this.$.articleItem.addClass("lastRow");
+                } else {
+                    this.$.articleItem.removeClass("lastRow");
                 }
                 if (inIndex - 1 < 0) {
-                    this.$.articleItem.applyStyle("border-top", "none");
+                    enyo.log("removing top border: ", inIndex);
+                    this.$.articleItem.addClass("firstRow");
+                } else {
+                    this.$.articleItem.removeClass("firstRow");
                 }
                 return true;
             }
@@ -84,20 +103,27 @@ enyo.kind({
         */
     },
     articleItemClick: function(inSender, inEvent) {
-        var article = this.articles.items[inEvent.rowIndex];
+        this.selectArticle(inEvent.rowIndex);
+    },
+    selectArticle: function(index) {
+        var article = this.articles.items[index];
         //article["turnReadOn"](this.markedArticleRead.bind(this), function() {}, true);
         enyo.log("clicked on article");
         enyo.log(article.subscriptionId);
         if (!article.isRead) {
-            article.turnReadOn(this.markedArticleRead.bind(this, article), function() {});
+            article.turnReadOn(this.markedArticleRead.bind(this, article, index), function() {});
         }
-        this.doArticleClicked(article);
+        this.doArticleClicked(article, index, this.articles.items.length - 1);
     },
-    markedArticleRead: function(article) {
+    markedArticleRead: function(article, index) {
         enyo.log("marked article read");
         enyo.log(article.subscriptionId);
-        this.$.articlesList.render();
-        this.doArticleRead(article);
+        //this.$.articlesList.render();
+        //this.$.articlesList.updateRow(index);
+        this.doArticleRead(article, index);
+    },
+    finishArticleRead: function(index) {
+        this.$.articlesList.updateRow(index);
     }
 });
 

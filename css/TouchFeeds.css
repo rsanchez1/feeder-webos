@@ -44,3 +44,11 @@
     padding: 0 !important;
     padding-bottom: 15px !important;
 }
+
+.firstRow {
+    border-top: none;
+}
+
+.lastRow {
+    border-bottom: none;
+}
