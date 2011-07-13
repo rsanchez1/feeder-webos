@@ -32,6 +32,7 @@ enyo.kind({
             {name: "previousButton", kind: "IconButton", icon: "images/previous-article.png", onclick: "previousClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 10%; top: 11px;"},
             {name: "readButton", kind: "IconButton", icon: "images/read-footer.png", onclick: "readClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 30%; top: 11px;"},
             {name: "starButton", kind: "IconButton", icon: "images/starred-footer.png", onclick: "starClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 50%; top: 11px;"},
+            {name: "offlineButton", kind: "IconButton", icon: "images/offline-article.png", onclick: "offlineClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 70%; top: 9px;"},
             {name: "nextButton", kind: "IconButton", icon: "images/next-article.png", onclick: "nextClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 90%; top: 11px;"}
         ]}
     ],
@@ -39,6 +40,7 @@ enyo.kind({
         this.inherited(arguments);
         this.$.headerContent.setContent("Welcome to TouchFeeds");
         this.$.sourceButton.hide();
+		this.app = enyo.application.app
     },
     articleChanged: function() {
         /*
@@ -55,7 +57,9 @@ enyo.kind({
         }
         if (!this.article.isRead) {
             enyo.log("article not read, mark it read");
-            this.article.turnReadOn(this.markedArticleRead.bind(this), function() {});
+			if (this.article.turnReadOn) {
+				this.article.turnReadOn(this.markedArticleRead.bind(this), function() {});
+			}
         }
         this.$.headerContent.setContent(Encoder.htmlDecode(this.article.title));
         // Adjust width of scroller to scroll through title without scrolling off page
@@ -119,11 +123,15 @@ enyo.kind({
         if (!!this.article.title) {
             if (this.article.isStarred) {
                 enyo.log("removing star");
-                this.article.turnStarOff(function() {enyo.log("successfully removed star");}, function() {enyo.log("failed to remove star");});
+				if (this.article.turnStarOff) {
+					this.article.turnStarOff(function() {enyo.log("successfully removed star");}, function() {enyo.log("failed to remove star");});
+				}
                 this.$.starButton.setIcon("images/starred-footer.png");
             } else {
                 enyo.log("starring article");
-                this.article.turnStarOn(function() {enyo.log("successfully starred article");}, function() {enyo.log("failed to star article");});
+				if (this.article.turnStarOn) {
+					this.article.turnStarOn(function() {enyo.log("successfully starred article");}, function() {enyo.log("failed to star article");});
+				}
                 this.$.starButton.setIcon("images/starred-footer-on.png");
             }
         }
@@ -131,9 +139,13 @@ enyo.kind({
     readClick: function() {
         if (!!this.article.title) {
             if (this.article.isRead) {
-                this.article.turnReadOff(this.markedArticleRead.bind(this), function() {});
+				if (this.article.turnReadOff) {
+					this.article.turnReadOff(this.markedArticleRead.bind(this), function() {});
+				}
             } else {
-                this.article.turnReadOn(this.markedArticleRead.bind(this), function() {});
+				if (this.article.turnReadOn) {
+					this.article.turnReadOn(this.markedArticleRead.bind(this), function() {});
+				}
             }
         }
     },
@@ -151,6 +163,23 @@ enyo.kind({
         if (this.index < this.maxIndex) {
             this.doSelectArticle(this.index + 1);
         }
+    },
+	offlineClick: function() {
+		enyo.log("clicked the offline button");
+		this.app.$.articlesDB.insertData({
+			table: "articles",
+			data: [{
+				author: this.article.author,
+				title: this.article.title,
+				displayDate: this.article.displayDate,
+				origin: this.article.origin,
+				summary: this.article.summary,
+				url: this.article.url
+			}]
+		}, {
+			onSuccess: function() {enyo.log("successfully saved article offline");},
+			onFailure: function() {enyo.log("failed to save article offline");}
+		});
     },
     resizedPane: function() {
         enyo.log("resizing article");

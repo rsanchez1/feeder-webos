@@ -17,7 +17,8 @@ enyo.kind({
         {kind: "AppMenu", components: [
             {kind: "EditMenu"},
             /*{caption: "Login", onclick: "showLogin"}*/
-        ]}
+        ]},
+		{kind: "onecrayon.Database", name: "articlesDB", database: "ext:TouchFeedsArticles", version: "1", debug: false}
     ],
 
     constructor: function() {
@@ -30,6 +31,9 @@ enyo.kind({
 
     ready: function() {
         enyo.log("called ready method");
+		this.$.articlesDB.setSchemaFromURL('schema.json', {
+			onSuccess: function() {enyo.log("successfully set database schema");}
+		});
         if (this.credentials.email && this.credentials.password) {
             enyo.log("Login API");
             this.api.login(this.credentials, this.loginSuccess.bind(this), this.loginFailure.bind(this));
@@ -41,11 +45,25 @@ enyo.kind({
 
     loginSuccess: function() {
         enyo.log("logged in successfully");
+		this.$.articlesView.setHeaderContent("Offline Items");
+		this.$.articlesDB.query("SELECT * FROM articles", {
+			onSuccess: function (results) {
+				enyo.log("************************");
+				enyo.log("got results successfully");
+				this.$.articlesView.setOfflineArticles(results);
+		   }.bind(this),
+			onFailure: function() {
+				enyo.log("failed to get results");
+			}
+		});
         this.sources = new AllSources(this.api);
+		this.refreshFeeds();
+		/*
         this.refreshFeeds(function() {
             this.$.articlesView.setHeaderContent("All Items");
             this.$.articlesView.setArticles(this.sources.stickySources.items[0]);
         }.bind(this));
+		*/
     },
 
     refreshFeeds: function(callback) {
