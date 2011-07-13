@@ -4,13 +4,13 @@ enyo.kind({
     components: [
         {name: "slidingPange", kind: "SlidingPane", fixedWidth: true, flex: 1, onSelectView: "slidingSelected", components: [
             {name: "feeds", width: "320px", fixedWidth: true, components: [
-                {name: "feedsView", kind: "TouchFeeds.FeedsView", headerContent: "TouchFeeds", flex: 1, components: [], onFeedClicked: "feedClicked"}
+                {name: "feedsView", kind: "TouchFeeds.FeedsView", headerContent: "TouchFeeds", flex: 1, components: [], onFeedClicked: "feedClicked", onRefreshFeeds: "refreshFeeds"}
             ]},
             {name: "articles", width: "320px", fixedWidth: true, components: [
-                {name: "articlesView", kind: "TouchFeeds.ArticlesView", headerContent: "All Items", flex: 1, components: [], onArticleClicked: "articleClicked", onArticleRead: "articleRead"}
+                {name: "articlesView", kind: "TouchFeeds.ArticlesView", headerContent: "All Items", flex: 1, components: [], onArticleClicked: "articleClicked", onArticleRead: "articleRead", onAllArticlesRead: "markedAllRead"}
             ]},
             {name: "singleArticle", flex: 1, dismissible: false, onHide: "hideArticle", onShow: "showArticle", onResize: "slidingResize", components: [
-                {name: "singleArticleView", kind: "TouchFeeds.SingleArticleView", flex: 1, components: [], onSelectArticle: "selectArticle"},
+                {name: "singleArticleView", kind: "TouchFeeds.SingleArticleView", flex: 1, components: [], onSelectArticle: "selectArticle", onRead: "readArticle"},
             ]},
             {name: "login", className: "enyo-bg", kind: "TouchFeeds.Login", onCancel: "closeDialog", onConfirm: "confirmDialog", onLogin: "handleLogin"}
         ]},
@@ -41,15 +41,22 @@ enyo.kind({
 
     loginSuccess: function() {
         enyo.log("logged in successfully");
-        this.$.feedsView.setShowSpinner(true);
         this.sources = new AllSources(this.api);
+        this.refreshFeeds(function() {
+            this.$.articlesView.setHeaderContent("All Items");
+            this.$.articlesView.setArticles(this.sources.stickySources.items[0]);
+        }.bind(this));
+    },
+
+    refreshFeeds: function(callback) {
+        this.$.feedsView.setShowSpinner(true);
+        if (!!callback) {
+            callback = function() {};
+        }
         this.sources.findAll(
             function() {
                 enyo.log("Filtering and refreshing...");
-                this.filterAndRefresh(function() {
-                    this.$.articlesView.setHeaderContent("All Items");
-                    this.$.articlesView.setArticles(this.sources.stickySources.items[0]);
-                }.bind(this));
+                this.filterAndRefresh(callback);
             }.bind(this),
 
             function() {
@@ -94,6 +101,7 @@ enyo.kind({
     },
 
     slidingResize: function() {
+        this.$.singleArticleView.resizedPane();
     },
 
     openAppMenuHandler: function() {
@@ -134,32 +142,29 @@ enyo.kind({
         this.$.singleArticleView.setMaxIndex(maxIndex);
     },
 
-    articleRead: function(thing, article, index) {
-        enyo.log("marked an article read");
-        this.sources.articleRead(article.subscriptionId);
+    selectArticle: function(thing, index) {
+        enyo.log("selecting article: ", index);
+        this.$.articlesView.selectArticle(index);
+    },
+    readArticle: function(thing, article, index, isRead) {
+        enyo.log("received read event");
+        if (isRead) {
+            enyo.log("mark article read");
+            this.sources.articleRead(article.subscriptionId);
+        } else {
+            enyo.log("mark article not read");
+            this.sources.articleNotRead(article.subscriptionId);
+        }
         this.$.articlesView.finishArticleRead(index);
-        enyo.log("article title: ", article.title);
-        enyo.log("article subscription id: ", article.subscriptionId);
-        //this.$.feedsView.reloadFeeds();
-        /*
-        this.sources.findAll(
-            function() {
-                enyo.log("Filtering and refreshing...");
-                this.filterAndRefresh();
-            }.bind(this),
-
-            function() {
-                enyo.log("Error fetching all feeds");
-            }
-        );
-        */
         this.sources.sortAndFilter(function() {
             this.$.feedsView.setStickySources(this.sources.stickySources);
             this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
         }.bind(this), function() {enyo.log("error sorting and filtering");});
     },
-    selectArticle: function(thing, index) {
-        enyo.log("selecting article: ", index);
-        this.$.articlesView.selectArticle(index);
+    markedAllRead: function() {
+        this.sources.sortAndFilter(function() {
+            this.$.feedsView.setStickySources(this.sources.stickySources);
+            this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
+        }.bind(this), function() {enyo.log("error sorting and filtering");});
     }
 });

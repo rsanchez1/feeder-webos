@@ -10,7 +10,9 @@ enyo.kind({
     },
     events: {
         onSelectArticle: "",
+        onRead: "",
     },
+    onSlideComplete: "resizedPane",
     components: [
         //{name: "header", kind: "Header"},
         {name: "header", kind: "PageHeader", components: [
@@ -23,11 +25,12 @@ enyo.kind({
         ]},
         {name: "articleScroller", kind: "Scroller", flex: 1, components: [
             {name: "about", style: "padding: 15px 15px 0 15px; color: #777; font-size: 0.8rem; margin-bottom: -10px;"},
-            {name: "summary", className: "articleSummary", kind: "HtmlContent", onLinkClick: "articleLinkClicked"},
+            {name: "summary", className: "articleSummary", kind: "HtmlContent", onLinkClick: "articleLinkClicked", style: "max-width: 90%;"},
         ]},
         {kind: "Toolbar", components: [
             {kind: "GrabButton"},
             {name: "previousButton", kind: "IconButton", icon: "images/previous-article.png", onclick: "previousClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 10%; top: 11px;"},
+            {name: "readButton", kind: "IconButton", icon: "images/read-footer.png", onclick: "readClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 30%; top: 11px;"},
             {name: "starButton", kind: "IconButton", icon: "images/starred-footer.png", onclick: "starClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 50%; top: 11px;"},
             {name: "nextButton", kind: "IconButton", icon: "images/next-article.png", onclick: "nextClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 90%; top: 11px;"}
         ]}
@@ -38,15 +41,21 @@ enyo.kind({
         this.$.sourceButton.hide();
     },
     articleChanged: function() {
+        /*
         for (var i in this.article) {
             if (this.article.hasOwnProperty(i)) {
                 enyo.log("property of article: ", i);
             }
         }
+        */
         if (this.article.isStarred) {
             this.$.starButton.setIcon("images/starred-footer-on.png");
         } else {
             this.$.starButton.setIcon("images/starred-footer.png");
+        }
+        if (!this.article.isRead) {
+            enyo.log("article not read, mark it read");
+            this.article.turnReadOn(this.markedArticleRead.bind(this), function() {});
         }
         this.$.headerContent.setContent(Encoder.htmlDecode(this.article.title));
         // Adjust width of scroller to scroll through title without scrolling off page
@@ -56,7 +65,7 @@ enyo.kind({
         enyo.log("new width for header will be: " + width);
         this.$.headerWrapper.applyStyle("width", width);
         this.$.summary.setContent(Encoder.htmlDecode(this.article.summary));
-        this.$.about.setContent("by " + this.article.author + " on " + this.article.origin);
+        this.$.about.setContent("by " + (!!this.article.author ? this.article.author : "Author Unavailable") + " on " + this.article.origin);
         this.$.sourceButton.show();
         var scrollTo = 0;
         /*
@@ -66,6 +75,17 @@ enyo.kind({
         */
         this.$.articleScroller.scrollTo(0, scrollTo);
         //set author/feed, everything else in article-assistant.js
+    },
+    markedArticleRead: function() {
+        if (!this.article.isRead) {
+            enyo.log("marked an article read");
+            this.$.readButton.setIcon("images/read-footer.png");
+        } else {
+            enyo.log("marked an artile not read");
+            this.$.readButton.setIcon("images/read-footer-on.png");
+        }
+        enyo.log("sending read event");
+        this.doRead(this.article, this.index, this.article.isRead);
     },
     indexChanged: function() {
         this.handleIndexChange();
@@ -108,6 +128,15 @@ enyo.kind({
             }
         }
     },
+    readClick: function() {
+        if (!!this.article.title) {
+            if (this.article.isRead) {
+                this.article.turnReadOff(this.markedArticleRead.bind(this), function() {});
+            } else {
+                this.article.turnReadOn(this.markedArticleRead.bind(this), function() {});
+            }
+        }
+    },
     previousClick: function() {
         enyo.log("previous click");
         enyo.log(this.index);
@@ -122,6 +151,10 @@ enyo.kind({
         if (this.index < this.maxIndex) {
             this.doSelectArticle(this.index + 1);
         }
+    },
+    resizedPane: function() {
+        enyo.log("resizing article");
+        this.$.headerScroller.setScrollLeft(0);
     }
 });
 

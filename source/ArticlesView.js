@@ -8,7 +8,8 @@ enyo.kind({
     },
     events: {
         onArticleClicked: "",
-        onArticleRead: ""
+        onArticleRead: "",
+        onAllArticlesRead: ""
     },
     isRendered: false,
     components: [
@@ -29,7 +30,8 @@ enyo.kind({
             ]}
         ]},
         {kind: "Toolbar", components: [
-            {kind: "GrabButton"}
+            {kind: "GrabButton"},
+            {name: "readAllButton", kind: "IconButton", icon: "images/read-footer-on.png", onclick: "readAllClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 60px; top: 11px;"},
         ]}
     ],
     create: function() {
@@ -45,14 +47,22 @@ enyo.kind({
         this.articles.reset();
         enyo.log("got articles");
         this.articles.items = [];
+        this.$.articlesList.punt();
+        /*
         if (this.isRendered) {
             this.$.articlesList.refresh();
         } else {
             this.isRendered = true;
             this.$.articlesList.render();
         }
+        */
         this.$.spinner.show();
         this.$.spinner.applyStyle("display", "inline-block");
+        if (this.articles.canMarkAllRead) {
+            this.$.readAllButton.setIcon("images/read-footer-on.png");
+        } else {
+            //set disabled state for read button
+        }
         //this.$.spinner.show();
         this.articles.findArticles(this.foundArticles.bind(this), function() {enyo.log("failed to find articles");});
     },
@@ -109,23 +119,22 @@ enyo.kind({
     },
     selectArticle: function(index) {
         var article = this.articles.items[index];
-        //article["turnReadOn"](this.markedArticleRead.bind(this), function() {}, true);
-        enyo.log("clicked on article");
-        enyo.log(article.subscriptionId);
-        if (!article.isRead) {
-            article.turnReadOn(this.markedArticleRead.bind(this, article, index), function() {});
-        }
         this.doArticleClicked(article, index, this.articles.items.length - 1);
-    },
-    markedArticleRead: function(article, index) {
-        enyo.log("marked article read");
-        enyo.log(article.subscriptionId);
-        //this.$.articlesList.render();
-        //this.$.articlesList.updateRow(index);
-        this.doArticleRead(article, index);
     },
     finishArticleRead: function(index) {
         this.$.articlesList.updateRow(index);
+    },
+    readAllClick: function() {
+        if (this.articles.canMarkAllRead) {
+            this.$.spinner.show();
+            this.articles.markAllRead(this.markedAllArticlesRead.bind(this), function() {enyo.log("error marking all read");});
+        }
+    },
+    markedAllArticlesRead: function() {
+        enyo.log("marked all articles read");
+        this.$.spinner.hide();
+        this.$.articlesList.punt();
+        this.doAllArticlesRead();
     }
 });
 

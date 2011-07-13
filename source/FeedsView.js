@@ -9,7 +9,8 @@ enyo.kind({
         subscriptionSources: []
     },
     events: {
-        onFeedClicked: ""
+        onFeedClicked: "",
+        onRefreshFeeds: "",
     },
     components: [
         //{name: "header", kind: "Header"},
@@ -37,7 +38,9 @@ enyo.kind({
             ]
             }
         ]},
-        {kind: "Toolbar", components: []}
+        {kind: "Toolbar", components: [
+            {name: "refreshButton", kind: "IconButton", icon: "images/refresh.png", onclick: "refreshClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 0; top: 11px;"},
+        ]}
     ],
     create: function() {
         this.inherited(arguments);
@@ -114,5 +117,8 @@ enyo.kind({
         enyo.log("reloading feeds");
         this.$.subscriptionSourcesList.render();
         this.$.stickySourcesList.render();
+    },
+    refreshClick: function() {
+        this.doRefreshFeeds();
     }
 });
