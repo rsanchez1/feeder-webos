@@ -47,6 +47,7 @@ enyo.kind({
         this.headerContentChanged();
     },
     ready: function() {
+        this.app = enyo.application.app;
         this.$.sourcesDivider.hide();
     },
     showSpinnerChanged: function() {
@@ -65,18 +66,30 @@ enyo.kind({
         this.$.stickySourcesList.render();
     },
     setupStickySources: function(inSender, inIndex) {
+        enyo.log("sticky sources index: ", inIndex);
         if (!!this.stickySources.items) {
-            var r = this.stickySources.items[inIndex];
-            if (r) {
-                this.$.stickyTitle.setContent(Encoder.htmlDecode(r.title));
-                this.$.stickyUnreadCountDisplay.setContent(r.unreadCountDisplay);
-                if (inIndex + 1 >= this.stickySources.items.length) {
-                    this.$.stickyItem.applyStyle("border-bottom", "none");
-                }
-                if (inIndex - 1 < 0) {
-                    this.$.stickyItem.applyStyle("border-top", "none");
-                }
+            if (inIndex == this.stickySources.items.length && (!this.stickySources.items[this.stickySources.items.length - 1].isOffline)) {
+                enyo.log("last item in sticky sources, adding offline");
+                this.$.stickyTitle.setContent("Offline Articles");
+                this.$.stickyUnreadCountDisplay.setContent(this.app.offlineArticles.length);
+                this.$.stickyItem.applyStyle("border-bottom", "none");
+                this.stickySources.items[this.stickySources.items.length] = {isOffline: true, title: "Offline Articles"};
                 return true;
+            } else {
+                var r = this.stickySources.items[inIndex];
+                if (r) {
+                    this.$.stickyTitle.setContent(Encoder.htmlDecode(r.title));
+                    this.$.stickyUnreadCountDisplay.setContent(r.unreadCountDisplay);
+                    /*
+                    if (inIndex + 1 >= this.stickySources.items.length) {
+                        this.$.stickyItem.applyStyle("border-bottom", "none");
+                    }
+                    */
+                    if (inIndex - 1 < 0) {
+                        this.$.stickyItem.applyStyle("border-top", "none");
+                    }
+                    return true;
+                }
             }
         }
     },
