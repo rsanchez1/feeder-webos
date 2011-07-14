@@ -1,6 +1,7 @@
 enyo.kind({
     name: "TouchFeeds.SingleArticleView",
-        kind: "VFlexBox",
+	kind: "VFlexBox",
+	isOffline: false,
     className: "enyo-bg",
     published: {
         article: {},
@@ -43,6 +44,7 @@ enyo.kind({
 		this.app = enyo.application.app
     },
     articleChanged: function() {
+		this.app.$.articlesDB.query('SELECT COUNT(*) FROM articles WHERE title="' + this.article.title + '"', {onSuccess: this.checkIfOnline.bind(this), onFailure: function() {enyo.log("failed to check if article offline");}});
         /*
         for (var i in this.article) {
             if (this.article.hasOwnProperty(i)) {
@@ -165,22 +167,32 @@ enyo.kind({
         }
     },
 	offlineClick: function() {
-		enyo.log("clicked the offline button");
-		this.app.$.articlesDB.insertData({
-			table: "articles",
-			data: [{
-				author: this.article.author,
-				title: this.article.title,
-				displayDate: this.article.displayDate,
-				origin: this.article.origin,
-				summary: this.article.summary,
-				url: this.article.url
-			}]
-		}, {
-			onSuccess: function() {enyo.log("successfully saved article offline");},
-			onFailure: function() {enyo.log("failed to save article offline");}
-		});
+		if (this.isOffline) {
+		} else {
+			enyo.log("clicked the offline button");
+			this.app.$.articlesDB.insertData({
+				table: "articles",
+				data: [{
+					author: this.article.author,
+					title: this.article.title,
+					displayDate: this.article.displayDate,
+					origin: this.article.origin,
+					summary: this.article.summary,
+					url: this.article.url
+				}]
+			}, {
+				onSuccess: function() {enyo.log("successfully saved article offline");},
+				onFailure: function() {enyo.log("failed to save article offline");}
+			});
+		}
     },
+	checkIfOffline: function(results) {
+		if (!!result[0] && !!result[0]["COUNT(*)"]) {
+			this.isOffline = true;
+		} else {
+			this.isOffline = false;
+		}
+	},
     resizedPane: function() {
         enyo.log("resizing article");
         this.$.headerScroller.setScrollLeft(0);
