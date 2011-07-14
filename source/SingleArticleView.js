@@ -12,6 +12,7 @@ enyo.kind({
     events: {
         onSelectArticle: "",
         onRead: "",
+		onChangedOffline: "",
     },
     onSlideComplete: "resizedPane",
     components: [
@@ -44,7 +45,6 @@ enyo.kind({
 		this.app = enyo.application.app
     },
     articleChanged: function() {
-		this.app.$.articlesDB.query('SELECT COUNT(*) FROM articles WHERE title="' + this.article.title + '"', {onSuccess: this.checkIfOnline.bind(this), onFailure: function() {enyo.log("failed to check if article offline");}});
         /*
         for (var i in this.article) {
             if (this.article.hasOwnProperty(i)) {
@@ -80,6 +80,7 @@ enyo.kind({
         }
         */
         this.$.articleScroller.scrollTo(0, scrollTo);
+		this.offlineQuery();
         //set author/feed, everything else in article-assistant.js
     },
     markedArticleRead: function() {
@@ -168,6 +169,13 @@ enyo.kind({
     },
 	offlineClick: function() {
 		if (this.isOffline) {
+			enyo.log("will delete article offline");
+			this.app.$.articlesDB.query("DELETE FROM articles WHERE articleID="+this.article.articleID, {onSuccess: function() {
+				enyo.windows.addBannerMessage("Deleted article offline", "{}");
+				this.offlineQuery();
+				this.doChangedOffline();
+			}.bind(this), onFailure: function() {enyo.log("failed to delete article");}
+			});
 		} else {
 			enyo.log("clicked the offline button");
 			this.app.$.articlesDB.insertData({
@@ -181,17 +189,22 @@ enyo.kind({
 					url: this.article.url
 				}]
 			}, {
-				onSuccess: function() {enyo.windows.addBannerMessage("Saved article offline", "{}");},
+				onSuccess: function() {enyo.windows.addBannerMessage("Saved article offline", "{}"); this.offlineQuery(); this.doChangedOffline();}.bind(this),
 				onFailure: function() {enyo.log("failed to save article offline");}
 			});
 		}
     },
 	checkIfOffline: function(results) {
-		if (!!result[0] && !!result[0]["COUNT(*)"]) {
+		if (!!results[0] && !!results[0]["COUNT(*)"]) {
 			this.isOffline = true;
+			this.$.offlineButton.setIcon("images/delete-article.png");
 		} else {
 			this.isOffline = false;
+			this.$.offlineButton.setIcon("images/offline-article.png");
 		}
+	},
+	offlineQuery: function() {
+		this.app.$.articlesDB.query('SELECT COUNT(*) FROM articles WHERE title="' + this.article.title + '"', {onSuccess: this.checkIfOffline.bind(this), onFailure: function() {enyo.log("failed to check if article offline");}});
 	},
     resizedPane: function() {
         enyo.log("resizing article");

@@ -10,7 +10,7 @@ enyo.kind({
                 {name: "articlesView", kind: "TouchFeeds.ArticlesView", headerContent: "All Items", flex: 1, components: [], onArticleClicked: "articleClicked", onArticleRead: "articleRead", onAllArticlesRead: "markedAllRead"}
             ]},
             {name: "singleArticle", flex: 1, dismissible: false, onHide: "hideArticle", onShow: "showArticle", onResize: "slidingResize", components: [
-                {name: "singleArticleView", kind: "TouchFeeds.SingleArticleView", flex: 1, components: [], onSelectArticle: "selectArticle", onRead: "readArticle"},
+                {name: "singleArticleView", kind: "TouchFeeds.SingleArticleView", flex: 1, components: [], onSelectArticle: "selectArticle", onRead: "readArticle", onChangedOffline: "changeOffline"},
             ]},
             {name: "login", className: "enyo-bg", kind: "TouchFeeds.Login", onCancel: "closeDialog", onConfirm: "confirmDialog", onLogin: "handleLogin"}
         ]},
@@ -48,7 +48,6 @@ enyo.kind({
 		this.$.articlesView.setHeaderContent("Offline Articles");
 		this.$.articlesDB.query("SELECT * FROM articles", {
 			onSuccess: function (results) {
-				enyo.log("************************");
 				enyo.log("got results successfully");
                 this.offlineArticles = results;
 				this.$.articlesView.setOfflineArticles(results);
@@ -199,5 +198,19 @@ enyo.kind({
             this.$.feedsView.setStickySources(this.sources.stickySources);
             this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
         }.bind(this), function() {enyo.log("error sorting and filtering");});
-    }
+    },
+	changeOffline: function() {
+		this.$.articlesDB.query("SELECT * FROM articles", {
+			onSuccess: function (results) {
+				enyo.log("got results successfully");
+                this.offlineArticles = results;
+				if (this.$.articlesView.offlineArticles.length) {
+					this.$.articlesView.setOfflineArticles(results);
+				}
+		   }.bind(this),
+			onFailure: function() {
+				enyo.log("failed to get results");
+			}
+		});
+   }
 });
