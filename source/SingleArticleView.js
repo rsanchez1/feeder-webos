@@ -21,7 +21,7 @@ enyo.kind({
             {name: "sourceButton", kind: "Button", caption: "Source", onclick: "sourceClick", style: "position: relative; left: 0px; margin: 0; margin-bottom: -10px; bottom: 5px; margin-right: 10px;"},
             {name: "headerScroller", kind: "Scroller", flex: 1, style: "height: 1.2rem;", vertical: false, autoVertical: false, components: [
                 {name: "headerWrapper", style: "width: 5000px;", components: [
-                    {name: "headerContent", content: "Welcome to TouchFeeds", style: "display:inline-block; height: 1.2rem; line-height: 1.1rem;"}
+                    {name: "headerContent", kind: "HtmlContent", content: "Welcome to TouchFeeds", style: "display:inline-block; height: 1.2rem; line-height: 1.1rem;"}
                 ]}
             ]}
         ]},

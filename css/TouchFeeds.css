@@ -50,6 +50,10 @@
     padding: 15px 15px 0 15px !important;
 }
 
+.articleSummary a > img {
+    border: 0 none !important;
+}
+
 .articleSummary h1, .articleSummary h2, .articleSummary h3 {
     line-height: 1.7rem;
 }

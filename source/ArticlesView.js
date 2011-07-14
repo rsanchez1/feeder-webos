@@ -24,7 +24,7 @@ enyo.kind({
         {kind: "Scroller", flex: 1, components: [
             {name: "articlesList", kind: "VirtualList", onSetupRow: "getListArticles", components: [
                 {name: "articleItem", kind: "Item", layoutKind: "VFlexLayout", components: [
-                    {name: "title", style: "font-size: 0.7rem; font-weight: 500; height: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"},
+                    {name: "title", kind: "HtmlContent", style: "font-size: 0.7rem; font-weight: 500; height: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"},
                     {name: "origin", style: "font-size: 0.5rem; height: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-top: 5px; color: #777;"},
                     {name: "starred"}
                 ], onclick: "articleItemClick"}

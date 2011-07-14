@@ -23,7 +23,7 @@ enyo.kind({
         {name: "stickySourcesList", kind: "VirtualRepeater", onSetupRow: "setupStickySources", components: [
             {name: "stickyItem", kind: "Item", layoutKind: "VFlexLayout", components: [
                 {name: "stickyTitle", style: "display: inline-block; width: 85%; margin-left: 5px;"},
-                {name: "stickyUnreadCountDisplay", style: "display: inline-block; width: 35px; text-align: left; position: absolute; right: 5px;"}
+                {name: "stickyUnreadCountDisplay", style: "display: inline-block; width: 35px; text-align: left; position: absolute; right: 10px;"}
             ], onclick: "stickyItemClick"}
         ]},
         {name: "sourcesDivider", kind: "Divider", caption: "Subscriptions"},
@@ -31,7 +31,7 @@ enyo.kind({
             {name: "subscriptionSourcesList", kind: "VirtualRepeater", onSetupRow: "setupSubscriptionSources", components: [
                 {name: "subscriptionItem", kind: "SwipeableItem", layoutKind: "VFlexLayout", components: [
                     {name: "title", style: "display: inline-block; width: 85%; margin-left: 5px; font-size: 0.7rem; font-weight: 500; height: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"},
-                    {name: "unreadCountDisplay", style: "display: inline-block; width: 35px; text-align: left; position: absolute; right: 5px;"}
+                    {name: "unreadCountDisplay", style: "display: inline-block; width: 35px; text-align: left; position: absolute; right: 10px;"}
                     ],
                     onclick: "subscriptionItemClick"
                 }
