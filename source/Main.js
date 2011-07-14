@@ -45,11 +45,12 @@ enyo.kind({
 
     loginSuccess: function() {
         enyo.log("logged in successfully");
-		this.$.articlesView.setHeaderContent("Offline Items");
+		this.$.articlesView.setHeaderContent("Offline Articles");
 		this.$.articlesDB.query("SELECT * FROM articles", {
 			onSuccess: function (results) {
 				enyo.log("************************");
 				enyo.log("got results successfully");
+                this.offlineArticles = results;
 				this.$.articlesView.setOfflineArticles(results);
 		   }.bind(this),
 			onFailure: function() {
@@ -151,7 +152,21 @@ enyo.kind({
     feedClicked: function(thing, item) {
         enyo.log("received feed clicked event");
         this.$.articlesView.setHeaderContent(item.title);
-        this.$.articlesView.setArticles(item); //pushing all articles to articles view
+        if (item.isOffline) {
+            this.$.articlesDB.query("SELECT * FROM articles", {
+                onSuccess: function (results) {
+                    enyo.log("************************");
+                    enyo.log("got results successfully");
+                    this.offlineArticles = results;
+                    this.$.articlesView.setOfflineArticles(results);
+               }.bind(this),
+                onFailure: function() {
+                    enyo.log("failed to get results");
+                }
+            });
+        } else {
+            this.$.articlesView.setArticles(item); //pushing all articles to articles view
+        }
     },
 
     articleClicked: function(thing, article, index, maxIndex) {

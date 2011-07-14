@@ -181,7 +181,7 @@ enyo.kind({
 					url: this.article.url
 				}]
 			}, {
-				onSuccess: function() {enyo.log("successfully saved article offline");},
+				onSuccess: function() {enyo.windows.addBannerMessage("Saved article offline", "{}");},
 				onFailure: function() {enyo.log("failed to save article offline");}
 			});
 		}
