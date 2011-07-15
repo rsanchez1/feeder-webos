@@ -14,6 +14,15 @@ var Api = Class.create({
     })
   },
 
+  getPage: function(url, success, failure) {
+    new Ajax.Request(url, {
+      method: "get",
+      parameters: {},
+      onFailure: failure,
+      onSuccess: function(response) {success(response.responseText)}
+    })
+  },
+
   getTags: function(success, failure) {
     new Ajax.Request(Api.BASE_URL + "tag/list", {
       method: "get",

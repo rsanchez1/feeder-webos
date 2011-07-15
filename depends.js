@@ -2,7 +2,8 @@ enyo.depends(
     //START DEPENDS
     "source/encoder.js",
     "source/prototype.js",
-	"source/database-enyo.js",
+    "source/database-enyo.js",
+    "source/readability.js",
     "source/models/api.js",
     "source/models/preferences.js",
     "source/models/countable.js",

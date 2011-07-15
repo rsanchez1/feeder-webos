@@ -71,6 +71,7 @@ enyo.kind({
         enyo.log("new width for header will be: " + width);
         this.$.headerWrapper.applyStyle("width", width);
         this.$.summary.setContent(Encoder.htmlDecode(this.article.summary));
+	//this.app.api.getPage(this.article.url, this.gotPage.bind(this), function() {enyo.log("could not get page");});
         this.$.about.setContent("by " + (!!this.article.author ? this.article.author : "Author Unavailable") + " on " + this.article.origin);
         this.$.sourceButton.show();
         var scrollTo = 0;
@@ -82,6 +83,10 @@ enyo.kind({
         this.$.articleScroller.scrollTo(0, scrollTo);
 		this.offlineQuery();
         //set author/feed, everything else in article-assistant.js
+    },
+    gotPage: function(page) {
+        this.$.summary.setContent("<div>" + Encoder.htmlDecode(page) + "</div>");
+	readability.init();
     },
     markedArticleRead: function() {
         if (!this.article.isRead) {
