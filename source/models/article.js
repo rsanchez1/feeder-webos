@@ -69,7 +69,7 @@ var Article = Class.create({
     var day = this.leftPad(this.updatedAt.getDate())
     var year = "" + this.updatedAt.getFullYear()
 
-    this.displayDate = this.updatedAt.toLocaleDateString() + " " + this.updatedAt.toLocaleTimeString()
+    this.displayDate = this.updatedAt.toLocaleDateString()/* + " " + this.updatedAt.toLocaleTimeString()*/
     this.sortDate = year + month + day
   },
 

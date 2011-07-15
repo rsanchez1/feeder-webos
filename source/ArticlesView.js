@@ -23,6 +23,7 @@ enyo.kind({
         ]},
         {kind: "Scroller", flex: 1, components: [
             {name: "articlesList", kind: "VirtualList", onSetupRow: "getListArticles", components: [
+                {kind: "Divider"},
                 {name: "articleItem", kind: "Item", layoutKind: "VFlexLayout", components: [
                     {name: "title", kind: "HtmlContent", style: "font-size: 0.7rem; font-weight: 500; height: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"},
                     {name: "origin", style: "font-size: 0.5rem; height: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-top: 5px; color: #777;"},
@@ -94,69 +95,60 @@ enyo.kind({
     },
     getListArticles: function(inSender, inIndex) {
 		enyo.log("updating list item");
-		if (this.offlineArticles.length) {
-			enyo.log("there were offline items");
-			var r = this.offlineArticles[inIndex];
-			enyo.log(r);
-			if (!!r) {
-				enyo.log("updating list offline");
-				enyo.log(r.title);
-				this.$.title.setContent(Encoder.htmlDecode(r.title));
-				this.$.title.applyStyle("font-weight", 500);
-				enyo.log(r.origin);
-				this.$.origin.setContent(Encoder.htmlDecode(r.origin));
-				this.$.origin.show();
-				if (inIndex + 1 >= this.offlineArticles.length) {
-					enyo.log("removing bottom border: ", inIndex);
+        var articles = [];
+        if (this.offlineArticles.length) {
+            articles = this.offlineArticles;
+        } else {
+            if (!!this.articles.items) {
+                articles = this.articles.items;
+            }
+        }
+        if (articles.length) {
+            r = articles[inIndex];
+            if (r) {
+                this.$.title.setContent(Encoder.htmlDecode(r.title));
+                if (!r.isRead && !this.offlineArticles.length) {
+                    this.$.title.applyStyle("font-weight", 700);
+                } else {
+                    this.$.title.applyStyle("font-weight", 500);
+                }
+                if (this.offlineArticles.length || this.articles.showOrigin) {
+                    this.$.origin.setContent(Encoder.htmlDecode(r.origin));
+                    this.$.origin.show();
+                } else {
+                    this.$.origin.setContent("");
+                    this.$.origin.hide();
+                }
+				if (inIndex + 1 >= articles.length) {
 					this.$.articleItem.addClass("lastRow");
 				} else {
 					this.$.articleItem.removeClass("lastRow");
 				}
-				if (inIndex - 1 < 0) {
-					enyo.log("removing top border: ", inIndex);
-					this.$.articleItem.addClass("firstRow");
-				} else {
-					this.$.articleItem.removeClass("firstRow");
-				}
-				return true;
-			}
-		} else {
-			enyo.log("no offline");
-			if (!!this.articles.items) {
-				//enyo.log("There are articles");
-				//enyo.log(this.articles.items[inIndex]);
-				var r = this.articles.items[inIndex];
-				//enyo.log("Article: ", r);
-				if (r) {
-					this.$.title.setContent(Encoder.htmlDecode(r.title));
-					if (!r.isRead) {
-						this.$.title.applyStyle("font-weight", 700);
-					} else {
-						this.$.title.applyStyle("font-weight", 500);
-					}
-					if (inIndex + 1 >= this.articles.items.length) {
-						enyo.log("removing bottom border: ", inIndex);
-						this.$.articleItem.addClass("lastRow");
-					} else {
-						this.$.articleItem.removeClass("lastRow");
-					}
-					if (inIndex - 1 < 0) {
-						enyo.log("removing top border: ", inIndex);
-						this.$.articleItem.addClass("firstRow");
-					} else {
-						this.$.articleItem.removeClass("firstRow");
-					}
-					if (this.articles.showOrigin) {
-						this.$.origin.setContent(Encoder.htmlDecode(r.origin));
-						this.$.origin.show();
-					} else {
-						this.$.origin.setContent("");
-						this.$.origin.hide();
-					}
-					return true;
-				}
-			}
-		}
+                if (inIndex - 1 < 0) {
+                    this.$.articleItem.addClass("firstRow");
+                } else {
+                    this.$.articleItem.removeClass("firstRow");
+                }
+                if (inIndex > 0 && articles[inIndex - 1].displayDate == r.displayDate) {
+                    enyo.log("unset divider");
+                    enyo.log(this.$.divider.getCaption());
+                    if (this.$.divider.getCaption() !== null) {
+                        enyo.log("set null");
+                        this.$.divider.setCaption(null);
+                    }
+                    this.$.divider.canGenerate = false;
+                    if (inIndex + 1 < articles.length && articles[inIndex + 1].displayDate != r.displayDate) {
+                        this.$.articleItem.addClass("lastRow");
+                    }
+                } else {
+                    enyo.log("set divider");
+                    this.$.divider.setCaption(r.displayDate);
+                    this.$.divider.canGenerate = !!r.displayDate;
+                    this.$.articleItem.addClass("firstRow");
+                }
+                return true;
+            }
+        }
     },
     articleItemClick: function(inSender, inEvent) {
         this.selectArticle(inEvent.rowIndex);
@@ -180,15 +172,16 @@ enyo.kind({
 		if (!this.offlineArticles.length) {
 			if (this.articles.canMarkAllRead) {
 				this.$.spinner.show();
-				this.articles.markAllRead(this.markedAllArticlesRead.bind(this), function() {enyo.log("error marking all read");});
+                var count = this.articles.getUnreadCount();
+				this.articles.markAllRead(this.markedAllArticlesRead.bind(this, count), function() {enyo.log("error marking all read");});
 			}
 		}
     },
-    markedAllArticlesRead: function() {
-        enyo.log("marked all articles read");
+    markedAllArticlesRead: function(count) {
+        enyo.log("marked all articles read: ", count);
         this.$.spinner.hide();
         this.$.articlesList.punt();
-        this.doAllArticlesRead();
+        this.doAllArticlesRead(count, this.articles.id);
     }
 });
 

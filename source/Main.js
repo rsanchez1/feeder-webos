@@ -193,7 +193,12 @@ enyo.kind({
             this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
         }.bind(this), function() {enyo.log("error sorting and filtering");});
     },
-    markedAllRead: function() {
+    markedAllRead: function(thing, count, id) {
+        if (id == "user/-/state/com.google/reading-list") {
+            this.sources.nukedEmAll();
+        } else {
+            this.sources.markedAllRead(count);
+        }
         this.sources.sortAndFilter(function() {
             this.$.feedsView.setStickySources(this.sources.stickySources);
             this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
