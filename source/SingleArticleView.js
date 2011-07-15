@@ -71,7 +71,7 @@ enyo.kind({
         enyo.log("new width for header will be: " + width);
         this.$.headerWrapper.applyStyle("width", width);
         this.$.summary.setContent(Encoder.htmlDecode(this.article.summary));
-	//this.app.api.getPage(this.article.url, this.gotPage.bind(this), function() {enyo.log("could not get page");});
+	    //this.app.api.getPage(this.article.url, this.gotPage.bind(this), function() {enyo.log("could not get page");});
         this.$.about.setContent("by " + (!!this.article.author ? this.article.author : "Author Unavailable") + " on " + this.article.origin);
         this.$.sourceButton.show();
         var scrollTo = 0;
@@ -84,10 +84,13 @@ enyo.kind({
 		this.offlineQuery();
         //set author/feed, everything else in article-assistant.js
     },
+    /*
     gotPage: function(page) {
-        this.$.summary.setContent("<div>" + Encoder.htmlDecode(page) + "</div>");
-	readability.init();
+        enyo.log("got page");
+        this.$.summary.setContent("<div style='max-width: 100%;'>" + Encoder.htmlDecode(page) + "</div>");
+        readability.init();
     },
+    */
     markedArticleRead: function() {
         if (!this.article.isRead) {
             enyo.log("marked an article read");

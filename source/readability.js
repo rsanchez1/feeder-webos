@@ -1,5 +1,9 @@
 /*jslint undef: true, nomen: true, eqeqeq: true, plusplus: true, newcap: true, immed: true, browser: true, devel: true, passfail: false */
 /*global window: false, readConvertLinksToFootnotes: false, readStyle: false, readSize: false, readMargin: false, Typekit: false, ActiveXObject: false */
+readStyle = "style-athelas";
+//readStyle = "style-apertura";
+readMargin = "";
+readSize = "";
 
 var dbg = (typeof console !== 'undefined') ? function(s) {
     console.log("Readability: " + s);
@@ -73,13 +77,19 @@ var readability = {
      *
      * @return void
      **/
-    init: function() {
+    init: function(doc) {
         /* Before we do anything, remove all scripts that are not readability. */
         //window.onload = window.onunload = function() {};
 		readability.contentToParse = enyo.$.main.$.singleArticleView.$.summary.node;
         enyo.log("init readability");
 
-        readability.removeScripts(readbility.contentToParse);
+        try {
+            readability.removeLinkTags(readability.contentToParse);
+            readability.removeMetaTags(readability.contentToParse);
+            readability.removeScripts(readability.contentToParse);
+        } catch(e) {
+            enyo.log("error removing scripts: ", e);
+        }
         enyo.log("removed scripts");
 
         if(readability.contentToParse && !readability.bodyCache) {
@@ -97,10 +107,10 @@ var readability = {
         /* Build readability's DOM tree */
         var overlay        = document.createElement("DIV");
         var innerDiv       = document.createElement("DIV");
-        var articleTools   = readability.getArticleTools();
+        //var articleTools   = readability.getArticleTools();
         var articleTitle   = readability.getArticleTitle();
         var articleContent = readability.grabArticle();
-        var articleFooter  = readability.getArticleFooter();
+        //var articleFooter  = readability.getArticleFooter();
         enyo.log("built readability dom tree");
 
         if(!articleContent) {
@@ -115,24 +125,28 @@ var readability = {
 
             nextPageLink = null;
         }
+        try {
 
-        overlay.id              = "readOverlay";
-        innerDiv.id             = "readInner";
+            overlay.id              = "readOverlay";
+            innerDiv.id             = "readInner";
 
-        /* Apply user-selected styling */
-        //document.body.className = readStyle;
-        document.dir            = readability.getSuggestedDirection(articleTitle.innerHTML);
+            /* Apply user-selected styling */
+            //document.body.className = readStyle;
+            //document.dir            = readability.getSuggestedDirection(articleTitle.innerHTML);
 
-        if (readStyle === "style-athelas" || readStyle === "style-apertura"){
-            overlay.className = readStyle + " rdbTypekit";
-        }
-        else {
-            overlay.className = readStyle;
-        }
-        innerDiv.className    = readMargin + " " + readSize;
+            if (readStyle === "style-athelas" || readStyle === "style-apertura"){
+                overlay.className = readStyle + " rdbTypekit";
+            }
+            else {
+                overlay.className = readStyle;
+            }
+            innerDiv.className    = readMargin + " " + readSize;
 
-        if(typeof(readConvertLinksToFootnotes) !== 'undefined' && readConvertLinksToFootnotes === true) {
-            readability.convertLinksToFootnotes = true;
+            if(typeof(readConvertLinksToFootnotes) !== 'undefined' && readConvertLinksToFootnotes === true) {
+                readability.convertLinksToFootnotes = true;
+            }
+        } catch(e) {
+            enyo.log("error before stuff: ", e);
         }
 	enyo.log('stuff');
 
@@ -1021,19 +1035,53 @@ var readability = {
         var scripts = doc.getElementsByTagName('script');
         for(var i = scripts.length-1; i >= 0; i-=1)
         {
-	enyo.log(i);
             if(typeof(scripts[i].src) === "undefined" || (scripts[i].src.indexOf('readability') === -1 && scripts[i].src.indexOf('typekit') === -1))
             {
                 scripts[i].nodeValue="";
                 scripts[i].removeAttribute('src');
                 if (scripts[i].parentNode) {
-			enyo.log('removing script');
-                        scripts[i].parentNode.removeChild(scripts[i]);          
-			enyo.log('script removed');
+                    scripts[i].parentNode.removeChild(scripts[i]);          
                 }
             }
         }
     },
+
+    /**
+     * Removes link tags from the document.
+     *
+     * @param Element
+    **/
+    removeLinkTags: function(doc) {
+        enyo.log("removing links");
+        var scripts = doc.getElementsByTagName('link');
+        //enyo.log(scripts[0]);
+        for(var i = scripts.length-1; i >= 0; i-=1)
+        {
+            scripts[i].nodeValue="";
+            scripts[i].removeAttribute('href');
+            //enyo.log(scripts[i])
+            //enyo.log(!!scripts[i].parentNode);
+            if (scripts[i].parentNode) {
+                scripts[i].parentNode.removeChild(scripts[i]);          
+            }
+        }
+    },
+
+    removeMetaTags: function(doc) {
+        enyo.log("removing links");
+        var scripts = doc.getElementsByTagName('meta');
+        //enyo.log(scripts[0]);
+        for(var i = scripts.length-1; i >= 0; i-=1)
+        {
+            scripts[i].nodeValue="";
+            //enyo.log(scripts[i])
+            //enyo.log(!!scripts[i].parentNode);
+            if (scripts[i].parentNode) {
+                scripts[i].parentNode.removeChild(scripts[i]);          
+            }
+        }
+    },
+
     
     /**
      * Get the inner text of a node - cross browser compatibly.
