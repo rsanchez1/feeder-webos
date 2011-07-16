@@ -1,6 +1,7 @@
 enyo.kind({
     name: "TouchFeeds.SingleArticleView",
 	kind: "VFlexBox",
+    dragAnywhere: false,
 	isOffline: false,
     fetchedOffline: false,
     className: "enyo-bg",
@@ -16,6 +17,11 @@ enyo.kind({
 		onChangedOffline: "",
     },
     onSlideComplete: "resizedPane",
+    onDragStart: "startDragging",
+    onDragging: "isDragging",
+    onDragEnd: "endDragging",
+    onDrag: "dragEvent",
+    onFlick: "flicked",
     components: [
         //{name: "header", kind: "Header"},
         {name: "header", kind: "PageHeader", components: [
@@ -27,14 +33,15 @@ enyo.kind({
             ]}
         ]},
         {name: "articleScroller", kind: "Scroller", flex: 1, components: [
-            {name: "aboutContainer", style: "padding: 15px 15px 0 15px; color: #777; font-size: 0.8rem; margin-bottom: -10px; font-weight: 300;", components: [
+            {name: "aboutContainer", className: "articleContainer", components: [
+                {name: "articleTitle", kind: "HtmlContent", style: "font-size: 1.6rem; font-weight: 700; color: #555; padding-bottom: 10px; word-spacing: 0.1rem; line-height: 2rem;"},
                 {name: "postDate", kind: "HtmlContent"},
-                {name: "about", kind: 'HtmlContent'}
+                {name: "source", kind: "HtmlContent"}
             ]},
-            {name: "summary", className: "articleSummary", kind: "HtmlContent", onLinkClick: "articleLinkClicked", style: "max-width: 90%;"},
+            {name: "summary", className: "articleSummary", kind: "HtmlContent", onLinkClick: "articleLinkClicked"},
         ]},
         {kind: "Toolbar", components: [
-            {kind: "GrabButton"},
+            {kind: "GrabButton", slidingHandler: true},
             {name: "previousButton", kind: "IconButton", icon: "images/previous-article.png", onclick: "previousClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 10%; top: 11px;"},
             {name: "readButton", kind: "IconButton", icon: "images/read-footer.png", onclick: "readClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 26.66%; top: 11px;"},
             {name: "starButton", kind: "IconButton", icon: "images/starred-footer.png", onclick: "starClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 43.33%; top: 11px;"},
@@ -46,6 +53,9 @@ enyo.kind({
     create: function() {
         this.inherited(arguments);
         this.$.headerContent.setContent("Welcome to TouchFeeds");
+        this.$.articleTitle.setContent("Welcome to Touchfeeds");
+        this.$.postDate.hide();
+        this.$.source.hide();
         this.$.sourceButton.hide();
 		this.app = enyo.application.app
     },
@@ -70,19 +80,24 @@ enyo.kind({
 			}
         }
         this.$.headerContent.setContent(Encoder.htmlDecode(this.article.title));
+        this.$.articleTitle.setContent(Encoder.htmlDecode(this.article.title));
         // Adjust width of scroller to scroll through title without scrolling off page
         this.$.headerScroller.setScrollLeft(0);
         this.$.headerWrapper.applyStyle("width", "5000px !important");
         var width = (this.$.headerContent.node.clientWidth + 1) + "px !important";
         enyo.log("new width for header will be: " + width);
         this.$.headerWrapper.applyStyle("width", width);
-        this.$.summary.setContent(Encoder.htmlDecode(this.article.summary));
+        this.$.summary.setContent("<div class='summaryWrapper'>" + Encoder.htmlDecode(this.article.summary) + "</div>");
+        var publishAuthor = "";
         if (!!this.article.displayDateAndTime) {
-            this.$.postDate.setContent("Posted <span style='font-weight: 700'>" + this.article.displayDateAndTime + "</span>");
-        } else {
-            this.$.postDate.setContent("");
+            publishAuthor = "Published <span style='font-weight: 700'>" + this.article.displayDateAndTime + "</span>";
         }
-        this.$.about.setContent("by <span style='font-weight: 700'>" + (!!this.article.author ? this.article.author : "Author Unavailable") + "</span> on <span style='font-weight: 700'>" + this.article.origin + "</span>");
+        publishAuthor += " by <span style='font-weight: 700'>" + (!!this.article.author ? this.article.author : "Author Unavailable") + "</span>";
+        this.$.postDate.setContent(publishAuthor);
+        this.$.postDate.show();
+        //this.$.about.setContent("by <span style='font-weight: 700'>" + (!!this.article.author ? this.article.author : "Author Unavailable") + "</span> on <span style='font-weight: 700'>" + this.article.origin + "</span>");
+        this.$.source.setContent("<span style='font-weight: 700'>" + this.article.origin + "</span>");
+        this.$.source.show();
         this.$.sourceButton.show();
         var scrollTo = 0;
         /*
@@ -150,7 +165,7 @@ enyo.kind({
         enyo.log("got page");
         var summary = Encoder.htmlDecode(page);
         this.article.summary = summary;
-        this.$.summary.setContent("<div style='max-width: 100%;'>" + summary + "</div>");
+        this.$.summary.setContent("<div class='summaryWrapper'>" + summary + "</div>");
         enyo.log("is article offline: ", this.isOffline);
         if (this.isOffline) {
             this.app.$.articlesDB.query(this.app.$.articlesDB.getUpdate('articles', {summary: summary}, {articleID: this.article.articleID}), {
@@ -246,6 +261,21 @@ enyo.kind({
     resizedPane: function() {
         enyo.log("resizing article");
         this.$.headerScroller.setScrollLeft(0);
+    },
+    startDragging: function(event) {
+        enyo.log("started dragging");
+    },
+    isDragging: function(event) {
+        enyo.log("is currently dragging");
+    },
+    endDragging: function(event) {
+        enyo.log("stopped dragging");
+    },
+    dragEvent: function(event) {
+        enyo.log("drag event");
+    },
+    flicked: function(event) {
+        enyo.log("flicked event");
     }
 });
 

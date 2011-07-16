@@ -2,15 +2,15 @@ enyo.kind({
     name: "TouchFeeds.Main",
     kind: enyo.VFlexBox,
     components: [
-        {name: "slidingPange", kind: "SlidingPane", fixedWidth: true, flex: 1, onSelectView: "slidingSelected", components: [
+        {name: "slidingPane", kind: "SlidingPane", fixedWidth: true, flex: 1, onSelectView: "slidingSelected", components: [
             {name: "feeds", width: "320px", fixedWidth: true, components: [
                 {name: "feedsView", kind: "TouchFeeds.FeedsView", headerContent: "TouchFeeds", flex: 1, components: [], onFeedClicked: "feedClicked", onRefreshFeeds: "refreshFeeds"}
             ]},
             {name: "articles", width: "320px", fixedWidth: true, components: [
                 {name: "articlesView", kind: "TouchFeeds.ArticlesView", headerContent: "All Items", flex: 1, components: [], onArticleClicked: "articleClicked", onArticleRead: "articleRead", onAllArticlesRead: "markedAllRead"}
             ]},
-            {name: "singleArticle", flex: 1, dismissible: false, onHide: "hideArticle", onShow: "showArticle", onResize: "slidingResize", components: [
-                {name: "singleArticleView", kind: "TouchFeeds.SingleArticleView", flex: 1, components: [], onSelectArticle: "selectArticle", onRead: "readArticle", onChangedOffline: "changeOffline"},
+            {name: "singleArticle", flex: 1, dragAnywhere: false, dismissible: false, onHide: "hideArticle", onShow: "showArticle", onResize: "slidingResize", components: [
+                {name: "singleArticleView", dragAnywhere: false, kind: "TouchFeeds.SingleArticleView", flex: 1, components: [], onSelectArticle: "selectArticle", onRead: "readArticle", onChangedOffline: "changeOffline"},
             ]},
             {name: "login", className: "enyo-bg", kind: "TouchFeeds.Login", onCancel: "closeDialog", onConfirm: "confirmDialog", onLogin: "handleLogin"}
         ]},
@@ -18,7 +18,7 @@ enyo.kind({
             {kind: "EditMenu"},
             /*{caption: "Login", onclick: "showLogin"}*/
         ]},
-		{kind: "onecrayon.Database", name: "articlesDB", database: "ext:TouchFeedsArticles", version: "1", debug: false}
+		{kind: "onecrayon.Database", name: "articlesDB", database: "ext:TouchFeedsArticles", version: 1, debug: false}
     ],
 
     constructor: function() {
@@ -166,6 +166,8 @@ enyo.kind({
         } else {
             this.$.articlesView.setArticles(item); //pushing all articles to articles view
         }
+        this.$.slidingPane.selectViewByName('articles', true);
+        //this.$.slidingPane.selectViewByName('ariclesView', true);
     },
 
     articleClicked: function(thing, article, index, maxIndex) {

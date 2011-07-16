@@ -39,6 +39,7 @@ enyo.kind({
     create: function() {
         this.inherited(arguments);
         this.headerContentChanged();
+        this.app = enyo.application.app;
     },
     headerContentChanged: function() {
         //this.$.header.setContent(this.headerContent);
@@ -92,6 +93,7 @@ enyo.kind({
             this.isRendered = true;
             this.$.articlesList.render();
         }
+        this.selectArticle(0);
     },
     getListArticles: function(inSender, inIndex) {
 		enyo.log("updating list item");
@@ -167,6 +169,10 @@ enyo.kind({
     },
     finishArticleRead: function(index) {
         this.$.articlesList.updateRow(index);
+        if (!this.articles.getUnreadCount()) {
+            enyo.log("selecting feeds view");
+            this.app.$.slidingPane.selectViewByName('feeds', true);
+        }
     },
     readAllClick: function() {
 		if (!this.offlineArticles.length) {

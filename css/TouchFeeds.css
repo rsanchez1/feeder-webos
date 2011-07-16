@@ -18,11 +18,27 @@
     top: 10px;
 }
 
+.articleContainer {
+    padding: 15px 5px 20px 5px;
+    margin: 0 10px 0 10px;
+    max-width: 90%;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    color: #777;
+    font-size: 0.8rem;
+    font-weight: 300;
+}
+
 .articleSummary {
+    margin: 0 10px 10px 10px;
+    padding: 0 5px 5px 5px;
+    max-width: 90%;
+    border-top: 1px solid rgba(255, 255, 255, 0.5);
     color: #333;
-    margin: 10px;
-    padding: 5px;
     line-height: 1.3rem;
+}
+
+.summaryWrapper {
+    padding-top: 5px;
 }
 
 .articleSummary.small, .articleSummary.small p {
@@ -41,13 +57,13 @@
 }
 
 .articleSummary p {
-    padding: 0 !important;
-    padding-bottom: 15px !important;
+    padding: 0 0 15px 0 !important;
 }
 
 .articleSummary img {
     max-width: 100% !important;
-    padding: 15px 15px 0 15px !important;
+    padding: 0 15px 10px 15px !important;
+    float: left;
 }
 
 .articleSummary a > img {
