@@ -2,6 +2,7 @@ enyo.kind({
     name: "TouchFeeds.SingleArticleView",
 	kind: "VFlexBox",
 	isOffline: false,
+    fetchedOffline: false,
     className: "enyo-bg",
     published: {
         article: {},
@@ -26,16 +27,20 @@ enyo.kind({
             ]}
         ]},
         {name: "articleScroller", kind: "Scroller", flex: 1, components: [
-            {name: "about", style: "padding: 15px 15px 0 15px; color: #777; font-size: 0.8rem; margin-bottom: -10px;"},
+            {name: "aboutContainer", style: "padding: 15px 15px 0 15px; color: #777; font-size: 0.8rem; margin-bottom: -10px; font-weight: 300;", components: [
+                {name: "postDate", kind: "HtmlContent"},
+                {name: "about", kind: 'HtmlContent'}
+            ]},
             {name: "summary", className: "articleSummary", kind: "HtmlContent", onLinkClick: "articleLinkClicked", style: "max-width: 90%;"},
         ]},
         {kind: "Toolbar", components: [
             {kind: "GrabButton"},
             {name: "previousButton", kind: "IconButton", icon: "images/previous-article.png", onclick: "previousClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 10%; top: 11px;"},
-            {name: "readButton", kind: "IconButton", icon: "images/read-footer.png", onclick: "readClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 30%; top: 11px;"},
-            {name: "starButton", kind: "IconButton", icon: "images/starred-footer.png", onclick: "starClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 50%; top: 11px;"},
-            {name: "offlineButton", kind: "IconButton", icon: "images/offline-article.png", onclick: "offlineClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 70%; top: 9px;"},
-            {name: "nextButton", kind: "IconButton", icon: "images/next-article.png", onclick: "nextClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 90%; top: 11px;"}
+            {name: "readButton", kind: "IconButton", icon: "images/read-footer.png", onclick: "readClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 26.66%; top: 11px;"},
+            {name: "starButton", kind: "IconButton", icon: "images/starred-footer.png", onclick: "starClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 43.33%; top: 11px;"},
+            {name: "offlineButton", kind: "IconButton", icon: "images/offline-article.png", onclick: "offlineClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 60%; top: 9px;"},
+            {name: "fetchButton", kind: "IconButton", icon: "images/fetch-text.png", onclick: "fetchClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 76.66%; top: 11px;"},
+            {name: "nextButton", kind: "IconButton", icon: "images/next-article.png", onclick: "nextClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 93.33%; top: 11px;"}
         ]}
     ],
     create: function() {
@@ -52,6 +57,7 @@ enyo.kind({
             }
         }
         */
+        this.fetchedOffline = false;
         if (this.article.isStarred) {
             this.$.starButton.setIcon("images/starred-footer-on.png");
         } else {
@@ -71,8 +77,12 @@ enyo.kind({
         enyo.log("new width for header will be: " + width);
         this.$.headerWrapper.applyStyle("width", width);
         this.$.summary.setContent(Encoder.htmlDecode(this.article.summary));
-	    //this.app.api.getPage(this.article.url, this.gotPage.bind(this), function() {enyo.log("could not get page");});
-        this.$.about.setContent("by " + (!!this.article.author ? this.article.author : "Author Unavailable") + " on " + this.article.origin);
+        if (!!this.article.displayDateAndTime) {
+            this.$.postDate.setContent("Posted <span style='font-weight: 700'>" + this.article.displayDateAndTime + "</span>");
+        } else {
+            this.$.postDate.setContent("");
+        }
+        this.$.about.setContent("by <span style='font-weight: 700'>" + (!!this.article.author ? this.article.author : "Author Unavailable") + "</span> on <span style='font-weight: 700'>" + this.article.origin + "</span>");
         this.$.sourceButton.show();
         var scrollTo = 0;
         /*
@@ -84,13 +94,6 @@ enyo.kind({
 		this.offlineQuery();
         //set author/feed, everything else in article-assistant.js
     },
-    /*
-    gotPage: function(page) {
-        enyo.log("got page");
-        this.$.summary.setContent("<div style='max-width: 100%;'>" + Encoder.htmlDecode(page) + "</div>");
-        readability.init();
-    },
-    */
     markedArticleRead: function() {
         if (!this.article.isRead) {
             enyo.log("marked an article read");
@@ -129,6 +132,32 @@ enyo.kind({
     articleLinkClicked: function(thing, url) {
         enyo.log("clicked link in article");
         window.open(url);
+    },
+    fetchClick: function() {
+        if (!this.fetchedOffline) {
+            this.fetchedOffline = true;
+            var scrollTo = 0;
+            /*
+            if (this.$.articleScroller.getScrollTop() > 200) {
+                scrollTo = -200;
+            }
+            */
+            this.$.articleScroller.scrollTo(0, scrollTo);
+            this.app.api.getPage(this.article.url, this.gotPage.bind(this), function() {enyo.log("could not get page");});
+        }
+    },
+    gotPage: function(page) {
+        enyo.log("got page");
+        var summary = Encoder.htmlDecode(page);
+        this.article.summary = summary;
+        this.$.summary.setContent("<div style='max-width: 100%;'>" + summary + "</div>");
+        enyo.log("is article offline: ", this.isOffline);
+        if (this.isOffline) {
+            this.app.$.articlesDB.query(this.app.$.articlesDB.getUpdate('articles', {summary: summary}, {articleID: this.article.articleID}), {
+                onSuccess: function() {enyo.log("updated article summary");},
+                onFailure: function() {enyo.log("failed to update article summary");}
+            });
+        }
     },
     starClick: function() {
         if (!!this.article.title) {

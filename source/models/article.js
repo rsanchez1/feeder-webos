@@ -16,18 +16,14 @@ var Article = Class.create({
   },
 
   cleanUp: function(content) {
-      /*
     var cleaned = this.replaceYouTubeLinks(content)
     cleaned = cleaned.replace(/<script.*?<\/script.*?>/g , "")
     cleaned = cleaned.replace(/<iframe.*?<\/iframe.*?>/g , "")
     cleaned = cleaned.replace(/<object.*?<\/object.*?>/g , "")
-    */
-    cleaned = content;
     return cleaned
   },
 
   replaceYouTubeLinks: function(content) {
-      /*
     var embed = /<(embed|iframe).*src="(.*?youtube.com.*?)".*<\/(embed|iframe)>/
     var urlMatch = embed.exec(content)
 
@@ -39,7 +35,6 @@ var Article = Class.create({
         content = content.replace(embed, '<div class="youtube"><img class="youtube-thumbnail" src="http://img.youtube.com/vi/' + id + '/0.jpg"><div class="youtube-play" data-url="http://youtube.com/watch?v=' + id + '">&nbsp;</div></div>')
       }
     }
-    */
 
     return content
   },
@@ -75,6 +70,7 @@ var Article = Class.create({
     var year = "" + this.updatedAt.getFullYear()
 
     this.displayDate = this.updatedAt.toLocaleDateString()/* + " " + this.updatedAt.toLocaleTimeString()*/
+    this.displayDateAndTime = this.updatedAt.toLocaleDateString() + " " + this.updatedAt.toLocaleTimeString()
     this.sortDate = year + month + day
   },
 
