@@ -60,14 +60,13 @@ enyo.kind({
             {caption: "Large", onclick: "chooseFont"}
         ]},
         {name: "sharePopup", kind: "Menu", modal: false, dismissWithClick: true, components: [
-        /*
             {name: "googleShare", caption: "Share with Google", shareValue: "google", onclick: "chooseShare"},
             {caption: "Share with Twitter", shareValue: "twitter", onclick: "chooseShare"},
             {caption: "Share with Facebook", shareValue: "facebook", onclick: "chooseShare"},
             {caption: "Share via Email", shareValue: "email", onclick: "chooseShare"},
-            {caption: "Share via SMS", shareValue: "sms", onclick: "chooseShare"}
-            */
-        ]}
+            //{caption: "Share via SMS", shareValue: "sms", onclick: "chooseShare"}
+        ]},
+        {name: "openAppService", kind: "PalmService", service: "palm://com.palm.applicationManager/", method: "launch"}
     ],
     create: function() {
         this.inherited(arguments);
@@ -261,29 +260,20 @@ enyo.kind({
     },
     shareClick: function(source, inEvent) {
         if (!!this.article.title) {
-            this.$.sharePopup.destroyComponents();
-            //this.$.sharePopup.components = [
-            var components = [
-                {onclick: "chooseShare"},
-                {caption: "Share with Twitter", shareValue: "twitter", onclick: "chooseShare"},
-                {caption: "Share with Facebook", shareValue: "facebook", onclick: "chooseShare"},
-                {caption: "Share via Email", shareValue: "email", onclick: "chooseShare"},
-                {caption: "Share via SMS", shareValue: "sms", onclick: "chooseShare"}
-            ];
-            if (!!this.article.isShared) {
-                enyo.log("article is shared");
-                components[0].caption = "Unshare with Google";
-                components[0].shareValue = "ungoogle";
-            } else {
-                enyo.log("article is not shared");
-                components[0].caption = "Share with Google";
-                components[0].shareValue = "google";
-            }
-            for (var i = components.length; i--;) {
-                components[i].kind = "MenuItem";
-            }
-            this.$.sharePopup.createComponents(components, {owner: this.$.sharePopup});
+            globalComponent = this;
             this.$.sharePopup.openAtEvent(inEvent);
+            //TODO: this is pretty hacky, but it is what it is
+            enyo.bind(this, function() {
+                if (!!this.article.isShared) {
+                    enyo.log("article is shared");
+                    this.$.googleShare.setCaption("Unshare with Google");
+                    this.$.googleShare.shareValue = "ungoogle";
+                } else {
+                    enyo.log("article is not shared");
+                    this.$.googleShare.setCaption("Share with Google");
+                    this.$.googleShare.shareValue = "google";
+                }
+            })();
         }
     },
     chooseShare: function(source, inEvent) {
@@ -305,6 +295,23 @@ enyo.kind({
             } else {
                 Feeder.notify("Cannot unshare offline");
             }
+        }
+        if (source.shareValue == "twitter") {
+            window.open("http://twitter.com/home?status=" + Encoder.htmlEncode(this.article.title) + " -- " + Encoder.htmlEncode(this.article.url));
+        }
+        if (source.shareValue == "facebook") {
+            window.open("http://www.facebook.com/sharer/sharer.php?u=" + Encoder.htmlEncode(this.article.url) + "&t=" + Encoder.htmlEncode(this.article.title));
+        }
+        if (source.shareValue == "email") {
+            this.$.openAppService.call({
+                id: "com.palm.app.email",
+                params: {
+                    summary: this.article.title,
+                    text: this.article.title + "\n\n" + this.article.url
+                }
+            });
+        }
+        if (source.shareValue == "sms") {
         }
     },
 	offlineClick: function() {
