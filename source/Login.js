@@ -18,8 +18,11 @@ enyo.kind({
         ]},
         {layoutKind: "HFlexLayout", pack: "center", components: [
             {kind: "Button", caption: "Login", flex: 1, style: "height: 2.0em !important;", className: "enyo-button-dark", onclick: "confirmClick", components: [
-                {name: "loginLabel", content: "Login", style: "float: left; left: 40%; position: relative; width: auto; font-size: 1.15em !important; padding-top: 0.3em !important;"},
+                {name: "loginLabel", content: "Login", style: "float: left; left: 30%; position: relative; width: auto; font-size: 1.15em !important; padding-top: 0.3em !important;"},
                 {kind: "Spinner", showing: false}
+            ]},
+            {kind: "Button", caption: "Cancel", flex: 1, style: "height: 2.0em !important;", className: "enyo-button-dark", onclick: "cancelClick", components: [
+                {name: "cancelLabel", content: "Cancel", style: "float: left; left: -15%; position: relative; width: auto; font-size: 1.15em !important; padding-top: 0.3em !important;"},
             ]},
         ]}
     ],

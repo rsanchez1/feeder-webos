@@ -18,6 +18,15 @@ Preferences = {
   INSTAPAPER_USERNAME: "q-instapaper-username",
   INSTAPAPER_PASSWORD: "r-instapaper-password",
   LEFTY_FRIENDLY: "s-lefty-friendly",
+  ARTICLE_FONT_SIZE: "article-font-size",
+
+  getArticleFontSize: function() {
+      return this.getCookie(this.ARTICLE_FONT_SIZE, "medium")
+  },
+
+  setArticleFontSize: function(fontSize) {
+      this.setCookie(this.ARTICLE_FONT_SIZE, fontSize)
+  },
 
   isLeftyFriendly: function() {
     return this.getCookie(this.LEFTY_FRIENDLY, false)

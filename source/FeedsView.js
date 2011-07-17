@@ -18,7 +18,7 @@ enyo.kind({
             {name: "headerWrapper", className: "tfHeaderWrapper", components: [
                 {name: "headerContent", content: "TouchFeeds", className: "tfHeader"}
             ]},
-            {kind: "Spinner", showing: true, style: "position: absolute; right: 10px; top: 10px;"}
+            {kind: "Spinner", showing: false, style: "position: absolute; right: 10px; top: 10px;"}
         ]},
         {name: "stickySourcesList", kind: "VirtualRepeater", onSetupRow: "setupStickySources", components: [
             {name: "stickyItem", kind: "Item", layoutKind: "VFlexLayout", components: [

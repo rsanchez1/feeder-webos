@@ -47,8 +47,12 @@ enyo.kind({
     },
 	offlineArticlesChanged: function() {
 		enyo.log("changed offline articles");
+        for (var i = this.offlineArticles.length; i--;) {
+            this.offlineArticles[i].sortDate = +(new Date(this.offlineArticles[i].displayDate));
+            enyo.log(this.offlineArticles[i].sortDate);
+        }
+        this.offlineArticles.sort(function(a, b) {return b.sortDate - a.sortDate;});
         this.$.spinner.hide();
-		enyo.log(this.offlineArticles);
 		//this.$.articlesList.punt();
         if (this.isRendered) {
             this.$.articlesList.refresh();
@@ -59,7 +63,6 @@ enyo.kind({
 	},
     articlesChanged: function() {
 		this.offlineArticles = [];
-        var articles = this.articles;
         this.articles.reset();
         enyo.log("got articles");
         this.articles.items = [];
@@ -87,6 +90,7 @@ enyo.kind({
         //enyo.log(this.articles.items);
         //enyo.log("Found articles: ", this.articles);
         this.$.spinner.hide();
+        //this.articles.items.sort(function(a, b) {return b.sortDate - a.sortDate;});
         if (this.isRendered) {
             this.$.articlesList.refresh();
         } else {
@@ -131,7 +135,7 @@ enyo.kind({
                 } else {
                     this.$.articleItem.removeClass("firstRow");
                 }
-                if (inIndex > 0 && articles[inIndex - 1].displayDate == r.displayDate) {
+                if (inIndex > 0 && articles[inIndex - 1].sortDate == r.sortDate) {
                     enyo.log("unset divider");
                     enyo.log(this.$.divider.getCaption());
                     if (this.$.divider.getCaption() !== null) {
@@ -139,14 +143,17 @@ enyo.kind({
                         this.$.divider.setCaption(null);
                     }
                     this.$.divider.canGenerate = false;
-                    if (inIndex + 1 < articles.length && articles[inIndex + 1].displayDate != r.displayDate) {
+                    if (inIndex + 1 < articles.length && articles[inIndex + 1].sortDate != r.sortDate) {
+                        enyo.log("applying last row");
                         this.$.articleItem.addClass("lastRow");
+                        this.$.articleItem.removeClass("firstRow");
                     }
                 } else {
                     enyo.log("set divider");
                     this.$.divider.setCaption(r.displayDate);
                     this.$.divider.canGenerate = !!r.displayDate;
                     this.$.articleItem.addClass("firstRow");
+                    this.$.articleItem.removeClass("lastRow");
                 }
                 return true;
             }
@@ -169,10 +176,6 @@ enyo.kind({
     },
     finishArticleRead: function(index) {
         this.$.articlesList.updateRow(index);
-        if (!this.articles.getUnreadCount()) {
-            enyo.log("selecting feeds view");
-            this.app.$.slidingPane.selectViewByName('feeds', true);
-        }
     },
     readAllClick: function() {
 		if (!this.offlineArticles.length) {
@@ -186,6 +189,10 @@ enyo.kind({
     markedAllArticlesRead: function(count) {
         enyo.log("marked all articles read: ", count);
         this.$.spinner.hide();
+        if (!this.articles.getUnreadCount()) {
+            enyo.log("selecting feeds view");
+            this.app.$.slidingPane.selectViewByName('feeds', true);
+        }
         this.$.articlesList.punt();
         this.doAllArticlesRead(count, this.articles.id);
     }

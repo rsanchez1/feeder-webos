@@ -42,18 +42,18 @@
 }
 
 .articleSummary.small, .articleSummary.small p {
-    font-size: 15px !important;
-    line-height: 18px !important;
+    font-size: 0.7rem !important;
+    line-height: 1rem !important;
 }
 
 .articleSummary.medium, .articleSummary.medium p {
-    font-size: 17px !important;
-    line-height: 21px !important;
+    font-size: 1rem !important;
+    line-height: 1.3rem !important;
 }
 
 .articleSummary.large, .articleSummary.large p {
-    font-size: 21px !important;
-    line-height: 25px !important;
+    font-size: 1.3rem !important;
+    line-height: 1.6rem !important;
 }
 
 .articleSummary p {
@@ -70,8 +70,19 @@
     border: 0 none !important;
 }
 
-.articleSummary h1, .articleSummary h2, .articleSummary h3 {
-    line-height: 1.7rem;
+.articleSummary.small h1, .articleSummary.small h2, .articleSummary.small h3 {
+    font-size: 0.9rem !important;
+    line-height: 1.2rem !important;
+}
+
+.articleSummary.medium h1, .articleSummary.medium h2, .articleSummary.medium h3 {
+    font-size: 1.2rem !important;
+    line-height: 1.5rem !important;;
+}
+
+.articleSummary.large h1, .articleSummary.large h2, .articleSummary.large h3 {
+    font-size: 1.5rem !important;
+    line-height: 1.8rem !important;
 }
 
 .firstRow {

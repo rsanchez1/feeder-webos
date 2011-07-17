@@ -1,6 +1,7 @@
 enyo.kind({
     name: "TouchFeeds.Main",
     kind: enyo.VFlexBox,
+    loggedIn: false,
     components: [
         {name: "slidingPane", kind: "SlidingPane", fixedWidth: true, flex: 1, onSelectView: "slidingSelected", components: [
             {name: "feeds", width: "320px", fixedWidth: true, components: [
@@ -16,7 +17,7 @@ enyo.kind({
         ]},
         {kind: "AppMenu", components: [
             {kind: "EditMenu"},
-            /*{caption: "Login", onclick: "showLogin"}*/
+            {name: "loginLabel", caption: "Login", onclick: "showLogin"}
         ]},
 		{kind: "onecrayon.Database", name: "articlesDB", database: "ext:TouchFeedsArticles", version: 1, debug: false}
     ],
@@ -32,7 +33,20 @@ enyo.kind({
     ready: function() {
         enyo.log("called ready method");
 		this.$.articlesDB.setSchemaFromURL('schema.json', {
-			onSuccess: function() {enyo.log("successfully set database schema");}
+			onSuccess: function() {
+                enyo.log("successfully set database schema");
+                this.$.articlesDB.query("SELECT * FROM articles", {
+                    onSuccess: function (results) {
+                        enyo.log("got results successfully");
+                        this.offlineArticles = results;
+                        this.$.articlesView.setHeaderContent("Offline Articles");
+                        this.$.articlesView.setOfflineArticles(results);
+                   }.bind(this),
+                    onFailure: function() {
+                        enyo.log("failed to get results");
+                    }
+                });
+            }.bind(this)
 		});
         if (this.credentials.email && this.credentials.password) {
             enyo.log("Login API");
@@ -45,19 +59,10 @@ enyo.kind({
 
     loginSuccess: function() {
         enyo.log("logged in successfully");
-		this.$.articlesView.setHeaderContent("Offline Articles");
-		this.$.articlesDB.query("SELECT * FROM articles", {
-			onSuccess: function (results) {
-				enyo.log("got results successfully");
-                this.offlineArticles = results;
-				this.$.articlesView.setOfflineArticles(results);
-		   }.bind(this),
-			onFailure: function() {
-				enyo.log("failed to get results");
-			}
-		});
+        this.loggedIn = true;
         this.sources = new AllSources(this.api);
 		this.refreshFeeds();
+        this.$.loginLabel.setCaption("Logout");
 		/*
         this.refreshFeeds(function() {
             this.$.articlesView.setHeaderContent("All Items");
@@ -67,20 +72,22 @@ enyo.kind({
     },
 
     refreshFeeds: function(callback) {
-        this.$.feedsView.setShowSpinner(true);
-        if (!!callback) {
-            callback = function() {};
-        }
-        this.sources.findAll(
-            function() {
-                enyo.log("Filtering and refreshing...");
-                this.filterAndRefresh(callback);
-            }.bind(this),
-
-            function() {
-                enyo.log("Error fetching all feeds");
+        if (!!this.sources) {
+            this.$.feedsView.setShowSpinner(true);
+            if (!!callback) {
+                callback = function() {};
             }
-        );
+            this.sources.findAll(
+                function() {
+                    enyo.log("Filtering and refreshing...");
+                    this.filterAndRefresh(callback);
+                }.bind(this),
+
+                function() {
+                    enyo.log("Error fetching all feeds");
+                }
+            );
+        }
     },
 
     filterAndRefresh: function(success) {
@@ -131,10 +138,22 @@ enyo.kind({
     },
 
     showLogin: function() {
-        this.$.login.openAtCenter();
+        if (this.loggedIn) {
+            this.sources = null;
+            this.loggedIn = false;
+            this.credentials.password = false;
+            this.credentials.save();
+            this.$.loginLabel.setCaption("Login");
+            this.$.login.openAtCenter();
+            this.$.feedsView.setStickySources([]);
+            this.$.feedsView.setSubscriptionSources([]);
+        } else {
+            this.$.login.openAtCenter();
+        }
     },
 
     closeDialog: function() {
+        this.$.slidingPane.selectViewByName('articles', true);
         this.$.login.close();
     },
 
