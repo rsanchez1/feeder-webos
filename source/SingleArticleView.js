@@ -50,8 +50,8 @@ enyo.kind({
         {kind: "Toolbar", components: [
             {kind: "GrabButton", slidingHandler: true},
             {name: "previousButton", kind: "IconButton", icon: "images/previous-article.png", onclick: "previousClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 20%; top: 11px;"},
-            {name: "starButton", kind: "IconButton", icon: "images/starred-footer.png", onclick: "starClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 43.33%; top: 11px;"},
-            {name: "shareButton", kind: "IconButton", icon: "images/sendto-footer.png", onclick: "shareClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 66.66%; top: 11px;"},
+            {name: "shareButton", kind: "IconButton", icon: "images/sendto-footer.png", onclick: "shareClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 43.33%; top: 11px;"},
+            {name: "starButton", kind: "IconButton", icon: "images/starred-footer.png", onclick: "starClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 66.66%; top: 11px;"},
             {name: "nextButton", kind: "IconButton", icon: "images/next-article.png", onclick: "nextClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 90%; top: 11px;"}
         ]},
         {name: "fontsPopup", kind: "Menu", modal: false, dismissWithClick: true, components: [

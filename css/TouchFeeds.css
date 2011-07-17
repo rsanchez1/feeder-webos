@@ -1,3 +1,28 @@
+body.light {
+    background: white;
+}
+
+.light .enyo-header {
+    background-color: #0021a5;
+    color: #f1ebe4;
+}
+
+.light .enyo-toolbar {
+    background-color: #00156b;
+}
+
+.light .itemSelected {
+    color: #ff4a00;
+}
+
+.itemSelected {
+    color: #3553d2;
+}
+
+.light .enyo-bg {
+    background-color: white;
+}
+
 .tfHeaderWrapper {
     width: 90%;
 }

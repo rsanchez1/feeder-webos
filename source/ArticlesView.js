@@ -1,6 +1,7 @@
 enyo.kind({
     name: "TouchFeeds.ArticlesView",
     kind: "VFlexBox",
+    selectedRow: -1,
     className: "enyo-bg",
     published: {
         headerContent: "",
@@ -135,6 +136,10 @@ enyo.kind({
                 } else {
                     this.$.articleItem.removeClass("firstRow");
                 }
+                if (articles.length == 1) {
+                    this.$.articleItem.addClass("firstRow");
+					this.$.articleItem.addClass("lastRow");
+                }
                 if (inIndex > 0 && articles[inIndex - 1].sortDate == r.sortDate) {
                     enyo.log("unset divider");
                     enyo.log(this.$.divider.getCaption());
@@ -155,6 +160,13 @@ enyo.kind({
                     this.$.articleItem.addClass("firstRow");
                     this.$.articleItem.removeClass("lastRow");
                 }
+                if (inIndex == this.selectedRow) {
+                    this.$.articleItem.addClass("itemSelected");
+                    this.$.title.applyStyle("font-weight", 500);
+                    globalSelected = this.$.articleItem;
+                } else {
+                    this.$.articleItem.removeClass("itemSelected");
+                }
                 return true;
             }
         }
@@ -163,6 +175,11 @@ enyo.kind({
         this.selectArticle(inEvent.rowIndex);
     },
     selectArticle: function(index) {
+        var previousIndex = this.app.$.singleArticleView.getIndex();
+        this.selectedRow = index;
+        var scrollTo = document.getElementById("page-" + index).offsetTop;
+        enyo.log("scrolling to: ", scrollTo);
+        //this.$.scroller.scrollTo(-scrollTo, 0);
 		var article;
 		var length = 0;
 		if (this.offlineArticles.length) {
@@ -172,6 +189,7 @@ enyo.kind({
 			article = this.articles.items[index];
 			length = this.articles.items.length;
 		}
+        this.$.articlesList.refresh();
         this.doArticleClicked(article, index, length - 1);
     },
     finishArticleRead: function(index) {
