@@ -4,6 +4,8 @@ enyo.kind({
     selectedRow: -1,
     className: "enyo-bg",
     wasOfflineSet: false,
+    maxTop: 0, //maximum that the user has scrolled, to track which articles to mark read
+    numberRendered: 0,
     published: {
         headerContent: "",
         articles: [],
@@ -49,6 +51,7 @@ enyo.kind({
         this.$.headerContent.setContent(Encoder.htmlDecode(this.headerContent));
     },
 	offlineArticlesChanged: function() {
+        this.maxTop = 0;
 		enyo.log("changed offline articles");
         for (var i = this.offlineArticles.length; i--;) {
             this.offlineArticles[i].sortDate = +(new Date(this.offlineArticles[i].displayDate));
@@ -71,6 +74,7 @@ enyo.kind({
 	},
     articlesChanged: function() {
         var scroller = this.$.articlesList.$.scroller;
+        this.maxTop = 0;
         scroller.adjustTop(0);
         scroller.adjustBottom(10);
         scroller.top = 0;
@@ -179,9 +183,34 @@ enyo.kind({
                 } else {
                     this.$.articleItem.removeClass("itemSelected");
                 }
+                var scroller = this.$.articlesList.$.scroller;
+                this.numberRendered = scroller.bottom - scroller.top;
+                enyo.log("scroller top: ", scroller.top);
+                enyo.log("scroller bottom: ", scroller.bottom);
+                enyo.log("max top: ", this.maxTop);
+                enyo.log("num items: ", articles.length);
+                if (scroller.top > this.maxTop && !this.offlineArticles.length) {
+                    for (var i = this.maxTop; i < scroller.top; i++) {
+                        if (!articles[i].isRead) {
+                            articles[i].turnReadOn(this.markedArticleRead.bind(this, articles[i], i), function() {enyo.log("could not mark article read");});
+                        }
+                    }
+                    this.maxTop = scroller.top;
+                }
+                if (scroller.bottom == articles.length - 1 && !this.offlineArticles.length) {
+                    for (var i = this.maxTop; i < articles.length; i++) {
+                        if (!articles[i].isRead) {
+                            articles[i].turnReadOn(this.markedArticleRead.bind(this, articles[i], i), function() {enyo.log("could not mark article read");});
+                        }
+                    }
+                }
                 return true;
             }
         }
+    },
+    markedArticleRead: function(article, index) {
+        this.finishArticleRead(index);
+        this.doArticleRead(article, index);
     },
     articleItemClick: function(inSender, inEvent) {
         this.selectArticle(inEvent.rowIndex);
@@ -193,11 +222,11 @@ enyo.kind({
         //enyo.log("scrolling to: ", scrollTo);
         //this.$.scroller.scrollTo(-scrollTo, 0);
         this.$.articlesList
-        var scrollTop = index - Math.floor(this.$.articlesList.getPageSize() / 2);
+        var scrollTop = index - Math.floor(this.numberRendered / 2);
         if (scrollTop < 0){
             scrollTop = 0;
         }
-        var scrollBottom = scrollTop + this.$.articlesList.getPageSize();
+        var scrollBottom = scrollTop + this.numberRendered;
         if (this.offlineArticles.length) {
             if (scrollBottom >= this.offlineArticles.length) {
                 scrollBottom = this.offlineArticles.length - 1;
