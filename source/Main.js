@@ -13,11 +13,13 @@ enyo.kind({
             {name: "singleArticle", flex: 1, dragAnywhere: false, dismissible: false, onHide: "hideArticle", onShow: "showArticle", onResize: "slidingResize", components: [
                 {name: "singleArticleView", dragAnywhere: false, kind: "TouchFeeds.SingleArticleView", flex: 1, components: [], onSelectArticle: "selectArticle", onRead: "readArticle", onChangedOffline: "changeOffline"},
             ]},
-            {name: "login", className: "enyo-bg", kind: "TouchFeeds.Login", onCancel: "closeDialog", onConfirm: "confirmDialog", onLogin: "handleLogin"}
+            {name: "login", className: "enyo-bg", kind: "TouchFeeds.Login", onCancel: "closeDialog", onConfirm: "confirmDialog", onLogin: "handleLogin"},
+            {name: "preferences", className: "enyo-bg", kind: "TouchFeeds.Preferences", onCancel: "closePreferences"}
         ]},
-        {kind: "AppMenu", components: [
+        {kind: "AppMenu", lazy: false, components: [
             {kind: "EditMenu"},
-            {name: "loginLabel", caption: "Login", onclick: "showLogin"}
+            {name: "loginLabel", caption: "Login", onclick: "showLogin"},
+            {name: "preferenesLabel", caption: "Preferences", onclick: "showPreferences"}
         ]},
 		{kind: "onecrayon.Database", name: "articlesDB", database: "ext:TouchFeedsArticles", version: 1, debug: false}
     ],
@@ -32,6 +34,7 @@ enyo.kind({
 
     ready: function() {
         enyo.log("called ready method");
+        this.$.appMenu.hide();
 		this.$.articlesDB.setSchemaFromURL('schema.json', {
 			onSuccess: function() {
                 enyo.log("successfully set database schema");
@@ -55,6 +58,7 @@ enyo.kind({
             enyo.log("get login information from user");
             setTimeout(function() {this.$.login.openAtCenter();}.bind(this), 0);
         }
+        Element.addClassName(document.body, Preferences.getColorScheme());
     },
 
     loginSuccess: function() {
@@ -135,6 +139,14 @@ enyo.kind({
 
     closeAppMenuHandler: function() {
         this.$.appMenu.close();
+    },
+
+    showPreferences: function() {
+        this.$.preferences.openAtCenter();
+    },
+
+    closePreferences: function() {
+        this.$.preferences.close();
     },
 
     showLogin: function() {

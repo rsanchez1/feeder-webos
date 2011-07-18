@@ -21,7 +21,7 @@ enyo.kind({
                 {name: "loginLabel", content: "Login", style: "float: left; left: 30%; position: relative; width: auto; font-size: 1.15em !important; padding-top: 0.3em !important;"},
                 {kind: "Spinner", showing: false}
             ]},
-            {kind: "Button", caption: "Cancel", flex: 1, style: "height: 2.0em !important;", className: "enyo-button-dark", onclick: "cancelClick", components: [
+            {kind: "Button", caption: "Cancel", flex: 1, style: "height: 2.0em !important;", className: "enyo-button", onclick: "cancelClick", components: [
                 {name: "cancelLabel", content: "Cancel", style: "float: left; left: -15%; position: relative; width: auto; font-size: 1.15em !important; padding-top: 0.3em !important;"},
             ]},
         ]}

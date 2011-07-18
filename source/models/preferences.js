@@ -19,6 +19,15 @@ Preferences = {
   INSTAPAPER_PASSWORD: "r-instapaper-password",
   LEFTY_FRIENDLY: "s-lefty-friendly",
   ARTICLE_FONT_SIZE: "article-font-size",
+  COLOR_SCHEME: "color-scheme",
+
+  getColorScheme: function() {
+      return this.getCookie(this.COLOR_SCHEME, "")
+  },
+
+  setColorScheme: function(colorScheme) {
+      this.setCookie(this.COLOR_SCHEME, colorScheme)
+  }, 
 
   getArticleFontSize: function() {
       return this.getCookie(this.ARTICLE_FONT_SIZE, "medium")

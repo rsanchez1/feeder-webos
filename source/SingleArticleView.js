@@ -184,7 +184,7 @@ enyo.kind({
                 }
                 */
                 this.$.articleScroller.scrollTo(0, scrollTo);
-                this.app.api.getPage(this.article.url, this.gotPage.bind(this), function() {enyo.log("could not get page");});
+                this.app.api.getPage(this.article.url, this.gotPage.bind(this), function() {Feeder.notify("Could not fetch article fulltext"); this.$.spinner.hide();}.bind(this));
             }
         }
     },
@@ -320,11 +320,15 @@ enyo.kind({
             if (this.isOffline) {
                 enyo.log("will delete article offline");
                 this.app.$.articlesDB.query("DELETE FROM articles WHERE articleID="+this.article.articleID, {onSuccess: function() {
-                    enyo.windows.addBannerMessage("Deleted article offline", "{}");
-                    this.$.spinner.hide();
-                    this.offlineQuery();
-                    this.doChangedOffline();
-                }.bind(this), onFailure: function() {enyo.log("failed to delete article");}
+                        enyo.windows.addBannerMessage("Deleted article offline", "{}");
+                        this.$.spinner.hide();
+                        this.offlineQuery();
+                        this.doChangedOffline();
+                    }.bind(this), onFailure: function() {
+                        enyo.log("failed to delete article");
+                        Feeder.notify("Failed to delete article");
+                        this.$.spinner.hide();
+                    }.bind(this)
                 });
             } else {
                 enyo.log("clicked the offline button");
@@ -340,7 +344,7 @@ enyo.kind({
                     }]
                 }, {
                     onSuccess: function() {enyo.windows.addBannerMessage("Saved article offline", "{}"); this.$.spinner.hide(); this.offlineQuery(); this.doChangedOffline();}.bind(this),
-                    onFailure: function() {enyo.log("failed to save article offline");}
+                    onFailure: function() {Feeder.notify("Failed to save article offline"); this.$.spinner.hide();}.bind(this)
                 });
             }
         }

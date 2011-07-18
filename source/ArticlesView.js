@@ -3,6 +3,7 @@ enyo.kind({
     kind: "VFlexBox",
     selectedRow: -1,
     className: "enyo-bg",
+    wasOfflineSet: false,
     published: {
         headerContent: "",
         articles: [],
@@ -41,6 +42,7 @@ enyo.kind({
         this.inherited(arguments);
         this.headerContentChanged();
         this.app = enyo.application.app;
+        globalList = this.$.articlesList;
     },
     headerContentChanged: function() {
         //this.$.header.setContent(this.headerContent);
@@ -61,8 +63,18 @@ enyo.kind({
             this.isRendered = true;
             this.$.articlesList.render();
         }
+        if (this.wasOfflineSet) {
+            this.selectArticle(0);
+        } else {
+            this.wasOfflineSet = true;
+        }
 	},
     articlesChanged: function() {
+        var scroller = this.$.articlesList.$.scroller;
+        scroller.adjustTop(0);
+        scroller.adjustBottom(10);
+        scroller.top = 0;
+        scroller.bottom = 10;
 		this.offlineArticles = [];
         this.articles.reset();
         enyo.log("got articles");
@@ -177,9 +189,29 @@ enyo.kind({
     selectArticle: function(index) {
         var previousIndex = this.app.$.singleArticleView.getIndex();
         this.selectedRow = index;
-        var scrollTo = document.getElementById("page-" + index).offsetTop;
-        enyo.log("scrolling to: ", scrollTo);
+        //var scrollTo = document.getElementById("page-" + index).offsetTop;
+        //enyo.log("scrolling to: ", scrollTo);
         //this.$.scroller.scrollTo(-scrollTo, 0);
+        this.$.articlesList
+        var scrollTop = index - Math.floor(this.$.articlesList.getPageSize() / 2);
+        if (scrollTop < 0){
+            scrollTop = 0;
+        }
+        var scrollBottom = scrollTop + this.$.articlesList.getPageSize();
+        if (this.offlineArticles.length) {
+            if (scrollBottom >= this.offlineArticles.length) {
+                scrollBottom = this.offlineArticles.length - 1;
+            }
+        } else {
+            if (scrollBottom >= this.articles.items.length) {
+                scrollBottom = this.articles.items.length - 1;
+            }
+        }
+        var scroller = this.$.articlesList.$.scroller;
+        scroller.adjustTop(scrollTop);
+        scroller.adjustBottom(scrollBottom);
+        scroller.top = scrollTop;
+        scroller.bottom = scrollBottom;
 		var article;
 		var length = 0;
 		if (this.offlineArticles.length) {
