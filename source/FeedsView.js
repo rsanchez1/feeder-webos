@@ -29,7 +29,7 @@ enyo.kind({
         {name: "sourcesDivider", kind: "Divider", caption: "Subscriptions"},
         {kind: "Scroller", flex: 1, components: [
             {name: "subscriptionSourcesList", kind: "VirtualRepeater", onSetupRow: "setupSubscriptionSources", components: [
-                {name: "subscriptionItem", kind: "SwipeableItem", layoutKind: "VFlexLayout", components: [
+                {name: "subscriptionItem", kind: "SwipeableItem", confirmCaption: "Remove Feed", onConfirm: "confirmedDeleteItem", layoutKind: "VFlexLayout", components: [
                     {name: "title", style: "display: inline-block; width: 85%; margin-left: 5px; font-size: 0.7rem; font-weight: 500; height: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"},
                     {name: "unreadCountDisplay", style: "display: inline-block; width: 35px; text-align: left; position: absolute; right: 10px;"}
                     ],
@@ -39,8 +39,20 @@ enyo.kind({
             }
         ]},
         {kind: "Toolbar", components: [
-            {name: "refreshButton", kind: "IconButton", icon: "images/refresh.png", onclick: "refreshClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 0; top: 11px;"},
-        ]}
+            {name: "addFeedButton", kind: "IconButton", icon: "images/icon_rss_add.png", onclick: "addFeedClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 0; top: 11px;"},
+            {name: "refreshButton", kind: "IconButton", icon: "images/refresh.png", onclick: "refreshClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 60px; top: 11px;"},
+        ]},
+		{name: "addFeedPopup", kind: "ModalDialog", components: [
+			{kind: "RowGroup", caption: "Enter Feed URL", components: [
+				{kind: "Input", name: "feedInput", hint: "", value: "", flex: 3},
+			]},
+			{layoutKind: "HFlexLayout", pack: "center", components: [
+				{kind: "Button", caption: "", flex: 1, style: "height: 2.0em !important; margin-bottom: 20px !important;", className: "enyo-button-dark", onclick: "confirmClick", components: [
+					{name: "feedLabel", content: "OK", style: "float: left; left: 45%; position: relative; width: auto; font-size: 1.15em !important; padding-top: 0.3em !important;"},
+					{name: "feedSpinner", kind: "Spinner", showing: false}
+				]},
+			]}
+		]},
     ],
     create: function() {
         this.inherited(arguments);
@@ -131,7 +143,29 @@ enyo.kind({
         this.$.subscriptionSourcesList.render();
         this.$.stickySourcesList.render();
     },
+	addFeedClick: function(source, inEvent) {
+        this.$.addFeedPopup.openAtEvent(inEvent);
+	},
+	confirmClick: function() {
+		enyo.log("confirming feed...");
+		this.$.feedSpinner.show();
+		this.app.api.addSubscription(this.$.feedInput.getValue(), this.addFeedSuccess.bind(this), function() {Feeder.notify("Could not add feed"); this.$.addFeedPopup.close();}.bind(this));
+		//check for feeds
+	},
+	addFeedSuccess: function() {
+		Feeder.notify("Successfully added feed");
+		this.doRefreshFeeds();
+		this.$.addFeedPopup.close();
+	},
     refreshClick: function() {
         this.doRefreshFeeds();
-    }
+    },
+	confirmedDeleteItem: function(inSender, inIndex) {
+		enyo.log("wanted to delete item: ", inIndex);
+		this.app.api.unsubscribe(this.subscriptionSources.items[inIndex], this.unsubscribedFeed.bind(this));
+	},
+	unsubscribedFeed: function() {
+		Feeder.notify("Successfully removed feed");
+        this.doRefreshFeeds();
+    },
 });

@@ -29,8 +29,8 @@ enyo.kind({
             {name: "articlesList", kind: "VirtualList", onSetupRow: "getListArticles", components: [
                 {kind: "Divider"},
                 {name: "articleItem", kind: "Item", layoutKind: "VFlexLayout", components: [
-                    {name: "title", kind: "HtmlContent", style: "font-size: 0.7rem; font-weight: 500; height: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"},
-                    {name: "origin", style: "font-size: 0.5rem; height: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-top: 5px; color: #777;"},
+                    {name: "title", className: "articleTitle", kind: "HtmlContent"},
+                    {name: "origin", className: "articleOrigin"},
                     {name: "starred"}
                 ], onclick: "articleItemClick"}
             ]}
@@ -38,7 +38,14 @@ enyo.kind({
         {kind: "Toolbar", components: [
             {kind: "GrabButton"},
             {name: "readAllButton", kind: "IconButton", icon: "images/read-footer-on.png", onclick: "readAllClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 60px; top: 11px;"},
-        ]}
+            {name: "refreshButton", kind: "IconButton", icon: "images/refresh.png", onclick: "refreshClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 120px; top: 11px;"},
+            {name: "fontButton", kind: "IconButton", icon: "images/icon_fonts.png", onclick: "fontClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 180px; top: 11px;"},
+        ]},
+        {name: "fontsPopup", kind: "Menu", modal: false, dismissWithClick: true, components: [
+            {caption: "Small", onclick: "chooseFont"},
+            {caption: "Medium", onclick: "chooseFont"},
+            {caption: "Large", onclick: "chooseFont"},
+        ]},
     ],
     create: function() {
         this.inherited(arguments);
@@ -51,6 +58,7 @@ enyo.kind({
         this.$.headerContent.setContent(Encoder.htmlDecode(this.headerContent));
     },
 	offlineArticlesChanged: function() {
+		this.articlesChangedHandler();
         this.maxTop = 0;
 		enyo.log("changed offline articles");
         for (var i = this.offlineArticles.length; i--;) {
@@ -73,6 +81,7 @@ enyo.kind({
         }
 	},
     articlesChanged: function() {
+		this.articlesChangedHandler();
         var scroller = this.$.articlesList.$.scroller;
         this.maxTop = 0;
         scroller.adjustTop(0);
@@ -92,16 +101,23 @@ enyo.kind({
             this.$.articlesList.render();
         }
         */
-        this.$.spinner.show();
-        this.$.spinner.applyStyle("display", "inline-block");
         if (this.articles.canMarkAllRead) {
             this.$.readAllButton.setIcon("images/read-footer-on.png");
         } else {
             //set disabled state for read button
         }
         //this.$.spinner.show();
+        this.$.spinner.show();
+        this.$.spinner.applyStyle("display", "inline-block");
         this.articles.findArticles(this.foundArticles.bind(this), function() {enyo.log("failed to find articles");});
     },
+	articlesChangedHandler: function() {
+        this.$.articlesList.removeClass("small");
+        this.$.articlesList.removeClass("medium");
+        this.$.articlesList.removeClass("large");
+        this.$.articlesList.addClass(Preferences.getArticleListFontSize());
+	},
+
     foundArticles: function() {
         enyo.log("Found articles");
         //enyo.log(this.articles.items);
@@ -269,6 +285,33 @@ enyo.kind({
 			}
 		}
     },
+	refreshClick: function() {
+		if (!this.offlineArticles.length) {
+			var scroller = this.$.articlesList.$.scroller;
+			this.maxTop = 0;
+			scroller.adjustTop(0);
+			scroller.adjustBottom(10);
+			scroller.top = 0;
+			scroller.bottom = 10;
+			this.articles.reset();
+			enyo.log("got articles");
+			this.articles.items = [];
+			this.$.articlesList.punt();
+			this.$.spinner.show();
+			this.$.spinner.applyStyle("display", "inline-block");
+			this.articles.findArticles(this.foundArticles.bind(this), function() {enyo.log("failed to find articles");});
+		}
+	},
+	fontClick: function(source, inEvent) {
+        this.$.fontsPopup.openAtEvent(inEvent);
+    },
+	chooseFont: function(source, inEvent) {
+        Preferences.setArticleListFontSize(source.caption.toLowerCase());
+        this.$.articlesList.removeClass("small");
+        this.$.articlesList.removeClass("medium");
+        this.$.articlesList.removeClass("large");
+        this.$.articlesList.addClass(Preferences.getArticleListFontSize());
+	},
     markedAllArticlesRead: function(count, wasScrolling) {
         enyo.log("marked all articles read: ", count);
         this.$.spinner.hide();

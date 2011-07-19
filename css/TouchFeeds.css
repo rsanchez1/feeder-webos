@@ -117,3 +117,42 @@ body.light {
 .lastRow {
     border-bottom: none;
 }
+
+.articleTitle {
+	font-size: 0.7rem;
+	font-weight: 500;
+	height: 0.9rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.small .articleTitle {
+	font-size: 0.5rem;
+	height: 0.7rem;
+}
+
+.large .articleTitle {
+	font-size: 0.8rem;
+	height: 1.0rem;
+}
+
+.articleOrigin {
+	font-size: 0.5rem;
+	height: 0.7rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	padding-top: 5px;
+	color: #777;
+}
+
+.small .articleOrigin {
+	font-size: 0.35rem;
+	height: 0.55rem;
+}
+
+.large .articleOrigin {
+	font-size: 0.6rem;
+	height: 0.8rem;
+}

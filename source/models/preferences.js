@@ -19,6 +19,7 @@ Preferences = {
   INSTAPAPER_PASSWORD: "r-instapaper-password",
   LEFTY_FRIENDLY: "s-lefty-friendly",
   ARTICLE_FONT_SIZE: "article-font-size",
+  ARTICLE_LIST_FONT_SIZE: "article-list-font-size",
   COLOR_SCHEME: "color-scheme",
 
   getColorScheme: function() {
@@ -35,6 +36,14 @@ Preferences = {
 
   setArticleFontSize: function(fontSize) {
       this.setCookie(this.ARTICLE_FONT_SIZE, fontSize)
+  },
+
+  getArticleListFontSize: function() {
+	  return this.getCookie(this.ARTICLE_LIST_FONT_SIZE, "medium");
+  },
+
+  setArticleListFontSize: function(fontSize) {
+	  this.setCookie(this.ARTICLE_LIST_FONT_SIZE, fontSize);
   },
 
   isLeftyFriendly: function() {
