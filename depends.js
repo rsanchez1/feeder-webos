@@ -32,5 +32,6 @@ enyo.depends(
     "source/SingleArticleView.js",
     "source/Login.js",
     "source/Preferences.js",
+    "source/ScrollBarsScroller.js",
 	"css/TouchFeeds.css"
 );

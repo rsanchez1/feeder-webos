@@ -21,7 +21,8 @@ enyo.kind({
             {name: "loginLabel", caption: "Login", onclick: "showLogin"},
             {name: "preferenesLabel", caption: "Preferences", onclick: "showPreferences"}
         ]},
-		{kind: "onecrayon.Database", name: "articlesDB", database: "ext:TouchFeedsArticles", version: 1, debug: false}
+		{kind: "onecrayon.Database", name: "articlesDB", database: "ext:TouchFeedsArticles", version: 1, debug: false},
+        {kind: "ApplicationEvents", onWindowRotated: "windowRotated"},
     ],
 
     constructor: function() {
@@ -257,5 +258,11 @@ enyo.kind({
 				enyo.log("failed to get results");
 			}
 		});
-   }
+   },
+   windowRotated: function() {
+       var orientation = enyo.getWindowOrientation();
+       if (orientation == "up" || orientation == "down") {
+       } else {
+       }
+   },
 });

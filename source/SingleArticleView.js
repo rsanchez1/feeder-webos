@@ -64,7 +64,7 @@ enyo.kind({
             {caption: "Share with Twitter", shareValue: "twitter", onclick: "chooseShare"},
             {caption: "Share with Facebook", shareValue: "facebook", onclick: "chooseShare"},
             {caption: "Share via Email", shareValue: "email", onclick: "chooseShare"},
-            //{caption: "Share via SMS", shareValue: "sms", onclick: "chooseShare"}
+            {caption: "Share via SMS", shareValue: "sms", onclick: "chooseShare"},
         ]},
         {name: "openAppService", kind: "PalmService", service: "palm://com.palm.applicationManager/", method: "launch"}
     ],
@@ -312,6 +312,12 @@ enyo.kind({
             });
         }
         if (source.shareValue == "sms") {
+            this.$.openAppService.call({
+                id: "com.palm.app.messaging",
+                params: {
+                    messageText: this.article.title + " - " + this.article.url
+                }
+            });
         }
     },
 	offlineClick: function() {

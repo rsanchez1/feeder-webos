@@ -84,6 +84,7 @@ enyo.kind({
 		this.articlesChangedHandler();
         var scroller = this.$.articlesList.$.scroller;
         this.maxTop = 0;
+        this.numberRendered = 0;
         scroller.adjustTop(0);
         scroller.adjustBottom(10);
         scroller.top = 0;
@@ -141,6 +142,11 @@ enyo.kind({
             if (!!this.articles.items) {
                 articles = this.articles.items;
             }
+        }
+        var scroller = this.$.articlesList.$.scroller;
+        var numberRendered = scroller.bottom - scroller.top;
+        if (numberRendered > this.numberRendered) {
+            this.numberRendered = numberRendered;
         }
         if (articles.length) {
             r = articles[inIndex];
@@ -200,8 +206,6 @@ enyo.kind({
                     this.$.articleItem.removeClass("itemSelected");
                 }
                 if (Preferences.markReadAsScroll()) {
-                    var scroller = this.$.articlesList.$.scroller;
-                    this.numberRendered = scroller.bottom - scroller.top;
                     enyo.log("scroller top: ", scroller.top);
                     enyo.log("scroller bottom: ", scroller.bottom);
                     enyo.log("max top: ", this.maxTop);
@@ -242,6 +246,9 @@ enyo.kind({
         //enyo.log("scrolling to: ", scrollTo);
         //this.$.scroller.scrollTo(-scrollTo, 0);
         this.$.articlesList
+        enyo.log("index, numberRendered, scrollBottom");
+        enyo.log(index);
+        enyo.log(this.numberRendered);
         var scrollTop = index - Math.floor(this.numberRendered / 2);
         if (scrollTop < 0){
             scrollTop = 0;
@@ -256,6 +263,7 @@ enyo.kind({
                 scrollBottom = this.articles.items.length - 1;
             }
         }
+        enyo.log(scrollBottom);
         var scroller = this.$.articlesList.$.scroller;
         scroller.adjustTop(scrollTop);
         scroller.adjustBottom(scrollBottom);
