@@ -183,24 +183,28 @@ enyo.kind({
                 } else {
                     this.$.articleItem.removeClass("itemSelected");
                 }
-                var scroller = this.$.articlesList.$.scroller;
-                this.numberRendered = scroller.bottom - scroller.top;
-                enyo.log("scroller top: ", scroller.top);
-                enyo.log("scroller bottom: ", scroller.bottom);
-                enyo.log("max top: ", this.maxTop);
-                enyo.log("num items: ", articles.length);
-                if (scroller.top > this.maxTop && !this.offlineArticles.length) {
-                    for (var i = this.maxTop; i < scroller.top; i++) {
-                        if (!articles[i].isRead) {
-                            articles[i].turnReadOn(this.markedArticleRead.bind(this, articles[i], i), function() {enyo.log("could not mark article read");});
+                if (Preferences.markReadAsScroll()) {
+                    var scroller = this.$.articlesList.$.scroller;
+                    this.numberRendered = scroller.bottom - scroller.top;
+                    enyo.log("scroller top: ", scroller.top);
+                    enyo.log("scroller bottom: ", scroller.bottom);
+                    enyo.log("max top: ", this.maxTop);
+                    enyo.log("num items: ", articles.length);
+                    if (scroller.top > this.maxTop && !this.offlineArticles.length) {
+                        for (var i = this.maxTop; i < scroller.top; i++) {
+                            if (!articles[i].isRead) {
+                                articles[i].turnReadOn(this.markedArticleRead.bind(this, articles[i], i), function() {enyo.log("could not mark article read");});
+                            }
                         }
+                        this.maxTop = scroller.top;
                     }
-                    this.maxTop = scroller.top;
-                }
-                if (scroller.bottom == articles.length - 1 && !this.offlineArticles.length) {
-                    for (var i = this.maxTop; i < articles.length; i++) {
-                        if (!articles[i].isRead) {
-                            articles[i].turnReadOn(this.markedArticleRead.bind(this, articles[i], i), function() {enyo.log("could not mark article read");});
+                    if (scroller.bottom >= articles.length - (this.$.articlesList.getLookAhead()) && !this.offlineArticles.length) {
+                        var count = this.articles.getUnreadCount();
+                        this.articles.markAllRead(this.markedAllArticlesRead.bind(this, count, true), function() {enyo.log("error marking all read");});
+                        for (var i = this.maxTop; i < articles.length; i++) {
+                            if (!articles[i].isRead && !articles[i].keepUnread) {
+                                articles[i].turnReadOn(this.markedArticleRead.bind(this, articles[i], i), function() {enyo.log("could not mark article read");});
+                            }
                         }
                     }
                 }
@@ -265,14 +269,16 @@ enyo.kind({
 			}
 		}
     },
-    markedAllArticlesRead: function(count) {
+    markedAllArticlesRead: function(count, wasScrolling) {
         enyo.log("marked all articles read: ", count);
         this.$.spinner.hide();
         if (!this.articles.getUnreadCount()) {
             enyo.log("selecting feeds view");
-            this.app.$.slidingPane.selectViewByName('feeds', true);
+            if (!wasScrolling) {
+                this.app.$.slidingPane.selectViewByName('feeds', true);
+                this.$.articlesList.punt();
+            }
         }
-        this.$.articlesList.punt();
         this.doAllArticlesRead(count, this.articles.id);
     }
 });

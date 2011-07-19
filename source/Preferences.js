@@ -16,6 +16,10 @@ enyo.kind({
                 ]}
             ]}
         ]},
+        {style: "padding-top: 15px; padding-bottom: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
+            {content: "Mark read as you scroll:", flex: 1},
+            {name: "scrollToggle", kind: "ToggleButton", flex: 1, onChange: "scrollToggle"}
+        ]},
         {layoutKind: "HFlexLayout", pack: "center", components: [
             {kind: "Button", caption: "OK", flex: 1, className: "enyo-button-dark", onclick: "okClick"}
         ]}
@@ -36,6 +40,7 @@ enyo.kind({
     componentsReady: function() {
         this.inherited(arguments);
         this.$.colorSchemeSelector.setValue(Preferences.getColorScheme());
+        this.$.scrollToggle.setState(Preferences.markReadAsScroll());
     },
 
     colorChanged: function(inSender, inValue, inOldValue) {
@@ -44,6 +49,10 @@ enyo.kind({
         Element.removeClassName(body, "dark");
         Element.addClassName(body, inValue);
         Preferences.setColorScheme(inValue);
+    },
+
+    scrollToggle: function(inSender, inState) {
+        Preferences.setMarkReadAsScroll(inState);
     },
 
     okClick: function() {
