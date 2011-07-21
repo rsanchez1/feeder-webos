@@ -73,6 +73,7 @@ enyo.kind({
         this.inherited(arguments);
         //this.$.headerContent.setContent("Welcome to TouchFeeds");
         this.$.articleTitle.setContent("Welcome to Touchfeeds");
+		this.$.summary.setContent(this.introText);
         this.$.postDate.hide();
         this.$.source.hide();
         this.$.sourceButton.hide();
@@ -117,11 +118,11 @@ enyo.kind({
         if (!!this.article.displayDateAndTime) {
             publishAuthor = "Published <span style='font-weight: 700'>" + this.article.displayDateAndTime + "</span>";
         }
-        publishAuthor += " by <span style='font-weight: 700'>" + (!!this.article.author ? this.article.author : "Author Unavailable") + "</span>";
+        publishAuthor += " by <span style='font-weight: 700'>" + (!!this.article.author ? Encoder.htmlDecode(this.article.author) : "Author Unavailable") + "</span>";
         this.$.postDate.setContent(publishAuthor);
         this.$.postDate.show();
         //this.$.about.setContent("by <span style='font-weight: 700'>" + (!!this.article.author ? this.article.author : "Author Unavailable") + "</span> on <span style='font-weight: 700'>" + this.article.origin + "</span>");
-        this.$.source.setContent("<span style='font-weight: 700'>" + this.article.origin + "</span>");
+        this.$.source.setContent("<span style='font-weight: 700'>" + Encoder.htmlDecode(this.article.origin) + "</span>");
         this.$.source.show();
         this.$.sourceButton.show();
         var scrollTo = 0;
@@ -191,12 +192,13 @@ enyo.kind({
     },
     gotPage: function(page) {
         enyo.log("got page");
-        var summary = Encoder.htmlDecode(page);
+        var summary = page;
         this.article.summary = summary;
-        this.$.summary.setContent("<div class='summaryWrapper'>" + summary + "</div>");
+        this.$.summary.setContent("<div class='summaryWrapper'>" + Encoder.htmlDecode(summary) + "</div>");
         this.$.spinner.hide();
         enyo.log("is article offline: ", this.isOffline);
         if (this.isOffline) {
+			enyo.log("preparing to save fulltext to offline database");
             this.app.$.articlesDB.query(this.app.$.articlesDB.getUpdate('articles', {summary: summary}, {articleID: this.article.articleID}), {
                 onSuccess: function() {enyo.log("updated article summary");},
                 onFailure: function() {enyo.log("failed to update article summary");}
@@ -344,12 +346,12 @@ enyo.kind({
                 this.app.$.articlesDB.insertData({
                     table: "articles",
                     data: [{
-                        author: this.article.author,
-                        title: this.article.title,
+                        author: Encoder.htmlEncode(this.article.author),
+                        title: Encoder.htmlEncode(this.article.title),
                         displayDate: this.article.displayDate,
-                        origin: this.article.origin,
-                        summary: this.article.summary,
-                        url: this.article.url
+                        origin: Encoder.htmlEncode(this.article.origin),
+                        summary: Encoder.htmlEncode(this.article.summary),
+                        url: Encoder.htmlEncode(this.article.url)
                     }]
                 }, {
                     onSuccess: function() {enyo.windows.addBannerMessage("Saved article offline", "{}"); this.$.spinner.hide(); this.offlineQuery(); this.doChangedOffline();}.bind(this),
@@ -368,7 +370,8 @@ enyo.kind({
 		}
 	},
 	offlineQuery: function() {
-		this.app.$.articlesDB.query('SELECT COUNT(*) FROM articles WHERE title="' + this.article.title + '"', {onSuccess: this.checkIfOffline.bind(this), onFailure: function() {enyo.log("failed to check if article offline");}});
+		enyo.log("getting number of offline articles");
+		this.app.$.articlesDB.query('SELECT COUNT(*) FROM articles WHERE title="' + Encoder.htmlEncode(this.article.title) + '"', {onSuccess: this.checkIfOffline.bind(this), onFailure: function() {enyo.log("failed to check if article offline");}});
 	},
     resizedPane: function() {
         enyo.log("resizing article");
@@ -388,6 +391,7 @@ enyo.kind({
     },
     flicked: function(event) {
         enyo.log("flicked event");
-    }
+    },
+	introText: "<p>TouchFeeds is a Google Reader app that connects you with the websites you love. Easily navigate your feeds and articles with sliding panels. Read articles the way you want to with customizable font sizes, color schemes, the ability to fetch the full text for articles, and an offline mode that lets you read anywhere.</p>",
 });
 
