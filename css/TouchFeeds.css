@@ -156,3 +156,17 @@ body.light {
 	font-size: 0.6rem;
 	height: 0.8rem;
 }
+
+.articleTitle.starred {
+    background: url(file:///home/roberto/Documents/feeder/enyo/feeder-webos/images/starred-grey.png) top left no-repeat no-repeat;
+    padding-left: 20px;
+    padding-top: 1px;
+}
+
+.large .articleTitle.starred {
+    padding-top: 0;
+}
+
+.small .articleTitle.starred {
+    padding-top: 2px;
+}

@@ -157,6 +157,11 @@ enyo.kind({
                 } else {
                     this.$.title.applyStyle("font-weight", 500);
                 }
+                if (r.isStarred && !this.offlineArticles.length) {
+                    this.$.title.addClass("starred");
+                } else {
+                    this.$.title.removeClass("starred");
+                }
                 if (this.offlineArticles.length || this.articles.showOrigin) {
                     this.$.origin.setContent(Encoder.htmlDecode(r.origin));
                     this.$.origin.show();
@@ -282,6 +287,9 @@ enyo.kind({
         this.doArticleClicked(article, index, length - 1);
     },
     finishArticleRead: function(index) {
+        this.$.articlesList.updateRow(index);
+    },
+    finishArticleStarred: function(index, isStarred) {
         this.$.articlesList.updateRow(index);
     },
     readAllClick: function() {
