@@ -149,12 +149,14 @@ enyo.kind({
 	confirmClick: function() {
 		enyo.log("confirming feed...");
 		this.$.feedSpinner.show();
-		this.app.api.addSubscription(this.$.feedInput.getValue(), this.addFeedSuccess.bind(this), function() {Feeder.notify("Could not add feed"); this.$.addFeedPopup.close();}.bind(this));
+		this.app.api.addSubscription(this.$.feedInput.getValue(), this.addFeedSuccess.bind(this), function() {Feeder.notify("Could not add feed"); this.$.feedSpinner.hide(); this.$.addFeedPopup.close();}.bind(this));
 		//check for feeds
 	},
 	addFeedSuccess: function() {
 		Feeder.notify("Successfully added feed");
 		this.doRefreshFeeds();
+        this.$.feedInput.setValue("");
+        this.$.feedSpinner.hide();
 		this.$.addFeedPopup.close();
 	},
     refreshClick: function() {
