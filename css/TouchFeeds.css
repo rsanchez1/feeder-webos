@@ -83,12 +83,18 @@ body.light {
 
 .articleSummary p {
     padding: 0 0 15px 0 !important;
+    clear: both !important;
+}
+
+.articleSummary * {
+    border: 0 none;
 }
 
 .articleSummary img {
     max-width: 100% !important;
     padding: 0 15px 10px 15px !important;
-    float: left;
+    float: left !important;
+    clear:both !important;
 }
 
 .articleSummary a > img {
