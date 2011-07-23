@@ -164,7 +164,7 @@ body.light {
 }
 
 .articleTitle.starred {
-    background: url(file:///home/roberto/Documents/feeder/enyo/feeder-webos/images/starred-grey.png) top left no-repeat no-repeat;
+    background: url(starred-grey.png) top left no-repeat no-repeat;
     padding-left: 20px;
     padding-top: 1px;
 }

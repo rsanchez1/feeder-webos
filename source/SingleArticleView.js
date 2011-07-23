@@ -26,7 +26,6 @@ enyo.kind({
     components: [
         //{name: "header", kind: "Header"},
         {name: "header", kind: "Toolbar", components: [
-            {name: "sourceButton", kind: "Button", caption: "Source", onclick: "sourceClick", style: "position: absolute; left: 0px; top:4px;"},
             /*
             {name: "headerScroller", kind: "Scroller", flex: 1, style: "height: 1.2rem;", vertical: false, autoVertical: false, components: [
                 {name: "headerWrapper", style: "width: 5000px;", components: [
@@ -42,7 +41,7 @@ enyo.kind({
         ]},
         {name: "articleScroller", horizontal: false, autoHorizontal: false, kind: "Scroller", flex: 1, components: [
             {name: "aboutContainer", className: "articleContainer", components: [
-                {name: "articleTitle", kind: "HtmlContent", style: "font-size: 1.6rem; font-weight: 700; color: #555; padding-bottom: 10px; word-spacing: 0.1rem; line-height: 2rem;"},
+                {name: "articleTitle", kind: "HtmlContent", style: "font-size: 1.6rem; font-weight: 700; color: #555; padding-bottom: 10px; word-spacing: 0.1rem; line-height: 2rem;", onclick: "sourceClick"},
                 {name: "postDate", kind: "HtmlContent"},
                 {name: "source", kind: "HtmlContent"}
             ]},
@@ -76,7 +75,6 @@ enyo.kind({
 		this.$.summary.setContent(this.introText);
         this.$.postDate.hide();
         this.$.source.hide();
-        this.$.sourceButton.hide();
 		this.app = enyo.application.app
     },
     articleChanged: function() {
@@ -124,7 +122,6 @@ enyo.kind({
         //this.$.about.setContent("by <span style='font-weight: 700'>" + (!!this.article.author ? this.article.author : "Author Unavailable") + "</span> on <span style='font-weight: 700'>" + this.article.origin + "</span>");
         this.$.source.setContent("<span style='font-weight: 700'>" + Encoder.htmlDecode(this.article.origin) + "</span>");
         this.$.source.show();
-        this.$.sourceButton.show();
         var scrollTo = 0;
         /*
         if (this.$.articleScroller.getScrollTop() > 200) {
