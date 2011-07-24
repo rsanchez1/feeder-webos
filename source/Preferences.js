@@ -18,7 +18,15 @@ enyo.kind({
         ]},
         {style: "padding-top: 15px; padding-bottom: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
             {content: "Mark read as you scroll:", flex: 1},
-            {name: "scrollToggle", kind: "ToggleButton", flex: 1, onChange: "scrollToggle"}
+            {name: "scrollToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "scrollToggle"}
+        ]},
+        {style: "padding-top: 15px; padding-bottom: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
+            {content: "Hide read feeds:", flex: 1},
+            {name: "feedsToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "feedsToggle"}
+        ]},
+        {style: "padding-top: 15px; padding-bottom: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
+            {content: "Hide read articles:", flex: 1},
+            {name: "articlesToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "articlesToggle"}
         ]},
         {layoutKind: "HFlexLayout", pack: "center", components: [
             {kind: "Button", caption: "OK", flex: 1, className: "enyo-button-dark", onclick: "okClick"}
@@ -41,6 +49,8 @@ enyo.kind({
         this.inherited(arguments);
         this.$.colorSchemeSelector.setValue(Preferences.getColorScheme());
         this.$.scrollToggle.setState(Preferences.markReadAsScroll());
+        this.$.feedsToggle.setState(Preferences.hideReadFeeds());
+        this.$.articlesToggle.setState(Preferences.hideReadArticles());
     },
 
     colorChanged: function(inSender, inValue, inOldValue) {
@@ -53,6 +63,14 @@ enyo.kind({
 
     scrollToggle: function(inSender, inState) {
         Preferences.setMarkReadAsScroll(inState);
+    },
+
+    feedsToggle: function(inSender, inState) {
+        Preferences.setHideReadFeeds(inState);
+    },
+
+    articlesToggle: function(inSender, inState) {
+        Preferences.setHideReadArticles(inState);
     },
 
     okClick: function() {

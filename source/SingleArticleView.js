@@ -18,11 +18,7 @@ enyo.kind({
 		onChangedOffline: "",
     },
     onSlideComplete: "resizedPane",
-    onDragStart: "startDragging",
-    onDragging: "isDragging",
-    onDragEnd: "endDragging",
-    onDrag: "dragEvent",
-    onFlick: "flicked",
+    canLinkClick: true,
     components: [
         //{name: "header", kind: "Header"},
         {name: "header", kind: "Toolbar", components: [
@@ -39,13 +35,13 @@ enyo.kind({
             {name: "fetchButton", kind: "IconButton", icon: "images/fetch-text.png", onclick: "fetchClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 90%; top: 11px;"},
             {kind: "Spinner", showing: false, style: "position: absolute; top: 70px; left: 94%;"},
         ]},
-        {name: "articleScroller", horizontal: false, autoHorizontal: false, kind: "Scroller", flex: 1, components: [
+        {name: "articleScroller", horizontal: false, autoHorizontal: false, kind: "Scroller", flex: 1, ondragfinish: "scrollerDragFinish", components: [
             {name: "aboutContainer", className: "articleContainer", components: [
                 {name: "articleTitle", kind: "HtmlContent", style: "font-size: 1.6rem; font-weight: 700; color: #555; padding-bottom: 10px; word-spacing: 0.1rem; line-height: 2rem;", onclick: "sourceClick"},
                 {name: "postDate", kind: "HtmlContent"},
                 {name: "source", kind: "HtmlContent"}
             ]},
-            {name: "summary", className: "articleSummary", kind: "HtmlContent", onLinkClick: "articleLinkClicked"},
+            {name: "summary", className: "articleSummary", kind: "HtmlContent", onLinkClick: "articleLinkClicked", ondragstart: "summaryDragStart", ondrag: "summaryDrag", ondragfinish: "summaryDragFinish"},
         ]},
         {kind: "Toolbar", components: [
             {kind: "GrabButton", slidingHandler: true},
@@ -166,10 +162,6 @@ enyo.kind({
     sourceClick: function() {
         enyo.log("clicked link for source");
         window.open(this.article.url);
-    },
-    articleLinkClicked: function(thing, url) {
-        enyo.log("clicked link in article");
-        window.open(url);
     },
     fetchClick: function() {
         if (!!this.article.url) {
@@ -374,20 +366,40 @@ enyo.kind({
         enyo.log("resizing article");
         //this.$.headerScroller.setScrollLeft(0);
     },
-    startDragging: function(event) {
-        enyo.log("started dragging");
+    summaryDragStart: function(thing1, event) {
+        enyo.log("summary drag start");
+        this.canLinkClick = false;
     },
-    isDragging: function(event) {
-        enyo.log("is currently dragging");
+    summaryDrag: function() {
+        enyo.log("summary drag");
     },
-    endDragging: function(event) {
-        enyo.log("stopped dragging");
+    summaryDragFinish: function(thing1, event) {
+        enyo.log("summary drag finish");
+        enyo.log("event dx: ", event.dx);
+        if (+event.dx > 50) {
+            enyo.log("dragged to the right");
+            if (this.index > 0) {
+                this.doSelectArticle(this.index - 1);
+            }
+        }
+        if (+event.dx < -50) {
+            enyo.log("dragged to the left");
+            if (this.index < this.maxIndex) {
+                this.doSelectArticle(this.index + 1);
+            }
+        }
+        setTimeout(function() {this.canLinkClick = true;}.bind(this), 500);
     },
-    dragEvent: function(event) {
-        enyo.log("drag event");
+    scrollerDragFinish: function(thing, event) {
+        enyo.log("scroller drag finished");
+        event.stopPropagation();
+        return -1;
     },
-    flicked: function(event) {
-        enyo.log("flicked event");
+    articleLinkClicked: function(thing, url, event) {
+        enyo.log("clicked link in article");
+        if (this.canLinkClick) {
+            window.open(url);
+        }
     },
 	introText: "<p>TouchFeeds is a Google Reader app that connects you with the websites you love. Easily navigate your feeds and articles with sliding panels. Read articles the way you want to with customizable font sizes, color schemes, the ability to fetch the full text for articles, and an offline mode that lets you read anywhere.</p>",
 });
