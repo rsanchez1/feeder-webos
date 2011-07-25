@@ -3,6 +3,7 @@ enyo.kind({
 	kind: "VFlexBox",
     dragAnywhere: false,
 	isOffline: false,
+        gestureY: 0,
     fetchedOffline: false,
     className: "enyo-bg",
     published: {
@@ -18,7 +19,6 @@ enyo.kind({
 		onChangedOffline: "",
     },
     onSlideComplete: "resizedPane",
-    canLinkClick: true,
     components: [
         //{name: "header", kind: "Header"},
         {name: "header", kind: "Toolbar", components: [
@@ -35,13 +35,13 @@ enyo.kind({
             {name: "fetchButton", kind: "IconButton", icon: "images/fetch-text.png", onclick: "fetchClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 90%; top: 11px;"},
             {kind: "Spinner", showing: false, style: "position: absolute; top: 70px; left: 94%;"},
         ]},
-        {name: "articleScroller", horizontal: false, autoHorizontal: false, kind: "Scroller", flex: 1, ondragfinish: "scrollerDragFinish", components: [
+        {name: "articleScroller", horizontal: false, autoHorizontal: false, kind: "Scroller", flex: 1, ondragfinish: "scrollerDragFinish", onScrollStop: "articleScrollStop", components: [
             {name: "aboutContainer", className: "articleContainer", components: [
                 {name: "articleTitle", kind: "HtmlContent", style: "font-size: 1.6rem; font-weight: 700; color: #555; padding-bottom: 10px; word-spacing: 0.1rem; line-height: 2rem;", onclick: "sourceClick"},
                 {name: "postDate", kind: "HtmlContent"},
                 {name: "source", kind: "HtmlContent"}
             ]},
-            {name: "summary", className: "articleSummary", kind: "HtmlContent", onLinkClick: "articleLinkClicked", ondragstart: "summaryDragStart", ondrag: "summaryDrag", ondragfinish: "summaryDragFinish"},
+            {name: "summary", className: "articleSummary", kind: "HtmlContent", onLinkClick: "articleLinkClicked", ondragstart: "summaryDragStart", ondrag: "summaryDrag", ondragfinish: "summaryDragFinish", ongesturestart: "summaryGestureStart", ongestureend: "summaryGestureEnd"},
         ]},
         {kind: "Toolbar", components: [
             {kind: "GrabButton", slidingHandler: true},
@@ -127,6 +127,14 @@ enyo.kind({
         this.$.articleScroller.scrollTo(0, scrollTo);
 		this.offlineQuery();
         //set author/feed, everything else in article-assistant.js
+        var aboutHeight = (this.$.articleTitle.node.scrollHeight) + (this.$.postDate.node.scrollHeight) + (this.$.source.node.scrollHeight);
+        this.$.summary.applyStyle("min-height", (this.$.articleScroller.node.clientHeight - aboutHeight) + "px !important");
+        var images = this.$.summary.node.getElementsByTagName("img");
+        for (var i = 0; i < images.length; i++) {
+            enyo.log("________________________________(");
+            enyo.log("attaching click end event to image");
+            images[0].onclick = function(event) {enyo.log("CALLED CLICK EVENT FOR IMAGE"); event.stopPropagation(); event.preventDefault(); return -1;};
+        }
     },
     markedArticleRead: function() {
         if (!this.article.isRead) {
@@ -368,10 +376,8 @@ enyo.kind({
     },
     summaryDragStart: function(thing1, event) {
         enyo.log("summary drag start");
-        this.canLinkClick = false;
     },
     summaryDrag: function() {
-        enyo.log("summary drag");
     },
     summaryDragFinish: function(thing1, event) {
         enyo.log("summary drag finish");
@@ -379,27 +385,67 @@ enyo.kind({
         if (+event.dx > 50) {
             enyo.log("dragged to the right");
             if (this.index > 0) {
+                this.$.summary.applyStyle("margin-left", "130px !important");
+                setTimeout(this.restoreLeft.bind(this, 15), 16);
                 this.doSelectArticle(this.index - 1);
             }
         }
         if (+event.dx < -50) {
             enyo.log("dragged to the left");
             if (this.index < this.maxIndex) {
+                this.$.summary.applyStyle("margin-left", "-110px !important");
+                setTimeout(this.restoreRight.bind(this, 15), 16);
                 this.doSelectArticle(this.index + 1);
             }
         }
-        setTimeout(function() {this.canLinkClick = true;}.bind(this), 500);
+    },
+    summaryGestureStart: function(thing1, event) {
+        enyo.log("gesture dragging start");
+        this.gestureY = +event.centerY;
+        enyo.log(event.pageY);
+        enyo.log(event.layerY);
+        enyo.log(event.centerY);
+    },
+    summaryGestureEnd: function(thing1, event) {
+        enyo.log("gesture dragging end");
+        enyo.log(this.gestureY);
+        var diff = event.centerY - this.gestureY;
+        enyo.log(diff);
+        enyo.log(event.pageY);
+        enyo.log(event.layerY);
+        enyo.log(event.centerY);
+        if (diff > 0) {
+            //dragged up
+            this.offlineClick();
+        } else {
+            //dragged down
+            this.starClick();
+        }
+    },
+    restoreLeft: function(adjust) {
+        var position = 120 - (15.5 * (15 - adjust)) + (((15 - adjust) * (15 - adjust)) / 2)
+        this.$.summary.applyStyle("margin-left", (Math.floor(position) + 10) + "px !important");
+        if (position > 0) {
+            setTimeout(this.restoreLeft.bind(this, adjust - 1), 16);
+        }
+    },
+    restoreRight: function(adjust) {
+        var position = -120 + (15.5 * (15 - adjust)) - (((15 - adjust) * (15 - adjust)) / 2)
+        this.$.summary.applyStyle("margin-left", (Math.floor(position) + 10) + "px !important");
+        if (adjust > 0) {
+            setTimeout(this.restoreRight.bind(this, adjust - 1), 16);
+        }
     },
     scrollerDragFinish: function(thing, event) {
         enyo.log("scroller drag finished");
-        event.stopPropagation();
-        return -1;
+    },
+    articleScrollStop: function(thing, event) {
+        enyo.log("article stopped scrolling");
+        enyo.log("_______________________");
     },
     articleLinkClicked: function(thing, url, event) {
         enyo.log("clicked link in article");
-        if (this.canLinkClick) {
-            window.open(url);
-        }
+        window.open(url);
     },
 	introText: "<p>TouchFeeds is a Google Reader app that connects you with the websites you love. Easily navigate your feeds and articles with sliding panels. Read articles the way you want to with customizable font sizes, color schemes, the ability to fetch the full text for articles, and an offline mode that lets you read anywhere.</p>",
 });
