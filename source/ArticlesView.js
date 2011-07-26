@@ -17,6 +17,7 @@ enyo.kind({
         onAllArticlesRead: ""
     },
     isRendered: false,
+    articleClicked: false,
     components: [
         //{name: "header", kind: "Header"},
         {name: "header", kind: "PageHeader", components: [
@@ -26,7 +27,7 @@ enyo.kind({
             {kind: "Spinner", showing: true, className: "tfSpinner",}
         ]},
         {kind: "Scroller", flex: 1, components: [
-            {name: "articlesList", kind: "VirtualList", onSetupRow: "getListArticles", components: [
+            {name: "articlesList", kind: "VirtualList", onSetupRow: "getListArticles", lookAhead: 0, components: [
                 {kind: "Divider"},
                 {name: "articleItem", kind: "Item", layoutKind: "VFlexLayout", components: [
                     {name: "title", className: "articleTitle", kind: "HtmlContent"},
@@ -179,10 +180,6 @@ enyo.kind({
                 } else {
                     this.$.articleItem.removeClass("firstRow");
                 }
-                if (articles.length == 1) {
-                    this.$.articleItem.addClass("firstRow");
-					this.$.articleItem.addClass("lastRow");
-                }
                 if (inIndex > 0 && articles[inIndex - 1].sortDate == r.sortDate) {
                     enyo.log("unset divider");
                     enyo.log(this.$.divider.getCaption());
@@ -201,12 +198,15 @@ enyo.kind({
                     this.$.divider.setCaption(r.displayDate);
                     this.$.divider.canGenerate = !!r.displayDate;
                     this.$.articleItem.addClass("firstRow");
-                    this.$.articleItem.removeClass("lastRow");
+                    if (inIndex + 1 < articles.length && articles[inIndex + 1].sortDate != r.sortDate) {
+                        this.$.articleItem.addClass("lastRow");
+                    } else {
+                        this.$.articleItem.removeClass("lastRow");
+                    }
                 }
                 if (inIndex == this.selectedRow) {
                     this.$.articleItem.addClass("itemSelected");
                     this.$.title.applyStyle("font-weight", 500);
-                    globalSelected = this.$.articleItem;
                 } else {
                     this.$.articleItem.removeClass("itemSelected");
                 }
@@ -233,6 +233,31 @@ enyo.kind({
                         }
                     }
                 }
+                if (articles.length == 1) {
+                    this.$.articleItem.addClass("firstRow");
+					this.$.articleItem.addClass("lastRow");
+                }
+                enyo.log("DOES TITLE HAVE NODE? ", this.$.title.hasNode());
+                /*
+                enyo.log("title node: ", this.$.title.node);
+                enyo.log("title event node: ", this.$.title.eventNode);
+                if (this.$.title.eventNode) {
+                    var title = this.$.title.eventNode;
+                    enyo.log("scroll height: ", title.scrollHeight);
+                    enyo.log("offset height: ", title.offsetHeight);
+                    while (title.scrollHeight > title.offsetHeight) {
+                        title.innerHTML = title.innerHTML.replace(/\W*\s(\S)*$/, "...");
+                    }
+                }
+                */
+                /*
+                var parentHeight = this.$.articleItem.node.parentNode;
+                var myHeight = this.$.articleItem.node.scrollHeight;
+                enyo.log("MY HEIGHT: ", myHeight);
+                enyo.log("PARENT HEIGHT: ", parentHeight);
+                */
+                globalItem = this.$.articleItem;
+                globalTitle = this.$.title;
                 return true;
             }
         }
@@ -242,6 +267,7 @@ enyo.kind({
         this.doArticleRead(article, index);
     },
     articleItemClick: function(inSender, inEvent) {
+        this.articleClicked = true;
         this.selectArticle(inEvent.rowIndex);
     },
     selectArticle: function(index) {
@@ -250,30 +276,28 @@ enyo.kind({
         //var scrollTo = document.getElementById("page-" + index).offsetTop;
         //enyo.log("scrolling to: ", scrollTo);
         //this.$.scroller.scrollTo(-scrollTo, 0);
-        this.$.articlesList
-        enyo.log("index, numberRendered, scrollBottom");
-        enyo.log(index);
-        enyo.log(this.numberRendered);
-        var scrollTop = index - Math.floor(this.numberRendered / 2);
-        if (scrollTop < 0){
-            scrollTop = 0;
-        }
-        var scrollBottom = scrollTop + this.numberRendered;
-        if (this.offlineArticles.length) {
-            if (scrollBottom >= this.offlineArticles.length) {
-                scrollBottom = this.offlineArticles.length - 1;
+        if (!this.articleClicked) {
+            var scrollTop = index - Math.floor(this.numberRendered / 2);
+            if (scrollTop < 0){
+                scrollTop = 0;
             }
-        } else {
-            if (scrollBottom >= this.articles.items.length) {
-                scrollBottom = this.articles.items.length - 1;
+            var scrollBottom = scrollTop + this.numberRendered;
+            if (this.offlineArticles.length) {
+                if (scrollBottom >= this.offlineArticles.length) {
+                    scrollBottom = this.offlineArticles.length - 1;
+                }
+            } else {
+                if (scrollBottom >= this.articles.items.length) {
+                    scrollBottom = this.articles.items.length - 1;
+                }
             }
+            var scroller = this.$.articlesList.$.scroller;
+            scroller.adjustTop(scrollTop);
+            scroller.adjustBottom(scrollBottom);
+            scroller.top = scrollTop;
+            scroller.bottom = scrollBottom;
         }
-        enyo.log(scrollBottom);
-        var scroller = this.$.articlesList.$.scroller;
-        scroller.adjustTop(scrollTop);
-        scroller.adjustBottom(scrollBottom);
-        scroller.top = scrollTop;
-        scroller.bottom = scrollBottom;
+        this.articleClicked = false;
 		var article;
 		var length = 0;
 		if (this.offlineArticles.length) {

@@ -128,10 +128,14 @@ body.light {
 .articleTitle {
 	font-size: 0.7rem;
 	font-weight: 500;
+    white-space: normal !important;
+    min-height: 0.9rem !important;
+    max-height: 1.5rem !important;
+    /*
 	height: 0.9rem;
-	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+    */
 }
 
 .small .articleTitle {
