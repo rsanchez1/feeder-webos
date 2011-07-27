@@ -241,18 +241,20 @@ enyo.kind({
                         this.$.articleItem.addClass("firstRow");
                         this.$.articleItem.addClass("lastRow");
                     }
-                    enyo.log("TITLE NODE: ", this.$.title.node);
-                    enyo.log("TITLE EVENT NODE: ", this.$.title.eventNode);
-                    enyo.log("DOES TITLE HAVE NODE? ", this.$.title.hasNode());
-                    if (!!this.$.title.node) {
-                        var title = this.$.title.node;
-                        enyo.log("scroll height: ", title.scrollHeight);
-                        enyo.log("offset height: ", title.offsetHeight);
-                        enyo.log("element height: ", Element.getHeight(title));
-                        while (title.scrollHeight > (+title.offsetHeight * 1.20)) { //give it some errork
-                            title.innerHTML = title.innerHTML.replace(/\W*\s(\S)*$/, "...");
+                    setTimeout(function(index) {
+                        this.$.articlesList.prepareRow(index);
+                        enyo.log("TITLE NODE: ", this.$.title.node);
+                        enyo.log("DOES TITLE HAVE NODE? ", this.$.title.hasNode());
+                        if (!!this.$.title.node) {
+                            var title = this.$.title.node;
+                            enyo.log("scroll height: ", title.scrollHeight);
+                            enyo.log("offset height: ", title.offsetHeight);
+                            enyo.log("element height: ", Element.getHeight(title));
+                            while (title.scrollHeight > (+title.offsetHeight * 1.20)) { //give it some errork
+                                title.innerHTML = title.innerHTML.replace(/\W*\s(\S)*$/, "...");
+                            }
                         }
-                    }
+                    }.bind(this, inIndex), 200);
                     /*
                     var parentHeight = this.$.articleItem.node.parentNode;
                     var myHeight = this.$.articleItem.node.scrollHeight;
