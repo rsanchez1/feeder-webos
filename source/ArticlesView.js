@@ -18,6 +18,7 @@ enyo.kind({
     },
     isRendered: false,
     articleClicked: false,
+    itemsToHide: {},
     components: [
         //{name: "header", kind: "Header"},
         {name: "header", kind: "PageHeader", components: [
@@ -28,7 +29,7 @@ enyo.kind({
         ]},
         {kind: "Scroller", flex: 1, components: [
             {name: "articlesList", kind: "VirtualList", onSetupRow: "getListArticles", lookAhead: 0, components: [
-                {kind: "Divider"},
+                {kind: "Divider", onclick: "articleDividerClick"},
                 {name: "articleItem", kind: "Item", layoutKind: "VFlexLayout", components: [
                     {name: "title", className: "articleTitle", kind: "HtmlContent"},
                     {name: "origin", className: "articleOrigin"},
@@ -64,11 +65,19 @@ enyo.kind({
 		enyo.log("changed offline articles");
         for (var i = this.offlineArticles.length; i--;) {
             this.offlineArticles[i].sortDate = +(new Date(this.offlineArticles[i].displayDate));
+            this.offlineArticles[i].sortOrigin = this.offlineArticles[i].origin.replace(/[^a-zA-Z 0-9 ]+/g,'');
             enyo.log(this.offlineArticles[i].sortDate);
         }
         this.offlineArticles.sort(function(a, b) {return b.sortDate - a.sortDate;});
         this.$.spinner.hide();
 		//this.$.articlesList.punt();
+        this.offlineArticles.sort(function(a, b) {
+            var originA = a.sortOrigin.toLowerCase();
+            var originB = b.sortOrigin.toLowerCase();
+            if (originA < originB) {return -1;}
+            if (originB < originA) {return 1;}
+            return 0;
+        });
         if (this.isRendered) {
             this.$.articlesList.refresh();
         } else {
@@ -119,6 +128,7 @@ enyo.kind({
         this.$.articlesList.removeClass("medium");
         this.$.articlesList.removeClass("large");
         this.$.articlesList.addClass(Preferences.getArticleListFontSize());
+        this.itemsToHide = {};
 	},
 
     foundArticles: function() {
@@ -127,6 +137,18 @@ enyo.kind({
         //enyo.log("Found articles: ", this.articles);
         this.$.spinner.hide();
         //this.articles.items.sort(function(a, b) {return b.sortDate - a.sortDate;});
+        for (var i = this.articles.items.length; i--;) {
+            this.articles.items[i].sortOrigin = this.articles.items[i].origin.replace(/[^a-zA-Z 0-9 ]+/g,'');
+        }
+        if (this.articles.showOrigin) {
+            this.articles.items.sort(function(a, b) {
+                var originA = a.sortOrigin.toLowerCase();
+                var originB = b.sortOrigin.toLowerCase();
+                if (originA < originB) {return -1;}
+                if (originB < originA) {return 1;}
+                return 0;
+            });
+        }
         if (this.isRendered) {
             this.$.articlesList.refresh();
         } else {
@@ -155,109 +177,139 @@ enyo.kind({
         if (articles.length) {
             r = articles[inIndex];
             if (r) {
-                this.$.title.setContent(Encoder.htmlDecode(r.title));
-                if (!r.isRead && !this.offlineArticles.length) {
-                    this.$.title.applyStyle("font-weight", 700);
-                } else {
-                    this.$.title.applyStyle("font-weight", 500);
-                }
-                if (r.isStarred && !this.offlineArticles.length) {
-                    this.$.title.addClass("starred");
-                } else {
-                    this.$.title.removeClass("starred");
-                }
-                if (this.offlineArticles.length || this.articles.showOrigin) {
-                    this.$.origin.setContent(Encoder.htmlDecode(r.origin));
-                    this.$.origin.show();
-                } else {
-                    this.$.origin.setContent("");
-                    this.$.origin.hide();
-                }
-				if (inIndex + 1 >= articles.length) {
-					this.$.articleItem.addClass("lastRow");
-				} else {
-					this.$.articleItem.removeClass("lastRow");
-				}
-                if (inIndex - 1 < 0) {
+                if (!!this.itemsToHide[r.origin]) {
+                    this.$.articleItem.hide();
                     this.$.articleItem.addClass("firstRow");
+                    this.$.articleItem.addClass("lastRow");
                 } else {
-                    this.$.articleItem.removeClass("firstRow");
-                }
-                if (inIndex > 0 && articles[inIndex - 1].sortDate == r.sortDate) {
-                    enyo.log("unset divider");
-                    enyo.log(this.$.divider.getCaption());
-                    if (this.$.divider.getCaption() !== null) {
-                        enyo.log("set null");
-                        this.$.divider.setCaption(null);
+                    this.$.articleItem.show();
+                    this.$.title.setContent(Encoder.htmlDecode(r.title));
+                    if (!r.isRead && !this.offlineArticles.length) {
+                        this.$.title.applyStyle("font-weight", 700);
+                    } else {
+                        this.$.title.applyStyle("font-weight", 500);
                     }
-                    this.$.divider.canGenerate = false;
-                    if (inIndex + 1 < articles.length && articles[inIndex + 1].sortDate != r.sortDate) {
-                        enyo.log("applying last row");
-                        this.$.articleItem.addClass("lastRow");
-                        this.$.articleItem.removeClass("firstRow");
+                    if (r.isStarred && !this.offlineArticles.length) {
+                        this.$.title.addClass("starred");
+                    } else {
+                        this.$.title.removeClass("starred");
                     }
-                } else {
-                    enyo.log("set divider");
-                    this.$.divider.setCaption(r.displayDate);
-                    this.$.divider.canGenerate = !!r.displayDate;
-                    this.$.articleItem.addClass("firstRow");
-                    if (inIndex + 1 < articles.length && articles[inIndex + 1].sortDate != r.sortDate) {
+                    if (this.offlineArticles.length || this.articles.showOrigin) {
+                        //this.$.origin.setContent(Encoder.htmlDecode(r.origin));
+                        this.$.origin.setContent(r.displayDate);
+                        this.$.origin.show();
+                    } else {
+                        this.$.origin.setContent("");
+                        this.$.origin.hide();
+                    }
+                    if (inIndex + 1 >= articles.length) {
                         this.$.articleItem.addClass("lastRow");
                     } else {
-						if (inIndex + 1 >= articles.length) {
-							this.$.articleItem.addClass("lastRow");
-						} else {
-							this.$.articleItem.removeClass("lastRow");
-						}
+                        this.$.articleItem.removeClass("lastRow");
                     }
+                    if (inIndex - 1 < 0) {
+                        this.$.articleItem.addClass("firstRow");
+                    } else {
+                        this.$.articleItem.removeClass("firstRow");
+                    }
+                    if (inIndex == this.selectedRow) {
+                        this.$.articleItem.addClass("itemSelected");
+                        this.$.title.applyStyle("font-weight", 500);
+                    } else {
+                        this.$.articleItem.removeClass("itemSelected");
+                    }
+                    if (Preferences.markReadAsScroll()) {
+                        if (scroller.top > this.maxTop && !this.offlineArticles.length) {
+                            for (var i = this.maxTop; i < scroller.top; i++) {
+                                if (!articles[i].isRead) {
+                                    articles[i].turnReadOn(this.markedArticleRead.bind(this, articles[i], i), function() {enyo.log("could not mark article read");});
+                                }
+                            }
+                            this.maxTop = scroller.top;
+                        }
+                        if (scroller.bottom >= articles.length - (this.$.articlesList.getLookAhead()) && !this.offlineArticles.length) {
+                            var count = this.articles.getUnreadCount();
+                            //this.articles.markAllRead(this.markedAllArticlesRead.bind(this, count, true), function() {enyo.log("error marking all read");});
+                            for (var i = this.maxTop; i < articles.length; i++) {
+                                if (!articles[i].isRead && !articles[i].keepUnread) {
+                                    articles[i].turnReadOn(this.markedArticleRead.bind(this, articles[i], i), function() {enyo.log("could not mark article read");});
+                                }
+                            }
+                        }
+                    }
+                    if (articles.length == 1) {
+                        this.$.articleItem.addClass("firstRow");
+                        this.$.articleItem.addClass("lastRow");
+                    }
+                    enyo.log("TITLE NODE: ", this.$.title.node);
+                    enyo.log("TITLE EVENT NODE: ", this.$.title.eventNode);
+                    enyo.log("DOES TITLE HAVE NODE? ", this.$.title.hasNode());
+                    if (!!this.$.title.node) {
+                        var title = this.$.title.node;
+                        enyo.log("scroll height: ", title.scrollHeight);
+                        enyo.log("offset height: ", title.offsetHeight);
+                        enyo.log("element height: ", Element.getHeight(title));
+                        while (title.scrollHeight > (+title.offsetHeight * 1.20)) { //give it some errork
+                            title.innerHTML = title.innerHTML.replace(/\W*\s(\S)*$/, "...");
+                        }
+                    }
+                    /*
+                    var parentHeight = this.$.articleItem.node.parentNode;
+                    var myHeight = this.$.articleItem.node.scrollHeight;
+                    enyo.log("MY HEIGHT: ", myHeight);
+                    enyo.log("PARENT HEIGHT: ", parentHeight);
+                    */
                 }
-                if (inIndex == this.selectedRow) {
-                    this.$.articleItem.addClass("itemSelected");
-                    this.$.title.applyStyle("font-weight", 500);
+                if (this.offlineArticles.length || this.articles.showOrigin) {
+                    if (inIndex > 0 && articles[inIndex - 1].origin == r.origin) {
+                        if (this.$.divider.getCaption() !== null) {
+                            this.$.divider.setCaption(null);
+                        }
+                        this.$.divider.canGenerate = false;
+                        if (inIndex + 1 < articles.length && articles[inIndex + 1].origin != r.origin) {
+                            this.$.articleItem.addClass("lastRow");
+                            this.$.articleItem.removeClass("firstRow");
+                        }
+                    } else {
+                        this.$.divider.setCaption(r.origin);
+                        this.$.divider.canGenerate = true;
+                        this.$.articleItem.addClass("firstRow");
+                        if (inIndex + 1 < articles.length && articles[inIndex + 1].origin != r.origin) {
+                            this.$.articleItem.addClass("lastRow");
+                        } else {
+                            if (inIndex + 1 >= articles.length) {
+                                this.$.articleItem.addClass("lastRow");
+                            } else {
+                                this.$.articleItem.removeClass("lastRow");
+                            }
+                        }
+                    }
                 } else {
-                    this.$.articleItem.removeClass("itemSelected");
-                }
-                if (Preferences.markReadAsScroll()) {
-                    if (scroller.top > this.maxTop && !this.offlineArticles.length) {
-                        for (var i = this.maxTop; i < scroller.top; i++) {
-                            if (!articles[i].isRead) {
-                                articles[i].turnReadOn(this.markedArticleRead.bind(this, articles[i], i), function() {enyo.log("could not mark article read");});
+                    if (inIndex > 0 && articles[inIndex - 1].sortDate == r.sortDate) {
+                        enyo.log(this.$.divider.getCaption());
+                        if (this.$.divider.getCaption() !== null) {
+                            this.$.divider.setCaption(null);
+                        }
+                        this.$.divider.canGenerate = false;
+                        if (inIndex + 1 < articles.length && articles[inIndex + 1].sortDate != r.sortDate) {
+                            this.$.articleItem.addClass("lastRow");
+                            this.$.articleItem.removeClass("firstRow");
+                        }
+                    } else {
+                        this.$.divider.setCaption(r.displayDate);
+                        this.$.divider.canGenerate = !!r.displayDate;
+                        this.$.articleItem.addClass("firstRow");
+                        if (inIndex + 1 < articles.length && articles[inIndex + 1].sortDate != r.sortDate) {
+                            this.$.articleItem.addClass("lastRow");
+                        } else {
+                            if (inIndex + 1 >= articles.length) {
+                                this.$.articleItem.addClass("lastRow");
+                            } else {
+                                this.$.articleItem.removeClass("lastRow");
                             }
                         }
-                        this.maxTop = scroller.top;
-                    }
-                    if (scroller.bottom >= articles.length - (this.$.articlesList.getLookAhead()) && !this.offlineArticles.length) {
-                        var count = this.articles.getUnreadCount();
-                        this.articles.markAllRead(this.markedAllArticlesRead.bind(this, count, true), function() {enyo.log("error marking all read");});
-                        for (var i = this.maxTop; i < articles.length; i++) {
-                            if (!articles[i].isRead && !articles[i].keepUnread) {
-                                articles[i].turnReadOn(this.markedArticleRead.bind(this, articles[i], i), function() {enyo.log("could not mark article read");});
-                            }
-                        }
                     }
                 }
-                if (articles.length == 1) {
-                    this.$.articleItem.addClass("firstRow");
-					this.$.articleItem.addClass("lastRow");
-                }
-				enyo.log("TITLE NODE: ", this.$.title.node);
-				enyo.log("TITLE EVENT NODE: ", this.$.title.eventNode);
-                enyo.log("DOES TITLE HAVE NODE? ", this.$.title.hasNode());
-                if (!!this.$.title.node) {
-                    var title = this.$.title.node;
-                    enyo.log("scroll height: ", title.scrollHeight);
-                    enyo.log("offset height: ", title.offsetHeight);
-					enyo.log("element height: ", Element.getHeight(title));
-                    while (title.scrollHeight > (+title.offsetHeight * 1.20)) { //give it some errork
-                        title.innerHTML = title.innerHTML.replace(/\W*\s(\S)*$/, "...");
-                    }
-                }
-                /*
-                var parentHeight = this.$.articleItem.node.parentNode;
-                var myHeight = this.$.articleItem.node.scrollHeight;
-                enyo.log("MY HEIGHT: ", myHeight);
-                enyo.log("PARENT HEIGHT: ", parentHeight);
-                */
                 return true;
             }
         }
@@ -269,6 +321,29 @@ enyo.kind({
     articleItemClick: function(inSender, inEvent) {
         this.articleClicked = true;
         this.selectArticle(inEvent.rowIndex);
+    },
+    articleDividerClick: function(inSender, inEvent) {
+        enyo.log("clicked article divider: ", inEvent.rowIndex);
+        var articles = [];
+        if (this.offlineArticles.length) {
+            articles = this.offlineArticles;
+        } else {
+            if (!!this.articles.items) {
+                articles = this.articles.items;
+            }
+        }
+        var article = articles[inEvent.rowIndex];
+        enyo.log(article.origin);
+        enyo.log(article.displayDate);
+        enyo.log(article.sortDate);
+        if (this.offlineArticles.length || this.articles.showOrigin) {
+            if (!!this.itemsToHide[article.origin]) {
+                delete this.itemsToHide[article.origin];
+            } else {
+                this.itemsToHide[article.origin] = true;
+            }
+            this.$.articlesList.refresh();
+        }
     },
     selectArticle: function(index) {
         var previousIndex = this.app.$.singleArticleView.getIndex();

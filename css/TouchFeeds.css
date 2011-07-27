@@ -127,10 +127,10 @@ body.light {
 
 .articleTitle {
 	font-size: 0.7rem;
+    min-height: 0.9rem;
+    max-height: 1.8rem;
 	font-weight: 500;
     white-space: normal !important;
-    min-height: 0.9rem !important;
-    max-height: 1.8rem !important;
 	overflow: hidden;
 	/*
 	height: 0.9rem;
@@ -142,12 +142,14 @@ body.light {
 
 .small .articleTitle {
 	font-size: 0.5rem;
-	height: 0.7rem;
+    min-height: 0.7rem;
+    max-height: 1.6rem;
 }
 
 .large .articleTitle {
 	font-size: 0.8rem;
-	height: 1.0rem;
+    min-height: 1.0rem;
+    max-height: 2.1rem;
 }
 
 .articleOrigin {
