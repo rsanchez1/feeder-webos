@@ -80,6 +80,7 @@ enyo.kind({
         } else {
             this.wasOfflineSet = true;
         }
+		//setTimeout(function() {enyo.log("REFRESHING LIST"); this.$.articlesList.refresh();}.bind(this), 3000);
 	},
     articlesChanged: function() {
 		this.articlesChangedHandler();
@@ -133,8 +134,10 @@ enyo.kind({
             this.$.articlesList.render();
         }
         this.selectArticle(0);
+		//setTimeout(function() {enyo.log("REFRESHING LIST"); this.$.articlesList.refresh();}.bind(this), 3000);
     },
     getListArticles: function(inSender, inIndex) {
+		globalSender = inSender;
 		enyo.log("updating list item");
         var articles = [];
         if (this.offlineArticles.length) {
@@ -201,7 +204,11 @@ enyo.kind({
                     if (inIndex + 1 < articles.length && articles[inIndex + 1].sortDate != r.sortDate) {
                         this.$.articleItem.addClass("lastRow");
                     } else {
-                        this.$.articleItem.removeClass("lastRow");
+						if (inIndex + 1 >= articles.length) {
+							this.$.articleItem.addClass("lastRow");
+						} else {
+							this.$.articleItem.removeClass("lastRow");
+						}
                     }
                 }
                 if (inIndex == this.selectedRow) {
@@ -211,10 +218,6 @@ enyo.kind({
                     this.$.articleItem.removeClass("itemSelected");
                 }
                 if (Preferences.markReadAsScroll()) {
-                    enyo.log("scroller top: ", scroller.top);
-                    enyo.log("scroller bottom: ", scroller.bottom);
-                    enyo.log("max top: ", this.maxTop);
-                    enyo.log("num items: ", articles.length);
                     if (scroller.top > this.maxTop && !this.offlineArticles.length) {
                         for (var i = this.maxTop; i < scroller.top; i++) {
                             if (!articles[i].isRead) {
@@ -237,27 +240,24 @@ enyo.kind({
                     this.$.articleItem.addClass("firstRow");
 					this.$.articleItem.addClass("lastRow");
                 }
+				enyo.log("TITLE NODE: ", this.$.title.node);
+				enyo.log("TITLE EVENT NODE: ", this.$.title.eventNode);
                 enyo.log("DOES TITLE HAVE NODE? ", this.$.title.hasNode());
-                /*
-                enyo.log("title node: ", this.$.title.node);
-                enyo.log("title event node: ", this.$.title.eventNode);
-                if (this.$.title.eventNode) {
-                    var title = this.$.title.eventNode;
+                if (!!this.$.title.node) {
+                    var title = this.$.title.node;
                     enyo.log("scroll height: ", title.scrollHeight);
                     enyo.log("offset height: ", title.offsetHeight);
-                    while (title.scrollHeight > title.offsetHeight) {
+					enyo.log("element height: ", Element.getHeight(title));
+                    while (title.scrollHeight > (+title.offsetHeight * 1.20)) { //give it some errork
                         title.innerHTML = title.innerHTML.replace(/\W*\s(\S)*$/, "...");
                     }
                 }
-                */
                 /*
                 var parentHeight = this.$.articleItem.node.parentNode;
                 var myHeight = this.$.articleItem.node.scrollHeight;
                 enyo.log("MY HEIGHT: ", myHeight);
                 enyo.log("PARENT HEIGHT: ", parentHeight);
                 */
-                globalItem = this.$.articleItem;
-                globalTitle = this.$.title;
                 return true;
             }
         }
