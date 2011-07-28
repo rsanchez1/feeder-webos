@@ -95,7 +95,6 @@ body.light {
     max-width: 100% !important;
     padding: 0 15px 10px 15px !important;
     float: left !important;
-    clear:both !important;
 }
 
 .articleSummary a > img {
