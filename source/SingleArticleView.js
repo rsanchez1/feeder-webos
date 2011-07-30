@@ -112,7 +112,7 @@ enyo.kind({
         if (!!this.article.displayDateAndTime) {
             publishAuthor = "Published <span style='font-weight: 700'>" + this.article.displayDateAndTime + "</span>";
         }
-        publishAuthor += " by <span style='font-weight: 700'>" + (!!this.article.author ? Encoder.htmlDecode(this.article.author) : "Author Unavailable") + "</span>";
+        publishAuthor += (!!this.article.author ? " by <span style='font-weight: 700'>" + Encoder.htmlDecode(this.article.author) + "</span>" : "");
         this.$.postDate.setContent(publishAuthor);
         this.$.postDate.show();
         //this.$.about.setContent("by <span style='font-weight: 700'>" + (!!this.article.author ? this.article.author : "Author Unavailable") + "</span> on <span style='font-weight: 700'>" + this.article.origin + "</span>");

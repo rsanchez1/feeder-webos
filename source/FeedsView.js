@@ -92,11 +92,9 @@ enyo.kind({
                 if (r) {
                     this.$.stickyTitle.setContent(Encoder.htmlDecode(r.title));
                     this.$.stickyUnreadCountDisplay.setContent(r.unreadCountDisplay);
-                    /*
-                    if (inIndex + 1 >= this.stickySources.items.length) {
+                    if (inIndex + 1 > this.stickySources.items.length) {
                         this.$.stickyItem.applyStyle("border-bottom", "none");
                     }
-                    */
                     if (inIndex - 1 < 0) {
                         this.$.stickyItem.applyStyle("border-top", "none");
                     }

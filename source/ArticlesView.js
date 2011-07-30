@@ -18,6 +18,8 @@ enyo.kind({
     },
     isRendered: false,
     articleClicked: false,
+    markReadTimeout: 0,
+    itemsToMarkRead: [],
     itemsToHide: {},
     components: [
         //{name: "header", kind: "Header"},
@@ -92,7 +94,7 @@ enyo.kind({
 		//setTimeout(function() {enyo.log("REFRESHING LIST"); this.$.articlesList.refresh();}.bind(this), 3000);
 	},
     articlesChanged: function() {
-		this.articlesChangedHandler();
+        this.articlesChangedHandler();
         var scroller = this.$.articlesList.$.scroller;
         this.maxTop = 0;
         this.numberRendered = 0;
@@ -114,7 +116,7 @@ enyo.kind({
         }
         */
         if (this.articles.canMarkAllRead) {
-            this.$.readAllButton.setIcon("images/read-footer-on.png");
+            this.$.readAllButton.setIcon("images/read-footer.png");
         } else {
             //set disabled state for read button
         }
@@ -133,6 +135,13 @@ enyo.kind({
 
     foundArticles: function() {
         enyo.log("Found articles");
+        if (Preferences.hideReadArticles()) {
+            for (var i = this.articles.items.length; i--;) {
+                if (this.articles.items[i].isRead) {
+                    this.articles.items.splice(i, 1);
+                }
+            }
+        }
         //enyo.log(this.articles.items);
         //enyo.log("Found articles: ", this.articles);
         this.$.spinner.hide();
@@ -160,7 +169,6 @@ enyo.kind({
     },
     getListArticles: function(inSender, inIndex) {
 		globalSender = inSender;
-		enyo.log("updating list item");
         var articles = [];
         if (this.offlineArticles.length) {
             articles = this.offlineArticles;
@@ -196,7 +204,7 @@ enyo.kind({
                     }
                     if (this.offlineArticles.length || this.articles.showOrigin) {
                         //this.$.origin.setContent(Encoder.htmlDecode(r.origin));
-                        this.$.origin.setContent(r.displayDate);
+                        this.$.origin.setContent(!!r.displayDateAndTime ? r.displayDateAndTime : r.displayDate);
                         this.$.origin.show();
                     } else {
                         this.$.origin.setContent("");
@@ -222,7 +230,8 @@ enyo.kind({
                         if (scroller.top > this.maxTop && !this.offlineArticles.length) {
                             for (var i = this.maxTop; i < scroller.top; i++) {
                                 if (!articles[i].isRead) {
-                                    articles[i].turnReadOn(this.markedArticleRead.bind(this, articles[i], i), function() {enyo.log("could not mark article read");});
+                                    this.addToMarkReadQueue(articles[i], i);
+                                    articles[i].isRead = true;
                                 }
                             }
                             this.maxTop = scroller.top;
@@ -232,7 +241,8 @@ enyo.kind({
                             //this.articles.markAllRead(this.markedAllArticlesRead.bind(this, count, true), function() {enyo.log("error marking all read");});
                             for (var i = this.maxTop; i < articles.length; i++) {
                                 if (!articles[i].isRead && !articles[i].keepUnread) {
-                                    articles[i].turnReadOn(this.markedArticleRead.bind(this, articles[i], i), function() {enyo.log("could not mark article read");});
+                                    this.addToMarkReadQueue(articles[i], i);
+                                    articles[i].isRead = true;
                                 }
                             }
                         }
@@ -243,13 +253,8 @@ enyo.kind({
                     }
                     setTimeout(function(index) {
                         this.$.articlesList.prepareRow(index);
-                        enyo.log("TITLE NODE: ", this.$.title.node);
-                        enyo.log("DOES TITLE HAVE NODE? ", this.$.title.hasNode());
                         if (!!this.$.title.node) {
                             var title = this.$.title.node;
-                            enyo.log("scroll height: ", title.scrollHeight);
-                            enyo.log("offset height: ", title.offsetHeight);
-                            enyo.log("element height: ", Element.getHeight(title));
                             while (title.scrollHeight > (+title.offsetHeight * 1.20)) { //give it some errork
                                 title.innerHTML = title.innerHTML.replace(/\W*\s(\S)*$/, "...");
                             }
@@ -288,7 +293,6 @@ enyo.kind({
                     }
                 } else {
                     if (inIndex > 0 && articles[inIndex - 1].sortDate == r.sortDate) {
-                        enyo.log(this.$.divider.getCaption());
                         if (this.$.divider.getCaption() !== null) {
                             this.$.divider.setCaption(null);
                         }
@@ -315,6 +319,21 @@ enyo.kind({
                 return true;
             }
         }
+    },
+    addToMarkReadQueue: function(article, index) {
+        clearTimeout(this.markReadTimeout);
+        this.itemsToMarkRead.push({article: article, index: index});
+        this.markReadTimeout = setTimeout(function() {
+            enyo.log("TRIGGERED MARK ARTICLE READ TIMEOUT");
+            for (var i = this.itemsToMarkRead.length; i--;) {
+                var article = this.itemsToMarkRead[i].article;
+                var index = this.itemsToMarkRead[i].index;
+                article.turnReadOn(this.markedArticleRead.bind(this, article, index), function() {enyo.log("could not mark article read");});
+            }
+            this.itemsToMarkRead = [];
+            this.markReadTimeout = 0;
+            enyo.log("FINISHED MARKING ARTICLES READ");
+        }.bind(this), 500);
     },
     markedArticleRead: function(article, index) {
         this.finishArticleRead(index);

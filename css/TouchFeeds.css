@@ -172,15 +172,15 @@ body.light {
 }
 
 .articleTitle.starred {
-    background: url(starred-grey.png) top left no-repeat no-repeat;
-    padding-left: 20px;
-    padding-top: 1px;
+    background: url(starred-grey.png) 2px 1px no-repeat no-repeat;
+    /*padding-left: 20px;*/
+    text-indent: 20px;
 }
 
 .large .articleTitle.starred {
-    padding-top: 0;
+    background-position: 2px 3px;
 }
 
 .small .articleTitle.starred {
-    padding-top: 2px;
+    background-position: 2px -2px;
 }
