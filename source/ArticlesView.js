@@ -23,14 +23,14 @@ enyo.kind({
         //{name: "header", kind: "Header"},
         {name: "header", kind: "PageHeader", components: [
             {name: "headerWrapper", className: "tfHeaderWrapper", components: [
-                {name: "headerContent", content: "All Articles", className: "tfHeader"}
+                {name: "headerContent", onclick: "headerClick", content: "All Articles", className: "tfHeader"}
             ]},
             {kind: "Spinner", showing: true, className: "tfSpinner",}
         ]},
         {kind: "Scroller", flex: 1, components: [
-            {name: "articlesList", kind: "VirtualList", onSetupRow: "getListArticles", lookAhead: 0, components: [
+            {name: "articlesList", kind: "VirtualList", onSetupRow: "getListArticles", components: [
                 {kind: "Divider", onclick: "articleDividerClick"},
-                {name: "articleItem", kind: "Item", layoutKind: "VFlexLayout", components: [
+                {name: "articleItem", kind: "SwipeableItem", layoutKind: "VFlexLayout", onConfirm: "swipedArticle", confirmRequired: false, allowLeft: true, components: [
                     {name: "title", className: "articleTitle", kind: "HtmlContent"},
                     {name: "origin", className: "articleOrigin"},
                     {name: "starred"}
@@ -39,7 +39,7 @@ enyo.kind({
         ]},
         {kind: "Toolbar", components: [
             {kind: "GrabButton"},
-            {name: "readAllButton", kind: "IconButton", icon: "images/read-footer-on.png", onclick: "readAllClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 60px; top: 11px;"},
+            {name: "readAllButton", kind: "IconButton", icon: "images/read-footer.png", onclick: "readAllClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 60px; top: 11px;"},
             {name: "refreshButton", kind: "IconButton", icon: "images/refresh.png", onclick: "refreshClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 120px; top: 11px;"},
             {name: "fontButton", kind: "IconButton", icon: "images/icon_fonts.png", onclick: "fontClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 180px; top: 11px;"},
         ]},
@@ -254,7 +254,7 @@ enyo.kind({
                                 title.innerHTML = title.innerHTML.replace(/\W*\s(\S)*$/, "...");
                             }
                         }
-                    }.bind(this, inIndex), 200);
+                    }.bind(this, inIndex), 16);
                     /*
                     var parentHeight = this.$.articleItem.node.parentNode;
                     var myHeight = this.$.articleItem.node.scrollHeight;
@@ -324,6 +324,38 @@ enyo.kind({
         this.articleClicked = true;
         this.selectArticle(inEvent.rowIndex);
     },
+    headerClick: function(inSender, inEvent) {
+        if (this.offlineArticles.length || this.articles.showOrigin) {
+            var isEmpty = true;
+            for (var i in this.itemsToHide) {
+                if (this.itemsToHide.hasOwnProperty(i)) {
+                    isEmpty = false;
+                }
+            }
+            if (isEmpty) {
+                var articles = [];
+                if (this.offlineArticles.length) {
+                    articles = this.offlineArticles;
+                } else {
+                    if (!!this.articles.items) {
+                        articles = this.articles.items;
+                    }
+                }
+                for (var l = articles.length; l--;) {
+                    if (!this.itemsToHide[articles[l].origin]) {
+                        this.itemsToHide[articles[l].origin] = true;
+                    }
+                }
+            } else {
+                for (var i in this.itemsToHide) {
+                    if (this.itemsToHide.hasOwnProperty(i)) {
+                        delete this.itemsToHide[i];
+                    }
+                }
+            }
+            this.$.articlesList.refresh();
+        }
+    },
     articleDividerClick: function(inSender, inEvent) {
         enyo.log("clicked article divider: ", inEvent.rowIndex);
         var articles = [];
@@ -391,7 +423,19 @@ enyo.kind({
         this.$.articlesList.updateRow(index);
     },
     finishArticleStarred: function(index, isStarred) {
+        enyo.log("finished article star");
         this.$.articlesList.updateRow(index);
+    },
+    swipedArticle: function(inSender, inIndex, thing) {
+        if (this.articles.items.length) {
+            if (this.articles.items[inIndex]) {
+                if (this.articles.items[inIndex].isStarred) {
+                    this.articles.items[inIndex].turnStarOff(this.finishArticleStarred.bind(this, inIndex, false), function() {Feeder.notify("Failed to remove star");});
+                } else {
+                    this.articles.items[inIndex].turnStarOn(this.finishArticleStarred.bind(this, inIndex, true), function() {Feeder.notify("Failed to add star");});
+                }
+            }
+        }
     },
     readAllClick: function() {
 		if (!this.offlineArticles.length) {

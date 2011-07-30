@@ -19,7 +19,9 @@ Preferences = {
   INSTAPAPER_PASSWORD: "r-instapaper-password",
   LEFTY_FRIENDLY: "s-lefty-friendly",
   ARTICLE_FONT_SIZE: "article-font-size",
+  ARTICLE_FONT_FACE: "article-font-face",
   ARTICLE_LIST_FONT_SIZE: "article-list-font-size",
+  ARTICLE_LIST_FONT_FACE: "article-list-font-face",
   COLOR_SCHEME: "color-scheme",
 
   getColorScheme: function() {
@@ -38,12 +40,28 @@ Preferences = {
       this.setCookie(this.ARTICLE_FONT_SIZE, fontSize)
   },
 
+  getArticleFontFace: function() {
+      return this.getCookie(this.ARTICLE_FONT_FACE, "prelude");
+  },
+
+  setArticleFontFace: function(fontFace) {
+      this.setCookie(this.ARTICLE_FONT_FACE, fontFace);
+  },
+
   getArticleListFontSize: function() {
 	  return this.getCookie(this.ARTICLE_LIST_FONT_SIZE, "medium");
   },
 
   setArticleListFontSize: function(fontSize) {
 	  this.setCookie(this.ARTICLE_LIST_FONT_SIZE, fontSize);
+  },
+
+  getArticleListFontFace: function() {
+      return this.getCookie(this.ARTICLE_LIST_FONT_FACE, "prelude");
+  },
+
+  setArticleListFontFace: function(fontFace) {
+      this.setCookie(this.ARTICLE_LIST_FONT_FACE, fontFace);
   },
 
   isLeftyFriendly: function() {
