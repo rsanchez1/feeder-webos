@@ -100,7 +100,7 @@ enyo.kind({
 			}
         }
         //this.$.headerContent.setContent(Encoder.htmlDecode(this.article.title));
-        this.$.articleTitle.setContent(Encoder.htmlDecode(this.article.title));
+        this.$.articleTitle.setContent(Encoder.htmlDecode(Encoder.htmlEncode(this.article.title)));
         // Adjust width of scroller to scroll through title without scrolling off page
         /*
         this.$.headerScroller.setScrollLeft(0);
