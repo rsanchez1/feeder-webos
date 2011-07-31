@@ -62,6 +62,7 @@ enyo.kind({
             {caption: "Share with Read it Later", shareValue: "readitlater", onclick: "chooseShare"},
             {caption: "Share via Email", shareValue: "email", onclick: "chooseShare"},
             {caption: "Share via SMS", shareValue: "sms", onclick: "chooseShare"},
+            {caption: "Share with Paper Mache", shareValue: "paper", onClick: "chooseShare"}
         ]},
         {name: "openAppService", kind: "PalmService", service: "palm://com.palm.applicationManager/", method: "launch"}
     ],
@@ -329,6 +330,16 @@ enyo.kind({
                 }
             });
         }
+        if (source.shareValue == "paper") {
+            this.$.openAppService.call({
+                id: "net.ryanwatkins.app.papermache",
+                params: {
+                    action: "add",
+                    url: this.article.url,
+                    title: this.article.title
+                }
+            });
+        }
     },
 	offlineClick: function() {
         if (!!this.article.title) {
@@ -390,7 +401,7 @@ enyo.kind({
     summaryDragFinish: function(thing1, event) {
         enyo.log("summary drag finish");
         enyo.log("event dx: ", event.dx);
-        if (+event.dx > 50) {
+        if (+event.dx > 100) {
             enyo.log("dragged to the right");
             if (this.index > 0) {
                 this.$.summary.applyStyle("margin-left", "130px !important");
@@ -398,7 +409,7 @@ enyo.kind({
                 this.doSelectArticle(this.index - 1);
             }
         }
-        if (+event.dx < -50) {
+        if (+event.dx < -100) {
             enyo.log("dragged to the left");
             if (this.index < this.maxIndex) {
                 this.$.summary.applyStyle("margin-left", "-110px !important");
@@ -484,10 +495,10 @@ enyo.kind({
         "<h2>Gesture Guide</h2>" +
         "<p>TouchFeeds features many gestures to enhance your reading experience.</p>" +
         "<ul class='gestureGuide'>" +
-        "<li>Drag an article to the left or right to go to the next or previous article, respectively.</li>" +
+        "<li>When viewing an article, drag the article to the left or right to go to the next or previous article, respectively.</li>" +
         "<li>When viewing an article, drag two fingers down on the article to star an article or to remove a star.</li>" +
         "<li>When viewing an article, drag two fingers up on the article to download an article for offline reading or to delete an offline article.</li>" +
-        "<li>When viewing articles for a feed, drag an article row to star that article or to remove a star.</li>" +
+        "<li>In the center Articles pane, drag an article row to star that article or to remove a star.</li>" +
         "<li>In the left-most Feeds pane, drag an feed row to remove that feed from Google Reader.</li>" +
         "</ul>" +
         "<h2>Viewing Folders</h2>" +
