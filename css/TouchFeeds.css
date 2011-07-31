@@ -8,19 +8,74 @@ body.light {
 }
 
 .light .enyo-toolbar {
-    background-color: #00156b;
+    background-color: #00156b !important;
 }
 
 .light .itemSelected {
     color: #ff4a00;
+    font-weight: normal;
 }
 
 .itemSelected {
     color: #3553d2;
+    font-weight: normal;
 }
 
 .light .enyo-bg {
     background-color: white;
+}
+
+.dark .enyo-item {
+    border: 0 none;
+    font-weight: normal;
+}
+
+.dark .enyo-item.unread-item {
+    font-weight: bold;
+}
+
+.dark .enyo-header {
+    background-color: #3c3c3c;
+    color: white;
+    -webkit-border-image: none !important;
+}
+
+.dark .enyo-toolbar {
+    background-color: #434343 !important;
+    color: white;
+}
+
+.dark .itemSelected {
+    color: #648dc9;
+    font-weight: bold;
+}
+
+.dark .itemLists {
+    background-color: #262626;
+    color: white;
+}
+
+.dark .enyo-bg {
+    background-color: #d8d8d8;
+    color: #000;
+}
+
+.enyo-item {
+    font-weight: normal;
+}
+
+.enyo-item.rss {
+    background: url(rss-grey.png) 16px 15px no-repeat no-repeat;
+    padding-left: 30px;
+}
+
+.enyo-item.folder {
+    background: url(folder-grey.png) 16px 15px no-repeat no-repeat;
+    padding-left: 30px;
+}
+
+.enyo-item.unread-item {
+    font-weight: bold;
 }
 
 .tfHeaderWrapper {
@@ -50,7 +105,7 @@ body.light {
     border-bottom: 1px solid rgba(0, 0, 0, 0.2);
     color: #777;
     font-size: 0.8rem;
-    font-weight: 300;
+    font-weight: lighter;
 }
 
 .articleSummary {
@@ -60,7 +115,8 @@ body.light {
     border-top: 1px solid rgba(255, 255, 255, 0.5);
     color: #333;
     line-height: 1.3rem;
-    min-height: 100%
+    min-height: 100%;
+    font-family: "Arial";
 }
 
 .summaryWrapper {
@@ -128,7 +184,7 @@ body.light {
 	font-size: 0.7rem;
     min-height: 0.9rem;
     max-height: 1.8rem;
-	font-weight: 500;
+	font-weight: normal;
     white-space: normal !important;
 	overflow: hidden;
 	/*
@@ -139,16 +195,43 @@ body.light {
 	*/
 }
 
+.unread-item .articleTitle {
+    font-weight: bold;
+}
+
+.dark .articleTitle {
+    font-weight: normal;
+    font-size: 0.8rem;
+    min-height: 1.0rem;
+    max-height: 2.1rem;
+}
+
+.dark .unread-item .articleTitle {
+    font-weight: bold;
+}
+
 .small .articleTitle {
 	font-size: 0.5rem;
     min-height: 0.7rem;
     max-height: 1.6rem;
 }
 
+.dark .small .articleTitle {
+    font-size: 0.6rem;
+    min-height: 0.8rem;
+    max-height: 1.7rem;
+}
+
 .large .articleTitle {
 	font-size: 0.8rem;
     min-height: 1.0rem;
     max-height: 2.1rem;
+}
+
+.dark .large .articleTitle {
+    font-size: 0.9rem;
+    min-height: 1.1rem;
+    max-height: 2.3rem;
 }
 
 .articleOrigin {
@@ -159,6 +242,10 @@ body.light {
 	white-space: nowrap;
 	padding-top: 5px;
 	color: #777;
+}
+
+.dark .articleOrigin {
+    color: #999;
 }
 
 .small .articleOrigin {
@@ -183,4 +270,8 @@ body.light {
 
 .small .articleTitle.starred {
     background-position: 2px -2px;
+}
+
+.touchFeedsSummary {
+    font-family: "Arial";
 }

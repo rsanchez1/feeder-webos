@@ -20,17 +20,17 @@ enyo.kind({
             ]},
             {kind: "Spinner", showing: false, style: "position: absolute; right: 10px; top: 10px;"}
         ]},
-        {name: "stickySourcesList", kind: "VirtualRepeater", onSetupRow: "setupStickySources", components: [
+        {name: "stickySourcesList", kind: "VirtualRepeater", onSetupRow: "setupStickySources", className: "itemLists", components: [
             {name: "stickyItem", kind: "Item", layoutKind: "VFlexLayout", components: [
                 {name: "stickyTitle", style: "display: inline-block; width: 85%; margin-left: 5px;"},
                 {name: "stickyUnreadCountDisplay", style: "display: inline-block; width: 35px; text-align: left; position: absolute; right: 10px;"}
             ], onclick: "stickyItemClick"}
         ]},
-        {name: "sourcesDivider", kind: "Divider", caption: "Subscriptions"},
-        {kind: "Scroller", flex: 1, components: [
-            {name: "subscriptionSourcesList", kind: "VirtualRepeater", onSetupRow: "setupSubscriptionSources", components: [
+        {name: "sourcesDivider", kind: "Divider", caption: "Subscriptions", className: "itemLists"},
+        {kind: "Scroller", flex: 1, className: "itemLists", components: [
+            {name: "subscriptionSourcesList", kind: "VirtualRepeater", onSetupRow: "setupSubscriptionSources", className: "itemLists", components: [
                 {name: "subscriptionItem", kind: "SwipeableItem", confirmCaption: "Remove Feed", onConfirm: "confirmedDeleteItem", layoutKind: "VFlexLayout", components: [
-                    {name: "title", style: "display: inline-block; width: 85%; margin-left: 5px; font-size: 0.7rem; font-weight: 500; height: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"},
+                    {name: "title", style: "display: inline-block; width: 85%; margin-left: 5px; font-size: 0.7rem; font-weight: normal !important; height: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"},
                     {name: "unreadCountDisplay", style: "display: inline-block; width: 35px; text-align: left; position: absolute; right: 10px;"}
                     ],
                     onclick: "subscriptionItemClick"
@@ -116,7 +116,7 @@ enyo.kind({
                 this.$.title.setContent(Encoder.htmlDecode(r.title));
                 this.$.unreadCountDisplay.setContent(r.unreadCountDisplay);
                 if (r.unreadCountDisplay) {
-                    this.$.title.applyStyle("font-weight", 700);
+                    this.$.title.applyStyle("font-weight", "bold !important");
                 }
                 if (inIndex + 1 >= this.subscriptionSources.items.length) {
                     this.$.subscriptionItem.applyStyle("border-bottom", "none");
@@ -124,6 +124,9 @@ enyo.kind({
                 if (inIndex - 1 < 0) {
                     this.$.subscriptionItem.applyStyle("border-top", "none");
                 }
+                this.$.subscriptionItem.removeClass("rss");
+                this.$.subscriptionItem.removeClass("folder");
+                this.$.subscriptionItem.addClass(r.icon);
                 return true;
             }
         }

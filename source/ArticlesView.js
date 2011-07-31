@@ -30,7 +30,7 @@ enyo.kind({
             {kind: "Spinner", showing: true, className: "tfSpinner",}
         ]},
         {kind: "Scroller", flex: 1, components: [
-            {name: "articlesList", kind: "VirtualList", onSetupRow: "getListArticles", components: [
+            {name: "articlesList", kind: "VirtualList", onSetupRow: "getListArticles", className: "itemLists", components: [
                 {kind: "Divider", onclick: "articleDividerClick"},
                 {name: "articleItem", kind: "SwipeableItem", layoutKind: "VFlexLayout", onConfirm: "swipedArticle", confirmRequired: false, allowLeft: true, components: [
                     {name: "title", className: "articleTitle", kind: "HtmlContent"},
@@ -68,18 +68,12 @@ enyo.kind({
         for (var i = this.offlineArticles.length; i--;) {
             this.offlineArticles[i].sortDate = +(new Date(this.offlineArticles[i].displayDate));
             this.offlineArticles[i].sortOrigin = this.offlineArticles[i].origin.replace(/[^a-zA-Z 0-9 ]+/g,'');
-            enyo.log(this.offlineArticles[i].sortDate);
         }
         this.offlineArticles.sort(function(a, b) {return b.sortDate - a.sortDate;});
         this.$.spinner.hide();
 		//this.$.articlesList.punt();
-        this.offlineArticles.sort(function(a, b) {
-            var originA = a.sortOrigin.toLowerCase();
-            var originB = b.sortOrigin.toLowerCase();
-            if (originA < originB) {return -1;}
-            if (originB < originA) {return 1;}
-            return 0;
-        });
+        this.offlineArticles.sort(this.originSortingFunction);
+        this.offlineArticles = this.sortSortedArticlesByDate(this.offlineArticles);
         if (this.isRendered) {
             this.$.articlesList.refresh();
         } else {
@@ -125,47 +119,59 @@ enyo.kind({
         this.$.spinner.applyStyle("display", "inline-block");
         this.articles.findArticles(this.foundArticles.bind(this), function() {enyo.log("failed to find articles");});
     },
-	articlesChangedHandler: function() {
+    articlesChangedHandler: function() {
         this.$.articlesList.removeClass("small");
         this.$.articlesList.removeClass("medium");
         this.$.articlesList.removeClass("large");
         this.$.articlesList.addClass(Preferences.getArticleListFontSize());
         this.itemsToHide = {};
-	},
-
+    },
     foundArticles: function() {
         enyo.log("Found articles");
         if (Preferences.hideReadArticles()) {
+            enyo.log("hide read articles");
             for (var i = this.articles.items.length; i--;) {
+                enyo.log("is article read? ", this.articles.items[i].isRead);
                 if (this.articles.items[i].isRead) {
                     this.articles.items.splice(i, 1);
                 }
             }
         }
-        //enyo.log(this.articles.items);
         //enyo.log("Found articles: ", this.articles);
         this.$.spinner.hide();
         //this.articles.items.sort(function(a, b) {return b.sortDate - a.sortDate;});
-        for (var i = this.articles.items.length; i--;) {
-            this.articles.items[i].sortOrigin = this.articles.items[i].origin.replace(/[^a-zA-Z 0-9 ]+/g,'');
+        enyo.log('preparing to sort articles');
+        try {
+            for (var i = this.articles.items.length; i--;) {
+                if (!!this.articles.items[i].displayDateAndTime) {
+                    this.articles.items[i].sortDateTime = +(new Date(this.articles.items[i].displayDateAndTime));
+                }
+                this.articles.items[i].sortDate = +(new Date(this.articles.items[i].displayDate));
+                if (!this.articles.items[i].origin) {
+                    this.articles.items[i].origin = "Unsubscribed";
+                }
+                this.articles.items[i].sortOrigin = this.articles.items[i].origin.replace(/[^a-zA-Z 0-9 ]+/g,'');
+            }
+        } catch (e) {
+            enyo.log("failed to prepare articles: ", e);
         }
-        if (this.articles.showOrigin) {
-            this.articles.items.sort(function(a, b) {
-                var originA = a.sortOrigin.toLowerCase();
-                var originB = b.sortOrigin.toLowerCase();
-                if (originA < originB) {return -1;}
-                if (originB < originA) {return 1;}
-                return 0;
-            });
+        enyo.log('sorting articles');
+        if (this.articles.items.length && this.articles.showOrigin) {
+            this.articles.items.sort(this.originSortingFunction);
+            this.articles.items = this.sortSortedArticlesByDate(this.articles.items);
         }
+        enyo.log('finished sorting articles');
         if (this.isRendered) {
+            enyo.log("refresh list");
             this.$.articlesList.refresh();
         } else {
+            enyo.log("render list");
             this.isRendered = true;
             this.$.articlesList.render();
         }
-        this.selectArticle(0);
-		//setTimeout(function() {enyo.log("REFRESHING LIST"); this.$.articlesList.refresh();}.bind(this), 3000);
+        if (this.articles.items.length) {
+            this.selectArticle(0);
+        }
     },
     getListArticles: function(inSender, inIndex) {
 		globalSender = inSender;
@@ -189,27 +195,22 @@ enyo.kind({
                     this.$.articleItem.hide();
                     this.$.articleItem.addClass("firstRow");
                     this.$.articleItem.addClass("lastRow");
+                    this.$.divider.setCaption(r.origin);
+                    this.$.divider.canGenerate = true;
                 } else {
                     this.$.articleItem.show();
                     this.$.title.setContent(Encoder.htmlDecode(r.title));
                     if (!r.isRead && !this.offlineArticles.length) {
-                        this.$.title.applyStyle("font-weight", 700);
+                        this.$.articleItem.addClass("unread-item");
                     } else {
-                        this.$.title.applyStyle("font-weight", 500);
+                        this.$.articleItem.removeClass("unread-item");
                     }
                     if (r.isStarred && !this.offlineArticles.length) {
                         this.$.title.addClass("starred");
                     } else {
                         this.$.title.removeClass("starred");
                     }
-                    if (this.offlineArticles.length || this.articles.showOrigin) {
-                        //this.$.origin.setContent(Encoder.htmlDecode(r.origin));
-                        this.$.origin.setContent(!!r.displayDateAndTime ? r.displayDateAndTime : r.displayDate);
-                        this.$.origin.show();
-                    } else {
-                        this.$.origin.setContent("");
-                        this.$.origin.hide();
-                    }
+                    this.$.origin.setContent(!!r.displayDateAndTime ? r.displayDateAndTime : r.displayDate);
                     if (inIndex + 1 >= articles.length) {
                         this.$.articleItem.addClass("lastRow");
                     } else {
@@ -222,7 +223,6 @@ enyo.kind({
                     }
                     if (inIndex == this.selectedRow) {
                         this.$.articleItem.addClass("itemSelected");
-                        this.$.title.applyStyle("font-weight", 500);
                     } else {
                         this.$.articleItem.removeClass("itemSelected");
                     }
@@ -266,52 +266,52 @@ enyo.kind({
                     enyo.log("MY HEIGHT: ", myHeight);
                     enyo.log("PARENT HEIGHT: ", parentHeight);
                     */
-                }
-                if (this.offlineArticles.length || this.articles.showOrigin) {
-                    if (inIndex > 0 && articles[inIndex - 1].origin == r.origin) {
-                        if (this.$.divider.getCaption() !== null) {
-                            this.$.divider.setCaption(null);
-                        }
-                        this.$.divider.canGenerate = false;
-                        if (inIndex + 1 < articles.length && articles[inIndex + 1].origin != r.origin) {
-                            this.$.articleItem.addClass("lastRow");
-                            this.$.articleItem.removeClass("firstRow");
-                        }
-                    } else {
-                        this.$.divider.setCaption(r.origin);
-                        this.$.divider.canGenerate = true;
-                        this.$.articleItem.addClass("firstRow");
-                        if (inIndex + 1 < articles.length && articles[inIndex + 1].origin != r.origin) {
-                            this.$.articleItem.addClass("lastRow");
+                    if (this.offlineArticles.length || this.articles.showOrigin) {
+                        if (inIndex > 0 && articles[inIndex - 1].origin == r.origin) {
+                            if (this.$.divider.getCaption() !== null) {
+                                this.$.divider.setCaption(null);
+                            }
+                            this.$.divider.canGenerate = false;
+                            if (inIndex + 1 < articles.length && articles[inIndex + 1].origin != r.origin) {
+                                this.$.articleItem.addClass("lastRow");
+                                this.$.articleItem.removeClass("firstRow");
+                            }
                         } else {
-                            if (inIndex + 1 >= articles.length) {
+                            this.$.divider.setCaption(r.origin);
+                            this.$.divider.canGenerate = true;
+                            this.$.articleItem.addClass("firstRow");
+                            if (inIndex + 1 < articles.length && articles[inIndex + 1].origin != r.origin) {
                                 this.$.articleItem.addClass("lastRow");
                             } else {
-                                this.$.articleItem.removeClass("lastRow");
+                                if (inIndex + 1 >= articles.length) {
+                                    this.$.articleItem.addClass("lastRow");
+                                } else {
+                                    this.$.articleItem.removeClass("lastRow");
+                                }
                             }
                         }
-                    }
-                } else {
-                    if (inIndex > 0 && articles[inIndex - 1].sortDate == r.sortDate) {
-                        if (this.$.divider.getCaption() !== null) {
-                            this.$.divider.setCaption(null);
-                        }
-                        this.$.divider.canGenerate = false;
-                        if (inIndex + 1 < articles.length && articles[inIndex + 1].sortDate != r.sortDate) {
-                            this.$.articleItem.addClass("lastRow");
-                            this.$.articleItem.removeClass("firstRow");
-                        }
                     } else {
-                        this.$.divider.setCaption(r.displayDate);
-                        this.$.divider.canGenerate = !!r.displayDate;
-                        this.$.articleItem.addClass("firstRow");
-                        if (inIndex + 1 < articles.length && articles[inIndex + 1].sortDate != r.sortDate) {
-                            this.$.articleItem.addClass("lastRow");
+                        if (inIndex > 0 && articles[inIndex - 1].sortDate == r.sortDate) {
+                            if (this.$.divider.getCaption() !== null) {
+                                this.$.divider.setCaption(null);
+                            }
+                            this.$.divider.canGenerate = false;
+                            if (inIndex + 1 < articles.length && articles[inIndex + 1].sortDate != r.sortDate) {
+                                this.$.articleItem.addClass("lastRow");
+                                this.$.articleItem.removeClass("firstRow");
+                            }
                         } else {
-                            if (inIndex + 1 >= articles.length) {
+                            this.$.divider.setCaption(r.displayDate);
+                            this.$.divider.canGenerate = !!r.displayDate;
+                            this.$.articleItem.addClass("firstRow");
+                            if (inIndex + 1 < articles.length && articles[inIndex + 1].sortDate != r.sortDate) {
                                 this.$.articleItem.addClass("lastRow");
                             } else {
-                                this.$.articleItem.removeClass("lastRow");
+                                if (inIndex + 1 >= articles.length) {
+                                    this.$.articleItem.addClass("lastRow");
+                                } else {
+                                    this.$.articleItem.removeClass("lastRow");
+                                }
                             }
                         }
                     }
@@ -351,27 +351,79 @@ enyo.kind({
                     isEmpty = false;
                 }
             }
-            if (isEmpty) {
-                var articles = [];
-                if (this.offlineArticles.length) {
-                    articles = this.offlineArticles;
-                } else {
-                    if (!!this.articles.items) {
-                        articles = this.articles.items;
-                    }
-                }
-                for (var l = articles.length; l--;) {
-                    if (!this.itemsToHide[articles[l].origin]) {
-                        this.itemsToHide[articles[l].origin] = true;
-                    }
-                }
+            var articles = [];
+            if (this.offlineArticles.length) {
+                articles = this.offlineArticles;
             } else {
-                for (var i in this.itemsToHide) {
-                    if (this.itemsToHide.hasOwnProperty(i)) {
-                        delete this.itemsToHide[i];
-                    }
+                if (!!this.articles.items) {
+                    articles = this.articles.items;
                 }
             }
+            if (isEmpty) {
+                enyo.log("hide all articles");
+                enyo.log("set articles");
+                for (var l = articles.length; l--;) {
+                    if (!this.itemsToHide[articles[l].origin]) {
+                        var article = articles[l];
+                        this.itemsToHide[article.origin] = {items: []};
+                        var firstIndex = -1;
+                        for (var z = 0; z < articles.length; z++) {
+                            if (articles[z].origin == article.origin) {
+                                if (firstIndex < 0) {
+                                    firstIndex = z;
+                                }
+                                var temp = articles.splice(z, 1);
+                                this.itemsToHide[article.origin].items.push(temp[0]);
+                                z--;
+                            }
+                        }
+                        var itemToSplice = {origin: article.origin, sortOrigin: article.origin.replace(/[^a-zA-Z 0-9 ]+/g, ''), sortDate: article.sortDate};
+                        if (!!article.sortDateTime) {
+                            itemToSplice.sortDateTime = article.sortDateTime;
+                        }
+                        articles.splice(z, 0, itemToSplice);
+                        l = articles.length;
+                    }
+                }
+                articles.sort(this.originSortingFunction);
+                articles = this.sortSortedArticlesByDate(articles);
+                enyo.log("marked articles to be hidden");
+                var scrollTop = 0;
+                var scrollBottom = scrollTop + this.numberRendered;
+                if (this.offlineArticles.length) {
+                    if (scrollBottom >= this.offlineArticles.length) {
+                        scrollBottom = this.offlineArticles.length - 1;
+                    }
+                } else {
+                    if (scrollBottom >= this.articles.items.length) {
+                        scrollBottom = this.articles.items.length - 1;
+                    }
+                }
+                var scroller = this.$.articlesList.$.scroller;
+                scroller.adjustTop(scrollTop);
+                scroller.adjustBottom(scrollBottom);
+                scroller.top = scrollTop;
+                scroller.bottom = scrollBottom;
+            } else {
+                enyo.log("show all articles");
+                for (var origin in this.itemsToHide) {
+                    if (this.itemsToHide.hasOwnProperty(origin)) {
+                        for (var i = articles.length; i--;) {
+                            if (articles[i].origin == origin) {
+                                articles.splice(i, 1);
+                            }
+                        }
+                        for (var i = 0; i < this.itemsToHide[origin].items.length; i++) {
+                            articles.push(this.itemsToHide[origin].items[i]);
+                        }
+                        delete this.itemsToHide[origin];
+                    }
+                }
+                articles.sort(this.originSortingFunction);
+                articles = this.sortSortedArticlesByDate(articles);
+                enyo.log("marked all articles to be shown");
+            }
+            enyo.log("refresh articles list");
             this.$.articlesList.refresh();
         }
     },
@@ -385,16 +437,45 @@ enyo.kind({
                 articles = this.articles.items;
             }
         }
+        enyo.log("set articles");
         var article = articles[inEvent.rowIndex];
-        enyo.log(article.origin);
-        enyo.log(article.displayDate);
-        enyo.log(article.sortDate);
         if (this.offlineArticles.length || this.articles.showOrigin) {
             if (!!this.itemsToHide[article.origin]) {
+                for (var i = articles.length; i--;) {
+                    if (articles[i].origin == article.origin) {
+                        articles.splice(i, 1);
+                    }
+                }
+                for (var i = 0; i < this.itemsToHide[article.origin].items.length; i++) {
+                    articles.push(this.itemsToHide[article.origin].items[i]);
+                }
+                articles.sort(this.originSortingFunction);
+                articles = this.sortSortedArticlesByDate(articles);
                 delete this.itemsToHide[article.origin];
+                enyo.log("show articles");
             } else {
-                this.itemsToHide[article.origin] = true;
+                this.itemsToHide[article.origin] = {items: []};
+                var firstIndex = -1;
+                for (var i = 0; i < articles.length; i++) {
+                    if (articles[i].origin == article.origin) {
+                        if (firstIndex < 0) {
+                            firstIndex = i;
+                        }
+                        var temp = articles.splice(i, 1);
+                        this.itemsToHide[article.origin].items.push(temp[0]);
+                        i--;
+                    }
+                }
+                var itemToSplice = {origin: article.origin, sortOrigin: article.origin.replace(/[^a-zA-Z 0-9 ]+/g, ''), sortDate: article.sortDate};
+                if (!!article.sortDateTime) {
+                    itemToSplice.sortDateTime = article.sortDateTime;
+                }
+                articles.splice(i, 0, itemToSplice);
+
+                articles.sort(this.originSortingFunction);
+                articles = this.sortSortedArticlesByDate(articles);
             }
+            enyo.log("refresh list");
             this.$.articlesList.refresh();
         }
     },
@@ -503,6 +584,34 @@ enyo.kind({
             }
         }
         this.doAllArticlesRead(count, this.articles.id);
+    },
+    originSortingFunction: function(a, b) {
+        var originA = a.sortOrigin.toLowerCase();
+        var originB = b.sortOrigin.toLowerCase();
+        if (originA < originB) {return -1;}
+        if (originB < originA) {return 1;}
+        return 0;
+    },
+    sortSortedArticlesByDate: function(articles) {
+        var start = 0;
+        var i = 0;
+        while (i < articles.length) {
+            var temp = [];
+            var origin = articles[i].origin;
+            while (!!articles[i] && articles[i].origin == origin) {
+                temp[temp.length] = articles[i];
+                i++;
+            }
+            if (!!temp[0].sortDateTime) {
+                temp.sort(function(a, b) {return b.sortDateTime - a.sortDateTime;});
+            } else {
+                temp.sort(function(a, b) {return b.sortDate - a.sortDate;});
+            }
+            for (var j = 0; j < temp.length; j++) {
+                articles[start + j] = temp[j];
+            }
+            start = i;
+        }
+        return articles;
     }
 });
-

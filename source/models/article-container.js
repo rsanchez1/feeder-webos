@@ -26,7 +26,7 @@ var ArticleContainer = Class.create(Countable, {
       }.bind(this))
 
       if(this.continuation) {
-        this.items.push(new LoadMore())
+        //this.items.push(new LoadMore())
       }
 
       enyo.log("calling success callback");

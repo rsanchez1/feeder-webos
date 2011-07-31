@@ -12,7 +12,8 @@ enyo.kind({
             {kind: "Button", flex: 1, components: [
                 {kind: "ListSelector", name: "colorSchemeSelector", onChange: "colorChanged", items: [
                     {caption: "Standard", value: ""},
-                    {caption: "Light", value: "light"}
+                    {caption: "Light", value: "light"},
+                    {caption: "Dark", value: "dark"}
                 ]}
             ]}
         ]},

@@ -3,7 +3,6 @@ enyo.depends(
     "source/encoder.js",
     "source/prototype.js",
     "source/database-enyo.js",
-    //"source/readability.js",
     "source/models/api.js",
     "source/models/preferences.js",
     "source/models/countable.js",
@@ -32,6 +31,5 @@ enyo.depends(
     "source/SingleArticleView.js",
     "source/Login.js",
     "source/Preferences.js",
-    "source/ScrollBarsScroller.js",
-	"css/TouchFeeds.css"
+    "css/TouchFeeds.css"
 );
