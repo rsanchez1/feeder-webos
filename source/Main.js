@@ -35,6 +35,14 @@ enyo.kind({
 
     ready: function() {
         enyo.log("called ready method");
+       var orientation = enyo.getWindowOrientation();
+       if (orientation == "up" || orientation == "down") {
+           this.$.feeds.applyStyle("width", "320px");
+           this.$.articles.applyStyle("width", "320px");
+       } else {
+           this.$.feeds.applyStyle("width", "384px");
+           this.$.articles.applyStyle("width", "384px");
+       }
         this.$.appMenu.hide();
 		this.$.articlesDB.setSchemaFromURL('schema.json', {
 			onSuccess: function() {
@@ -265,7 +273,11 @@ enyo.kind({
    windowRotated: function() {
        var orientation = enyo.getWindowOrientation();
        if (orientation == "up" || orientation == "down") {
+           this.$.feeds.applyStyle("width", "320px");
+           this.$.articles.applyStyle("width", "320px");
        } else {
+           this.$.feeds.applyStyle("width", "384px");
+           this.$.articles.applyStyle("width", "384px");
        }
    },
 
