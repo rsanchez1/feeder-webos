@@ -5,7 +5,7 @@ enyo.kind({
     components: [
         {name: "slidingPane", kind: "SlidingPane", fixedWidth: true, flex: 1, onSelectView: "slidingSelected", components: [
             {name: "feeds", width: "320px", fixedWidth: true, components: [
-                {name: "feedsView", kind: "TouchFeeds.FeedsView", headerContent: "TouchFeeds", flex: 1, components: [], onFeedClicked: "feedClicked", onRefreshFeeds: "refreshFeeds"}
+                {name: "feedsView", kind: "TouchFeeds.FeedsView", headerContent: "TouchFeeds", flex: 1, components: [], onFeedClicked: "feedClicked", onRefreshFeeds: "refreshFeeds", onHeaderClicked: "feedsHeaderClicked"}
             ]},
             {name: "articles", width: "320px", fixedWidth: true, components: [
                 {name: "articlesView", kind: "TouchFeeds.ArticlesView", headerContent: "All Items", flex: 1, components: [], onArticleClicked: "articleClicked", onArticleRead: "articleRead", onAllArticlesRead: "markedAllRead"}
@@ -268,4 +268,8 @@ enyo.kind({
        } else {
        }
    },
+
+   feedsHeaderClicked: function() {
+       this.$.singleArticleView.showSummary();
+   }
 });

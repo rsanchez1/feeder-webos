@@ -333,7 +333,7 @@ enyo.kind({
             this.itemsToMarkRead = [];
             this.markReadTimeout = 0;
             enyo.log("FINISHED MARKING ARTICLES READ");
-        }.bind(this), 500);
+        }.bind(this), 1100);
     },
     markedArticleRead: function(article, index) {
         this.finishArticleRead(index);

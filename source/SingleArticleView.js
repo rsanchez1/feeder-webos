@@ -59,6 +59,7 @@ enyo.kind({
             {name: "googleShare", caption: "Share with Google", shareValue: "google", onclick: "chooseShare"},
             {caption: "Share with Twitter", shareValue: "twitter", onclick: "chooseShare"},
             {caption: "Share with Facebook", shareValue: "facebook", onclick: "chooseShare"},
+            {caption: "Share with Read it Later", shareValue: "readitlater", onclick: "chooseShare"},
             {caption: "Share via Email", shareValue: "email", onclick: "chooseShare"},
             {caption: "Share via SMS", shareValue: "sms", onclick: "chooseShare"},
         ]},
@@ -125,6 +126,10 @@ enyo.kind({
         }
         */
         this.$.articleScroller.scrollTo(0, scrollTo);
+        setTimeout(function() {
+            var scrollTo = 0;
+            this.$.articleScroller.scrollTo(0, scrollTo);
+        }.bind(this), 200);
 		this.offlineQuery();
         //set author/feed, everything else in article-assistant.js
         var aboutHeight = (this.$.articleTitle.node.scrollHeight) + (this.$.postDate.node.scrollHeight) + (this.$.source.node.scrollHeight);
@@ -298,6 +303,9 @@ enyo.kind({
                 Feeder.notify("Cannot unshare offline");
             }
         }
+        if (source.shareValue == "readitlater") {
+            window.open("https://readitlaterlist.com/save?url=" + Encoder.htmlEncode(this.article.url) + "&title=" + Encoder.htmlEncode(this.article.title));
+        }
         if (source.shareValue == "twitter") {
             window.open("http://twitter.com/home?status=" + Encoder.htmlEncode(this.article.title) + " -- " + Encoder.htmlEncode(this.article.url));
         }
@@ -447,6 +455,52 @@ enyo.kind({
         enyo.log("clicked link in article");
         window.open(url);
     },
-	introText: "<div class='touchFeedsSummary'><p>TouchFeeds is a Google Reader app that connects you with the websites you love. Easily navigate your feeds and articles with sliding panels. Read articles the way you want to with customizable font sizes, color schemes, the ability to fetch the full text for articles, and an offline mode that lets you read anywhere.</p></div>",
+    showSummary: function() {
+        this.$.articleTitle.setContent("Welcome to Touchfeeds");
+        this.$.summary.setContent(this.introText);
+        this.$.postDate.hide();
+        this.$.source.hide();
+    },
+	introText: "<div class='touchFeedsSummary'>" +
+        "<p>TouchFeeds is a Google Reader app that connects you with the websites you love. Easily navigate your feeds and articles with sliding panels. Read articles the way you want to with customizable font sizes, color schemes, the ability to fetch the full text for articles, and an offline mode that lets you read anywhere.</p>" +
+        "<p>You can tap the TouchFeeds header in the left-most pane to show this guide again.</p>" +
+        "<h2>Icon Guide</h2>" +
+        "<p>TouchFeeds features many buttons that allow you to quickly interact with your feeds.</p>" +
+        "<ul class='iconGuide'> " +
+        "<li class='addFeed'><div class='icon'></div>Add a feed to Google Reader</li>" +
+        "<li class='refresh'><div class='icon'></div>Refresh your list of feeds or articles</li>" +
+        "<li class='star'><div class='icon'></div>The article is starred. Tap this icon to remove the star.</li>" +
+        "<li class='noStar'><div class='icon'></div>The article is not starred. Tap this icon to add a star.</li>" +
+        "<li class='markRead'><div class='icon'></div>Mark an article read, or all articles in a feed read.</li>" +
+        "<li class='markUnread'><div class='icon'></div>Mark an article unread.</li>" +
+        "<li class='share'><div class='icon'></div>Share an article.</li>" +
+        "<li class='download'><div class='icon'></div>Download an article for offline reading.</li>" +
+        "<li class='delete'><div class='icon'></div>Delete an article if it is saved offline.</li>" +
+        "<li class='fetch'><div class='icon'></div>Fetch the article fulltext using <a href='http://readitlaterlist.com'>Read it Later</a>.</li>" +
+        "<li class='font'><div class='icon'></div>Change the font size for more comfortable reading.</li>" +
+        "<li class='next'><div class='icon'></div>Go to the next article.</li>" +
+        "<li class='previous'><div class='icon'></div>Go to the previous article.</li>" +
+        "</ul>" +
+        "<h2>Gesture Guide</h2>" +
+        "<p>TouchFeeds features many gestures to enhance your reading experience.</p>" +
+        "<ul class='gestureGuide'>" +
+        "<li>Drag an article to the left or right to go to the next or previous article, respectively.</li>" +
+        "<li>When viewing an article, drag two fingers down on the article to star an article or to remove a star.</li>" +
+        "<li>When viewing an article, drag two fingers up on the article to download an article for offline reading or to delete an offline article.</li>" +
+        "<li>When viewing articles for a feed, drag an article row to star that article or to remove a star.</li>" +
+        "<li>In the left-most Feeds pane, drag an feed row to remove that feed from Google Reader.</li>" +
+        "</ul>" +
+        "<h2>Viewing Folders</h2>" +
+        "<p>In the Feeds pane, feeds will have an RSS icon, and folders will have a folder icon. When you view a folder, you can choose to sort articles in the folder by feed. When the articles are sorted by feeds, you can tap the feed divider to show or hide all articles for that feed. You can also tap the folder header to show or hide all articles in every feed.</p>" +
+        "<p>This also applies to All Items, Starred, Shared, and Offline Articles.</p>" +
+        "<h2>Application Menu</h2>" +
+        "<p>In the App Menu, you can login or logout, and you can toggle Preferences for color scheme, hiding or showing read feeds or articles, marking articles read as you scroll, and sorting and grouping options for articles.</p>" +
+        "<h2>Open Source</h2>" +
+        "<p>This app is open source. You can find the full source and license at <a href='https://github.com/rsanchez1/feeder-webos/tree/enyo'>TouchFeeds on Github</a>.</p>" + 
+        "<h2>Contact</h2>" +
+        "<p>If you have any questions, contact <a href='mailto:support@sanchezapps.com'>support@sanchezapps.com</a> (NOTE: Not functional yet)." +
+        "<h2>Special Thanks</h2>" +
+        "<p>Here would go any attribution to beta testers. If you would like to be mentioned here, contact me with how you want to be attributed (twitter, web site link, etc).</p>" +
+        "</div>",
 });
 

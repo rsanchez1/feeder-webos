@@ -11,12 +11,13 @@ enyo.kind({
     events: {
         onFeedClicked: "",
         onRefreshFeeds: "",
+        onHeaderClicked: "",
     },
     components: [
         //{name: "header", kind: "Header"},
         {name: "header", kind: "PageHeader", components: [
             {name: "headerWrapper", className: "tfHeaderWrapper", components: [
-                {name: "headerContent", content: "TouchFeeds", className: "tfHeader"}
+                {name: "headerContent", content: "TouchFeeds", className: "tfHeader", onclick: "headerClicked"}
             ]},
             {kind: "Spinner", showing: false, style: "position: absolute; right: 10px; top: 10px;"}
         ]},
@@ -80,12 +81,15 @@ enyo.kind({
     setupStickySources: function(inSender, inIndex) {
         enyo.log("sticky sources index: ", inIndex);
         if (!!this.stickySources.items) {
-            if (inIndex == this.stickySources.items.length && (!this.stickySources.items[this.stickySources.items.length - 1].isOffline)) {
+            if ((inIndex == this.stickySources.items.length && (!this.stickySources.items[this.stickySources.items.length - 1].isOffline)) || (!!this.stickySources.items[inIndex] && this.stickySources.items[inIndex].isOffline)) {
+                enyo.log("__________________________________________");
                 enyo.log("last item in sticky sources, adding offline");
                 this.$.stickyTitle.setContent("Offline Articles");
                 this.$.stickyUnreadCountDisplay.setContent(this.app.offlineArticles.length);
                 this.$.stickyItem.applyStyle("border-bottom", "none");
-                this.stickySources.items[this.stickySources.items.length] = {isOffline: true, title: "Offline Articles"};
+                if (!this.stickySources.items[this.stickySources.items.length - 1].isOffline) {
+                    this.stickySources.items[this.stickySources.items.length] = {isOffline: true, title: "Offline Articles"};
+                }
                 return true;
             } else {
                 var r = this.stickySources.items[inIndex];
@@ -171,4 +175,7 @@ enyo.kind({
 		Feeder.notify("Successfully removed feed");
         this.doRefreshFeeds();
     },
+    headerClicked: function() {
+        this.doHeaderClicked();
+    }
 });

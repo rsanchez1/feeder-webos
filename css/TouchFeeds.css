@@ -272,6 +272,98 @@ body.light {
     background-position: 2px -2px;
 }
 
+.dark .articleTitle.starred {
+    background-position: 2px 3px;
+}
+
+.dark .large .articleTitle.starred {
+    background-position: 2px 4px; 
+}
+
+.dark .small .articleTitle.starred {
+    background-position: 2px -2px;
+}
+
 .touchFeedsSummary {
-    font-family: "Arial";
+}
+
+.touchFeedsSummary p {
+    padding-left: 20px !important;
+}
+
+.touchFeedsSummary h2 {
+    font-size: 1.2rem;
+}
+
+.touchFeedsSummary ul.iconGuide {
+    list-style-type: none;
+    margin: 0;
+    padding: 0 0 0 40px !important;
+    font-size: 0.8rem;
+}
+
+.touchFeedsSummary ul.gestureGuide li {
+    margin-bottom: 20px;
+}
+
+.touchFeedsSummary li .icon {
+    width: 30px;
+    height: 30px;
+    display: inline-block;
+    position: relative;
+    left: 0px;
+    top: 8px;
+    margin-right: 10px;
+}
+
+.touchFeedsSummary li.addFeed .icon {
+    background: #a8a8a8 url(../images/icon_rss_add.png) 0 0 no-repeat;
+}
+
+.touchFeedsSummary li.refresh .icon {
+    background: #a8a8a8 url(../images/refresh.png) -1px -1px no-repeat;
+}
+
+.touchFeedsSummary li.star .icon {
+    background: #a8a8a8 url(../images/starred-footer-on.png) 1px 1px no-repeat;
+}
+
+.touchFeedsSummary li.noStar .icon {
+    background: #a8a8a8 url(../images/starred-footer.png) 1px 1px no-repeat;
+}
+
+.touchFeedsSummary li.markRead .icon {
+    background: #a8a8a8 url(../images/read-footer.png) 1px 1px no-repeat;
+}
+
+.touchFeedsSummary li.markUnread .icon {
+    background: #a8a8a8 url(../images/read-footer-on.png) 2px 1px no-repeat;
+}
+
+.touchFeedsSummary li.share .icon {
+    background: #a8a8a8 url(../images/sendto-footer.png) 1px 0 no-repeat;
+}
+
+.touchFeedsSummary li.download .icon {
+    background: #a8a8a8 url(../images/offline-article.png) -1px -1px no-repeat;
+}
+
+.touchFeedsSummary li.delete .icon {
+    background: #a8a8a8 url(../images/delete-article.png) 0 0 no-repeat;
+}
+
+.touchFeedsSummary li.fetch .icon {
+    background: #a8a8a8 url(../images/fetch-text.png) 0 0 no-repeat;
+}
+
+.touchFeedsSummary li.font .icon {
+    background: #a8a8a8 url(../images/icon_fonts.png) 0 0 no-repeat;
+}
+
+.touchFeedsSummary li.next .icon {
+    background: #a8a8a8 url(../images/next-article.png) 0 0 no-repeat;
+}
+
+.touchFeedsSummary li.previous .icon {
+    background: #a8a8a8 url(../images/previous-article.png) 0 0 no-repeat;
 }

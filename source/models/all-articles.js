@@ -2,7 +2,7 @@ var AllArticles = Class.create(ArticleContainer, {
   initialize: function($super, api) {
     $super(api)
     this.id = "user/-/state/com.google/reading-list"
-    this.title = "All Items"
+    this.title = "All Articles"
     this.icon = "list"
     this.sticky = true
     this.divideBy = "Home"
