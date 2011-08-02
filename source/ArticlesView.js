@@ -41,7 +41,7 @@ enyo.kind({
         ]},
         {kind: "Toolbar", components: [
             {kind: "GrabButton"},
-            {name: "readAllButton", kind: "IconButton", icon: "images/read-footer.png", onclick: "readAllClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 60px; top: 11px;"},
+           {name: "readAllButton", kind: "IconButton", icon: "images/read-footer.png", onclick: "readAllClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 60px; top: 11px;"},
             {name: "refreshButton", kind: "IconButton", icon: "images/refresh.png", onclick: "refreshClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 120px; top: 11px;"},
             {name: "fontButton", kind: "IconButton", icon: "images/icon_fonts.png", onclick: "fontClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 180px; top: 11px;"},
         ]},
@@ -69,11 +69,14 @@ enyo.kind({
             this.offlineArticles[i].sortDate = +(new Date(this.offlineArticles[i].displayDate));
             this.offlineArticles[i].sortOrigin = this.offlineArticles[i].origin.replace(/[^a-zA-Z 0-9 ]+/g,'');
         }
-        this.offlineArticles.sort(function(a, b) {return b.sortDate - a.sortDate;});
         this.$.spinner.hide();
 		//this.$.articlesList.punt();
-        this.offlineArticles.sort(this.originSortingFunction);
-        this.offlineArticles = this.sortSortedArticlesByDate(this.offlineArticles);
+        if (Preferences.groupFoldersByFeed()) {
+            this.offlineArticles.sort(this.originSortingFunction);
+            this.offlineArticles = this.sortSortedArticlesByDate(this.offlineArticles);
+        } else {
+            this.offlineArticles.sort(function(a, b) {return b.sortDate - a.sortDate;});
+        }
         if (this.isRendered) {
             this.$.articlesList.refresh();
         } else {
@@ -140,8 +143,8 @@ enyo.kind({
         //enyo.log("Found articles: ", this.articles);
         this.$.spinner.hide();
         //this.articles.items.sort(function(a, b) {return b.sortDate - a.sortDate;});
-        enyo.log('preparing to sort articles');
-        try {
+        if (Preferences.groupFoldersByFeed()) {
+            enyo.log('preparing to sort articles');
             for (var i = this.articles.items.length; i--;) {
                 if (!!this.articles.items[i].displayDateAndTime) {
                     this.articles.items[i].sortDateTime = +(new Date(this.articles.items[i].displayDateAndTime));
@@ -152,15 +155,12 @@ enyo.kind({
                 }
                 this.articles.items[i].sortOrigin = this.articles.items[i].origin.replace(/[^a-zA-Z 0-9 ]+/g,'');
             }
-        } catch (e) {
-            enyo.log("failed to prepare articles: ", e);
+            if (this.articles.items.length && this.articles.showOrigin) {
+                this.articles.items.sort(this.originSortingFunction);
+                this.articles.items = this.sortSortedArticlesByDate(this.articles.items);
+            }
+            enyo.log('finished sorting articles');
         }
-        enyo.log('sorting articles');
-        if (this.articles.items.length && this.articles.showOrigin) {
-            this.articles.items.sort(this.originSortingFunction);
-            this.articles.items = this.sortSortedArticlesByDate(this.articles.items);
-        }
-        enyo.log('finished sorting articles');
         if (this.isRendered) {
             enyo.log("refresh list");
             this.$.articlesList.refresh();
@@ -266,7 +266,7 @@ enyo.kind({
                     enyo.log("MY HEIGHT: ", myHeight);
                     enyo.log("PARENT HEIGHT: ", parentHeight);
                     */
-                    if (this.offlineArticles.length || this.articles.showOrigin) {
+                    if ((this.offlineArticles.length || this.articles.showOrigin) && (Preferences.groupFoldersByFeed())) {
                         if (inIndex > 0 && articles[inIndex - 1].origin == r.origin) {
                             if (this.$.divider.getCaption() !== null) {
                                 this.$.divider.setCaption(null);
@@ -344,7 +344,7 @@ enyo.kind({
         this.selectArticle(inEvent.rowIndex);
     },
     headerClick: function(inSender, inEvent) {
-        if (this.offlineArticles.length || this.articles.showOrigin) {
+        if ((this.offlineArticles.length || this.articles.showOrigin) && (Preferences.groupFoldersByFeed())) {
             var isEmpty = true;
             for (var i in this.itemsToHide) {
                 if (this.itemsToHide.hasOwnProperty(i)) {
@@ -439,7 +439,7 @@ enyo.kind({
         }
         enyo.log("set articles");
         var article = articles[inEvent.rowIndex];
-        if (this.offlineArticles.length || this.articles.showOrigin) {
+        if ((this.offlineArticles.length || this.articles.showOrigin) && (Preferences.groupFoldersByFeed())) {
             if (!!this.itemsToHide[article.origin]) {
                 for (var i = articles.length; i--;) {
                     if (articles[i].origin == article.origin) {
@@ -613,5 +613,29 @@ enyo.kind({
             start = i;
         }
         return articles;
+    },
+    reloadArticles: function() {
+        if (this.offlineArticles.length) {
+            var articles = this.offlineArticles;
+            for (var origin in this.itemsToHide) {
+                if (this.itemsToHide.hasOwnProperty(origin)) {
+                    for (var i = articles.length; i--;) {
+                        if (articles[i].origin == origin) {
+                            articles.splice(i, 1);
+                        }
+                    }
+                    for (var i = 0; i < this.itemsToHide[origin].items.length; i++) {
+                        articles.push(this.itemsToHide[origin].items[i]);
+                    }
+                    delete this.itemsToHide[origin];
+                }
+            }
+            articles.sort(function(a, b) {return b.sortDate - a.sortDate;});
+            this.offlineArticlesChanged();
+        } else {
+            if (this.articles.showOrigin) {
+                this.articlesChanged();
+            }
+        }
     }
 });

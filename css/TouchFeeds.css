@@ -201,9 +201,9 @@ body.light {
 
 .dark .articleTitle {
     font-weight: normal;
-    font-size: 0.8rem;
-    min-height: 1.0rem;
-    max-height: 2.1rem;
+    font-size: 0.7rem;
+    min-height: 0.9rem;
+    max-height: 2.0rem;
 }
 
 .dark .unread-item .articleTitle {
@@ -229,9 +229,9 @@ body.light {
 }
 
 .dark .large .articleTitle {
-    font-size: 0.9rem;
-    min-height: 1.1rem;
-    max-height: 2.3rem;
+    font-size: 0.8rem;
+    min-height: 1.0rem;
+    max-height: 2.2rem;
 }
 
 .articleOrigin {
@@ -366,4 +366,7 @@ body.light {
 
 .touchFeedsSummary li.previous .icon {
     background: #a8a8a8 url(../images/previous-article.png) 0 0 no-repeat;
+}
+
+.groupToggle .enyo-toggle-button-bar.off {
 }

@@ -69,7 +69,7 @@ enyo.kind({
     create: function() {
         this.inherited(arguments);
         //this.$.headerContent.setContent("Welcome to TouchFeeds");
-        this.$.articleTitle.setContent("Welcome to Touchfeeds");
+        this.$.articleTitle.setContent("Welcome to TouchFeeds");
 		this.$.summary.setContent(this.introText);
         this.$.postDate.hide();
         this.$.source.hide();
@@ -467,7 +467,7 @@ enyo.kind({
         window.open(url);
     },
     showSummary: function() {
-        this.$.articleTitle.setContent("Welcome to Touchfeeds");
+        this.$.articleTitle.setContent("Welcome to TouchFeeds");
         this.$.summary.setContent(this.introText);
         this.$.postDate.hide();
         this.$.source.hide();
@@ -498,8 +498,8 @@ enyo.kind({
         "<li>When viewing an article, drag the article to the left or right to go to the next or previous article, respectively.</li>" +
         "<li>When viewing an article, drag two fingers down on the article to star an article or to remove a star.</li>" +
         "<li>When viewing an article, drag two fingers up on the article to download an article for offline reading or to delete an offline article.</li>" +
-        "<li>In the center Articles pane, drag an article row to star that article or to remove a star.</li>" +
-        "<li>In the left-most Feeds pane, drag an feed row to remove that feed from Google Reader.</li>" +
+        "<li>In the center Articles pane, swipe an article row to star that article or to remove a star.</li>" +
+        "<li>In the left-most Feeds pane, swipe a feed row to remove that feed from Google Reader.</li>" +
         "</ul>" +
         "<h2>Viewing Folders</h2>" +
         "<p>In the Feeds pane, feeds will have an RSS icon, and folders will have a folder icon. When you view a folder, you can choose to sort articles in the folder by feed. When the articles are sorted by feeds, you can tap the feed divider to show or hide all articles for that feed. You can also tap the folder header to show or hide all articles in every feed.</p>" +

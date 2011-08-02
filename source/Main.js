@@ -14,7 +14,7 @@ enyo.kind({
                 {name: "singleArticleView", dragAnywhere: false, kind: "TouchFeeds.SingleArticleView", flex: 1, components: [], onSelectArticle: "selectArticle", onRead: "readArticle", onChangedOffline: "changeOffline", onStarred: "starredArticle"},
             ]},
             {name: "login", className: "enyo-bg", kind: "TouchFeeds.Login", onCancel: "closeDialog", onConfirm: "confirmDialog", onLogin: "handleLogin"},
-            {name: "preferences", className: "enyo-bg", kind: "TouchFeeds.Preferences", onCancel: "closePreferences"}
+            {name: "preferences", className: "enyo-bg", kind: "TouchFeeds.Preferences", onCancel: "closePreferences", onGroupChange: "groupChange"}
         ]},
         {kind: "AppMenu", lazy: false, components: [
             {kind: "EditMenu"},
@@ -176,6 +176,8 @@ enyo.kind({
     closeDialog: function() {
         this.$.slidingPane.selectViewByName('articles', true);
         this.$.login.close();
+
+        this.$.feedsView.setStickySources({items: [{isOffline: true, title: "Offline Articles"}]});
     },
 
     confirmDialog: function() {
@@ -283,5 +285,9 @@ enyo.kind({
 
    feedsHeaderClicked: function() {
        this.$.singleArticleView.showSummary();
+   },
+
+   groupChange: function() {
+       this.$.articlesView.reloadArticles();
    }
 });

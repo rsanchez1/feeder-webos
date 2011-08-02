@@ -5,6 +5,7 @@ enyo.kind({
     style: "top: 50%; height: auto; width: 400px; background-color: transparent",
     events: {
         onCancel: "",
+        onGroupChange: "",
     },
     components: [
         {layoutKind: "HFlexLayout", pack: "center", components: [
@@ -29,6 +30,10 @@ enyo.kind({
             {content: "Hide read articles:", flex: 1},
             {name: "articlesToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "articlesToggle"}
         ]},
+        {style: "padding-top: 15px; padding-bottom: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
+            {content: "Group folder articles by:", flex: 1},
+            {name: "groupToggle", kind: "ToggleButton", flex: 1, onLabel: "Feed", offLabel: "Date", onChange: "groupToggle", className: "groupToggle", style: "position: relative; left: 5px;"}
+        ]},
         {layoutKind: "HFlexLayout", pack: "center", components: [
             {kind: "Button", caption: "OK", flex: 1, className: "enyo-button-dark", onclick: "okClick"}
         ]}
@@ -52,6 +57,7 @@ enyo.kind({
         this.$.scrollToggle.setState(Preferences.markReadAsScroll());
         this.$.feedsToggle.setState(Preferences.hideReadFeeds());
         this.$.articlesToggle.setState(Preferences.hideReadArticles());
+        this.$.groupToggle.setState(Preferences.groupFoldersByFeed());
     },
 
     colorChanged: function(inSender, inValue, inOldValue) {
@@ -72,6 +78,11 @@ enyo.kind({
 
     articlesToggle: function(inSender, inState) {
         Preferences.setHideReadArticles(inState);
+    },
+
+    groupToggle: function(inSender, inState) {
+        Preferences.setGroupFoldersByFeed(inState);
+        this.doGroupChange();
     },
 
     okClick: function() {

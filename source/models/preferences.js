@@ -23,6 +23,15 @@ Preferences = {
   ARTICLE_LIST_FONT_SIZE: "article-list-font-size",
   ARTICLE_LIST_FONT_FACE: "article-list-font-face",
   COLOR_SCHEME: "color-scheme",
+  GROUP_FOLDERS_BY_FEED: "group-folders-by-feed",
+
+  groupFoldersByFeed: function() {
+      return this.getCookie(this.GROUP_FOLDERS_BY_FEED, true);
+  },
+
+  setGroupFoldersByFeed: function(groupState) {
+      this.setCookie(this.GROUP_FOLDERS_BY_FEED, groupState);
+  },
 
   getColorScheme: function() {
       return this.getCookie(this.COLOR_SCHEME, "")
