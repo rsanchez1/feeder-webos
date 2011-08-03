@@ -6,6 +6,8 @@ enyo.kind({
     events: {
         onCancel: "",
         onGroupChange: "",
+        onShowHideFeedsChange: "",
+        onShowHideArticlesChange: ""
     },
     components: [
         {layoutKind: "HFlexLayout", pack: "center", components: [
@@ -74,10 +76,12 @@ enyo.kind({
 
     feedsToggle: function(inSender, inState) {
         Preferences.setHideReadFeeds(inState);
+        this.doShowHideFeedsChange();
     },
 
     articlesToggle: function(inSender, inState) {
         Preferences.setHideReadArticles(inState);
+        this.doShowHideArticlesChange();
     },
 
     groupToggle: function(inSender, inState) {

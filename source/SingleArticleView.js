@@ -136,11 +136,12 @@ enyo.kind({
         var aboutHeight = (this.$.articleTitle.node.scrollHeight) + (this.$.postDate.node.scrollHeight) + (this.$.source.node.scrollHeight);
         this.$.summary.applyStyle("min-height", (this.$.articleScroller.node.clientHeight - aboutHeight) + "px !important");
         var images = this.$.summary.node.getElementsByTagName("img");
+        var anchors = this.$.summary.node.getElementsByTagName("a");
         for (var i = 0; i < images.length; i++) {
             enyo.log("________________________________(");
             enyo.log("attaching click end event to image");
             var dimensions = images[i].height * images[i].width;
-            if (dimensions <= 1) {
+            if (dimensions <= 1 || images[i].src.indexOf("ads") >= 0) {
                 Element.remove(images[i]);
             } else {
                 images[i].onclick = function(event) {enyo.log("CALLED CLICK EVENT FOR IMAGE"); event.stopPropagation(); event.preventDefault(); return -1;};
@@ -151,6 +152,11 @@ enyo.kind({
                     }
                     Element.insert(insertAfter, {after: "<span class='imageCaption' style='width: " + images[i].width + "px;'>" + images[i].title + "</span>"});
                 }
+            }
+        }
+        for (var i = 0; i < anchors.length; i++) {
+            if (anchors[i].href.indexOf("ads") >= 0) {
+                Element.remove(anchors[i]);
             }
         }
     },

@@ -177,5 +177,8 @@ enyo.kind({
     },
     headerClicked: function() {
         this.doHeaderClicked();
+    },
+    refreshFeeds: function() {
+        this.doRefreshFeeds();
     }
 });

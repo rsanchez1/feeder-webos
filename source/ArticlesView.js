@@ -634,8 +634,12 @@ enyo.kind({
             this.offlineArticlesChanged();
         } else {
             if (this.articles.showOrigin) {
-                this.articlesChanged();
+                this.refreshArticles();
             }
         }
+    },
+
+    refreshArticles: function() {
+        this.articlesChanged();
     }
 });
