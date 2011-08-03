@@ -13,7 +13,7 @@ enyo.kind({
             {name: "singleArticle", flex: 1, dragAnywhere: false, dismissible: false, onHide: "hideArticle", onShow: "showArticle", onResize: "slidingResize", components: [
                 {name: "singleArticleView", dragAnywhere: false, kind: "TouchFeeds.SingleArticleView", flex: 1, components: [], onSelectArticle: "selectArticle", onRead: "readArticle", onChangedOffline: "changeOffline", onStarred: "starredArticle"},
             ]},
-            {name: "login", className: "enyo-bg", kind: "TouchFeeds.Login", onCancel: "closeDialog", onConfirm: "confirmDialog", onLogin: "handleLogin"},
+            {name: "login", className: "enyo-bg", kind: "TouchFeeds.Login", onCancel: "closeDialog", onLogin: "handleLogin", onOpen: "openDialog"},
             {name: "preferences", className: "enyo-bg", kind: "TouchFeeds.Preferences", onCancel: "closePreferences", onGroupChange: "groupChange"}
         ]},
         {kind: "AppMenu", lazy: false, components: [
@@ -23,6 +23,7 @@ enyo.kind({
         ]},
 		{kind: "onecrayon.Database", name: "articlesDB", database: "ext:TouchFeedsArticles", version: 1, debug: false},
         {kind: "ApplicationEvents", onWindowRotated: "windowRotated"},
+        {kind: "Dashboard", name: "appDashboard"},
     ],
 
     constructor: function() {
@@ -68,6 +69,11 @@ enyo.kind({
             setTimeout(function() {this.$.login.openAtCenter();}.bind(this), 0);
         }
         Element.addClassName(document.body, Preferences.getColorScheme());
+        /*
+        this.$.appDashboard.push({icon: "small_icon.png", title: "Dashboard Test", text: "PreCentral"});
+        this.$.appDashboard.push({icon: "small_icon.png", title: "Dashboard Test 2", text: "WebOS Roundup"});
+        this.$.appDashboard.push({icon: "small_icon.png", title: "Dashboard Test 3", text: "Palm Developer Blog"});
+        */
     },
 
     loginSuccess: function() {
@@ -173,18 +179,21 @@ enyo.kind({
         }
     },
 
+    openDialog: function() {
+        enyo.log("opened login");
+        enyo.keyboard.setManualMode(true);
+    },
+
     closeDialog: function() {
+        enyo.keyboard.setManualMode(false);
         this.$.slidingPane.selectViewByName('articles', true);
         this.$.login.close();
 
         this.$.feedsView.setStickySources({items: [{isOffline: true, title: "Offline Articles"}]});
     },
 
-    confirmDialog: function() {
-        this.$.login.close();
-    },
-    
     handleLogin: function() {
+        enyo.keyboard.setManualMode(false);
         enyo.log("successfully logged in");
         this.$.login.close();
         this.loginSuccess();
@@ -213,6 +222,7 @@ enyo.kind({
     },
 
     articleClicked: function(thing, article, index, maxIndex) {
+        this.$.singleArticleView.$.articleScroller.scrollTo(0, 0);
         this.$.singleArticleView.setArticle(article);
         this.$.singleArticleView.setIndex(index);
         this.$.singleArticleView.setMaxIndex(maxIndex);

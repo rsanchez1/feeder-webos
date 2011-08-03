@@ -11,10 +11,10 @@ enyo.kind({
     components: [
         {layoutKind: "HFlexLayout", pack: "center", components: [{name: "loginError", kind: "HtmlContent", showing: false, content: "Login failed. Try again.", className: "enyo-text-error warning-icon"}]},
         {kind: "RowGroup", caption: "EMAIL", components: [
-            {kind: "Input", name: "email", hint: "", value: "", onkeypress: "inputChange"}
+            {kind: "Input", name: "email", hint: "", value: "", onkeypress: "inputChange", onfocus: "emailFocus"}
         ]},
         {kind: "RowGroup", caption: "PASSWORD", components: [
-            {kind: "PasswordInput", name: "password", hint: "", value: "", onkeypress: "inputChange"}
+            {kind: "PasswordInput", name: "password", hint: "", value: "", onkeypress: "inputChange", onfocus: "passwordFocus"}
         ]},
         {layoutKind: "HFlexLayout", pack: "center", components: [
             {kind: "Button", caption: "Login", flex: 1, style: "height: 2.0em !important;", className: "enyo-button-dark", onclick: "confirmClick", components: [
@@ -26,6 +26,11 @@ enyo.kind({
             ]},
         ]}
     ],
+    /*
+    onOpen: function() {
+        enyo.log("opened login dialog");
+    },
+    */
 
     constructor: function() {
         this.inherited(arguments);
@@ -42,12 +47,9 @@ enyo.kind({
 
     confirmClick: function() {
         enyo.log("clicked OK");
-        //this.$.loginError.show();
         this.$.spinner.show();
         var api = this.app.api;
         api.login({email: this.$.email.getValue(), password: this.$.password.getValue()}, this.loginSuccess.bind(this), this.loginFailure.bind(this));
-        //this.$.loginLabel.applyStyle("padding-top", "0.5em");
-        //this.doConfirm();
     },
 
     loginSuccess: function(response) {
@@ -56,7 +58,6 @@ enyo.kind({
         this.credentials.email = this.$.email.getValue();
         this.credentials.password = this.$.password.getValue();
         this.credentials.save();
-        //this.doConfirm();
         this.doLogin();
     },
 
@@ -82,5 +83,15 @@ enyo.kind({
             var api = this.app.api;
             api.login({email: this.$.email.getValue(), password: this.$.password.getValue()}, this.loginSuccess.bind(this), this.loginFailure.bind(this));
         }
+    },
+
+    emailFocus: function() {
+        enyo.log("focused email");
+        enyo.keyboard.show(enyo.keyboard.typeEmail);
+    },
+
+    passwordFocus: function() {
+        enyo.log("focused password");
+        enyo.keyboard.show(enyo.keyboard.typePassword);
     }
 });

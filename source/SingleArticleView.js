@@ -139,7 +139,12 @@ enyo.kind({
         for (var i = 0; i < images.length; i++) {
             enyo.log("________________________________(");
             enyo.log("attaching click end event to image");
-            images[0].onclick = function(event) {enyo.log("CALLED CLICK EVENT FOR IMAGE"); event.stopPropagation(); event.preventDefault(); return -1;};
+            var dimensions = images[i].height * images[i].width;
+            if (dimensions <= 1) {
+                Element.remove(images[i]);
+            } else {
+                images[i].onclick = function(event) {enyo.log("CALLED CLICK EVENT FOR IMAGE"); event.stopPropagation(); event.preventDefault(); return -1;};
+            }
         }
     },
     markedArticleRead: function() {
