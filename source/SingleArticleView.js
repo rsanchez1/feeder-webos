@@ -144,6 +144,13 @@ enyo.kind({
                 Element.remove(images[i]);
             } else {
                 images[i].onclick = function(event) {enyo.log("CALLED CLICK EVENT FOR IMAGE"); event.stopPropagation(); event.preventDefault(); return -1;};
+                if (images[i].title !== "") {
+                    var insertAfter = images[i];
+                    if (Element.match(Element.up(images[i]), "a")) {
+                        insertAfter = Element.up(images[i]);
+                    }
+                    Element.insert(insertAfter, {after: "<span class='imageCaption' style='width: " + images[i].width + "px;'>" + images[i].title + "</span>"});
+                }
             }
         }
     },

@@ -140,7 +140,7 @@ body.light {
 
 .articleSummary p {
     padding: 0 0 15px 0 !important;
-    clear: both !important;
+    clear: right !important;
 }
 
 .articleSummary * {
@@ -369,4 +369,13 @@ body.light {
 }
 
 .groupToggle .enyo-toggle-button-bar.off {
+}
+
+.imageCaption {
+    display: block;
+    clear: left;
+    font-size: 0.6rem;
+    line-height: 0.8rem;
+    padding-left: 15px;
+    float: left;
 }
