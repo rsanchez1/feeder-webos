@@ -141,7 +141,10 @@ enyo.kind({
             enyo.log("________________________________(");
             enyo.log("attaching click end event to image");
             var dimensions = images[i].height * images[i].width;
+            enyo.log(images[i].src);
             if (dimensions <= 1 || images[i].src.indexOf("ads") >= 0) {
+                enyo.log("advertisement, remove");
+                Element.hide(images[i]);
                 Element.remove(images[i]);
             } else {
                 images[i].onclick = function(event) {enyo.log("CALLED CLICK EVENT FOR IMAGE"); event.stopPropagation(); event.preventDefault(); return -1;};
@@ -155,7 +158,10 @@ enyo.kind({
             }
         }
         for (var i = 0; i < anchors.length; i++) {
+            enyo.log(anchors[i].href);
             if (anchors[i].href.indexOf("ads") >= 0) {
+                enyo.log("advertisement link, remove");
+                Element.hide(anchors[i]);
                 Element.remove(anchors[i]);
             }
         }
