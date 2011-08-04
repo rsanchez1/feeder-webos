@@ -134,19 +134,21 @@ enyo.kind({
 		this.offlineQuery();
         //set author/feed, everything else in article-assistant.js
         var aboutHeight = (this.$.articleTitle.node.scrollHeight) + (this.$.postDate.node.scrollHeight) + (this.$.source.node.scrollHeight);
-        this.$.summary.applyStyle("min-height", (this.$.articleScroller.node.clientHeight - aboutHeight) + "px !important");
+        this.$.summary.applyStyle("min-height", (this.$.articleScroller.node.clientHeight - aboutHeight - 50) + "px !important");
         var images = this.$.summary.node.getElementsByTagName("img");
-        var anchors = this.$.summary.node.getElementsByTagName("a");
+        var imagesToRemove = [];
         for (var i = 0; i < images.length; i++) {
-            enyo.log("________________________________(");
-            enyo.log("attaching click end event to image");
-            var dimensions = images[i].height * images[i].width;
-            enyo.log(images[i].src);
+            var dimensions = Element.measure(images[i], "width") * Element.measure(images[i], "height");
             if (dimensions <= 1 || images[i].src.indexOf("ads") >= 0) {
-                enyo.log("advertisement, remove");
-                Element.hide(images[i]);
-                Element.remove(images[i]);
+                if (dimensions <= 1) {
+                    enyo.log("found tracking pixel, mark for removal");
+                } else {
+                    enyo.log("found advertisement image, mark for removal");
+                    enyo.log(images[i].src);
+                }
+                imagesToRemove.push(images[i]);
             } else {
+                enyo.log("attaching click end event to image");
                 images[i].onclick = function(event) {enyo.log("CALLED CLICK EVENT FOR IMAGE"); event.stopPropagation(); event.preventDefault(); return -1;};
                 if (images[i].title !== "") {
                     var insertAfter = images[i];
@@ -157,12 +159,25 @@ enyo.kind({
                 }
             }
         }
+        if (imagesToRemove.length) {
+            for (var i = imagesToRemove.length; i--;) {
+                Element.remove(imagesToRemove[i]);
+                enyo.log("advertisement image or tracking pixel removed");
+            }
+        }
+        var anchors = this.$.summary.node.getElementsByTagName("a");
+        var anchorsToRemove = [];
         for (var i = 0; i < anchors.length; i++) {
-            enyo.log(anchors[i].href);
             if (anchors[i].href.indexOf("ads") >= 0) {
-                enyo.log("advertisement link, remove");
-                Element.hide(anchors[i]);
-                Element.remove(anchors[i]);
+                enyo.log(anchors[i].href);
+                enyo.log("found advertisement link, mark for removal");
+                anchorsToRemove.push(anchors[i]);
+            }
+        }
+        if (anchorsToRemove.length) {
+            for (var i = anchorsToRemove.length; i--;) {
+                Element.remove(anchorsToRemove[i]);
+                enyo.log("advertising link removed");
             }
         }
     },
