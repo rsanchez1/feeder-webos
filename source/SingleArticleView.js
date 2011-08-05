@@ -136,7 +136,7 @@ enyo.kind({
         var aboutHeight = (this.$.articleTitle.node.scrollHeight) + (this.$.postDate.node.scrollHeight) + (this.$.source.node.scrollHeight);
         this.$.summary.applyStyle("min-height", (this.$.articleScroller.node.clientHeight - aboutHeight - 50) + "px !important");
         $A(this.$.summary.node.getElementsByTagName("a")).each(function(anchor) {
-            if (anchor.href.indexOf("ads") >= 0) {
+            if (anchor.href.indexOf("ads") >= 0 && (anchor.href.indexOf("ads") - anchor.href.indexOf("uploads") !== 4)) {
                 enyo.log(anchor.href);
                 enyo.log("found advertisement link, remove");
                 //Element.remove(anchor);
