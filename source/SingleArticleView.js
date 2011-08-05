@@ -62,7 +62,7 @@ enyo.kind({
             {caption: "Share with Read it Later", shareValue: "readitlater", onclick: "chooseShare"},
             {caption: "Share via Email", shareValue: "email", onclick: "chooseShare"},
             {caption: "Share via SMS", shareValue: "sms", onclick: "chooseShare"},
-            {caption: "Share with Paper Mache", shareValue: "paper", onClick: "chooseShare"}
+            {caption: "Share with Paper Mache", shareValue: "paper", onclick: "chooseShare"}
         ]},
         {name: "openAppService", kind: "PalmService", service: "palm://com.palm.applicationManager/", method: "launch"}
     ],
@@ -135,51 +135,37 @@ enyo.kind({
         //set author/feed, everything else in article-assistant.js
         var aboutHeight = (this.$.articleTitle.node.scrollHeight) + (this.$.postDate.node.scrollHeight) + (this.$.source.node.scrollHeight);
         this.$.summary.applyStyle("min-height", (this.$.articleScroller.node.clientHeight - aboutHeight - 50) + "px !important");
-        var images = this.$.summary.node.getElementsByTagName("img");
-        var imagesToRemove = [];
-        for (var i = 0; i < images.length; i++) {
-            var dimensions = Element.measure(images[i], "width") * Element.measure(images[i], "height");
-            if (dimensions <= 1 || images[i].src.indexOf("ads") >= 0) {
+        $A(this.$.summary.node.getElementsByTagName("a")).each(function(anchor) {
+            if (anchor.href.indexOf("ads") >= 0) {
+                enyo.log(anchor.href);
+                enyo.log("found advertisement link, remove");
+                //Element.remove(anchor);
+                Element.setStyle(anchor, {border: "3px solid #f00"});
+            }
+        });
+        $A(this.$.summary.node.getElementsByTagName("img")).each(function(image) {
+            image.onload = function() {
+                enyo.log("image loaded");
+                var image = this;
+                var dimensions = Element.measure(image, "width") * Element.measure(image, "height");
                 if (dimensions <= 1) {
-                    enyo.log("found tracking pixel, mark for removal");
+                    enyo.log(dimensions);
+                    enyo.log("found tracking pixel, remove");
+                    //Element.remove(image);
+                    Element.setStyle(anchor, {border: "3px solid #f00"});
                 } else {
-                    enyo.log("found advertisement image, mark for removal");
-                    enyo.log(images[i].src);
-                }
-                imagesToRemove.push(images[i]);
-            } else {
-                enyo.log("attaching click end event to image");
-                images[i].onclick = function(event) {enyo.log("CALLED CLICK EVENT FOR IMAGE"); event.stopPropagation(); event.preventDefault(); return -1;};
-                if (images[i].title !== "") {
-                    var insertAfter = images[i];
-                    if (Element.match(Element.up(images[i]), "a")) {
-                        insertAfter = Element.up(images[i]);
+                    enyo.log("attaching click end event to image");
+                    image.onclick = function(event) {enyo.log("CALLED CLICK EVENT FOR IMAGE"); event.stopPropagation(); event.preventDefault(); return -1;};
+                    if (image.title !== "") {
+                        var insertAfter = image;
+                        if (Element.match(Element.up(image), "a")) {
+                            insertAfter = Element.up(image);
+                        }
+                        Element.insert(insertAfter, {after: "<span class='imageCaption' style='width: " + Element.measure(image, "width") + "px;'>" + image.title + "</span>"});
                     }
-                    Element.insert(insertAfter, {after: "<span class='imageCaption' style='width: " + images[i].width + "px;'>" + images[i].title + "</span>"});
                 }
-            }
-        }
-        if (imagesToRemove.length) {
-            for (var i = imagesToRemove.length; i--;) {
-                Element.remove(imagesToRemove[i]);
-                enyo.log("advertisement image or tracking pixel removed");
-            }
-        }
-        var anchors = this.$.summary.node.getElementsByTagName("a");
-        var anchorsToRemove = [];
-        for (var i = 0; i < anchors.length; i++) {
-            if (anchors[i].href.indexOf("ads") >= 0) {
-                enyo.log(anchors[i].href);
-                enyo.log("found advertisement link, mark for removal");
-                anchorsToRemove.push(anchors[i]);
-            }
-        }
-        if (anchorsToRemove.length) {
-            for (var i = anchorsToRemove.length; i--;) {
-                Element.remove(anchorsToRemove[i]);
-                enyo.log("advertising link removed");
-            }
-        }
+            };
+        });
     },
     markedArticleRead: function() {
         if (!this.article.isRead) {
