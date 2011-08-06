@@ -295,6 +295,7 @@ enyo.kind({
 
    feedsHeaderClicked: function() {
        this.$.singleArticleView.showSummary();
+        this.$.slidingPane.selectViewByName('singleArticle', true);
    },
 
    groupChange: function() {

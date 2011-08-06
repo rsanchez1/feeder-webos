@@ -139,8 +139,8 @@ enyo.kind({
             if (anchor.href.indexOf("ads") >= 0 && (anchor.href.indexOf("ads") - anchor.href.indexOf("uploads") !== 4)) {
                 enyo.log(anchor.href);
                 enyo.log("found advertisement link, remove");
-                //Element.remove(anchor);
-                Element.setStyle(anchor, {border: "3px solid #f00"});
+                Element.remove(anchor);
+                //Element.setStyle(anchor, {border: "3px solid #f00"});
             }
         });
         $A(this.$.summary.node.getElementsByTagName("img")).each(function(image) {
@@ -151,8 +151,8 @@ enyo.kind({
                 if (dimensions <= 1) {
                     enyo.log(dimensions);
                     enyo.log("found tracking pixel, remove");
-                    //Element.remove(image);
-                    Element.setStyle(anchor, {border: "3px solid #f00"});
+                    Element.remove(image);
+                    //Element.setStyle(anchor, {border: "3px solid #f00"});
                 } else {
                     enyo.log("attaching click end event to image");
                     image.onclick = function(event) {enyo.log("CALLED CLICK EVENT FOR IMAGE"); event.stopPropagation(); event.preventDefault(); return -1;};
