@@ -20,21 +20,21 @@ enyo.kind({
                 ]}
             ]}
         ]},
-        {style: "padding-top: 15px; padding-bottom: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
-            {content: "Mark read as you scroll:", flex: 1},
-            {name: "scrollToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "scrollToggle"}
+        {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
+            {className: "preferencesLabel", content: "Mark read as you scroll:", flex: 3},
+            {className: "preferencesToggle", name: "scrollToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "scrollToggle"}
         ]},
-        {style: "padding-top: 15px; padding-bottom: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
-            {content: "Hide read feeds:", flex: 1},
-            {name: "feedsToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "feedsToggle"}
+        {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
+            {className: "preferencesLabel", content: "Hide read feeds:", flex: 3},
+            {className: "preferencesToggle", name: "feedsToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "feedsToggle"}
         ]},
-        {style: "padding-top: 15px; padding-bottom: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
-            {content: "Hide read articles:", flex: 1},
-            {name: "articlesToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "articlesToggle"}
+        {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
+            {className: "preferencesLabel", content: "Hide read articles:", flex: 3},
+            {className: "preferencesToggle", name: "articlesToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "articlesToggle"}
         ]},
-        {style: "padding-top: 15px; padding-bottom: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
-            {content: "Group folder articles by:", flex: 1},
-            {name: "groupToggle", kind: "ToggleButton", flex: 1, onLabel: "Feed", offLabel: "Date", onChange: "groupToggle", className: "groupToggle", style: "position: relative; left: 5px;"}
+        {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
+            {className: "preferencesLabel", content: "Group folder articles by:", flex: 3},
+            {className: "preferencesToggle", name: "groupToggle", kind: "ToggleButton", flex: 1, onLabel: "Feed", offLabel: "Date", onChange: "groupToggle", className: "groupToggle"}
         ]},
         {layoutKind: "HFlexLayout", pack: "center", components: [
             {kind: "Button", caption: "OK", flex: 1, className: "enyo-button-dark", onclick: "okClick"}
