@@ -460,10 +460,10 @@ enyo.kind({
         enyo.log(event.centerY);
         if (diff > 0) {
             //dragged up
-            this.offlineClick();
+            this.starClick();
         } else {
             //dragged down
-            this.starClick();
+            this.offlineClick();
         }
     },
     restoreLeft: function(adjust) {
