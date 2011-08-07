@@ -1,7 +1,7 @@
 enyo.kind({
     name: "TouchFeeds.FeedsView",
     kind: "VFlexBox",
-    className: "enyo-bg",
+    className: "enyo-bg itemLists",
     published: {
         headerContent: "",
         showSpinner: false,
@@ -20,6 +20,10 @@ enyo.kind({
                 {name: "headerContent", content: "TouchFeeds", className: "tfHeader", onclick: "headerClicked"}
             ]},
             {kind: "Spinner", showing: false, style: "position: absolute; right: 10px; top: 10px;"}
+        ]},
+        {kind: "InputBox", className: "itemLists", style: "margin-top: 5px !important; border-width: 0px 14px 1px 14px !important; -webkit-border-image: none !important; margin-bottom: 0 !important; padding-bottom: 5px !important; border-bottom: 1px solid rgba(0, 0, 0, 0.2);", components: [
+            {name: "searchQuery", kind: "Input", flex: 1, className: "enyo-input", style: "border-width: 7px 14px 7px 14px !important; margin-left: -8px;", onfocus: "searchFocused", onblur: "searchBlurred", onkeypress: "searchKey", hint: "Tap Here To Search"},
+            {kind: "Button", caption: "Search", onclick: "searchClick"}
         ]},
         {name: "stickySourcesList", kind: "VirtualRepeater", onSetupRow: "setupStickySources", className: "itemLists", components: [
             {name: "stickyItem", kind: "Item", layoutKind: "VFlexLayout", components: [
@@ -99,9 +103,6 @@ enyo.kind({
                     if (inIndex + 1 > this.stickySources.items.length) {
                         this.$.stickyItem.applyStyle("border-bottom", "none");
                     }
-                    if (inIndex - 1 < 0) {
-                        this.$.stickyItem.applyStyle("border-top", "none");
-                    }
                     return true;
                 }
             }
@@ -143,36 +144,54 @@ enyo.kind({
         enyo.log("tapped number: ", inEvent.rowIndex);
         this.doFeedClicked(this.subscriptionSources.items[inEvent.rowIndex]);
     },
+    searchClick: function() {
+        var query = this.$.searchQuery.getValue();
+        this.doFeedClicked(new Search(this.app.api, query));
+    },
+    searchFocused: function() {
+        Element.setStyle(this.$.searchQuery.node, {marginLeft: 0});
+    },
+    searchBlurred: function() {
+        Element.setStyle(this.$.searchQuery.node, {marginLeft: "-8px"});
+    },
+    searchKey: function(source, event) {
+        if (event.keyCode == 13) {
+            this.searchClick();
+            enyo.keyboard.setManualMode(true);
+            enyo.keyboard.hide();
+            enyo.keyboard.setManualMode(false);
+        }
+    },
     reloadFeeds: function() {
         enyo.log("reloading feeds");
         this.$.subscriptionSourcesList.render();
         this.$.stickySourcesList.render();
     },
-	addFeedClick: function(source, inEvent) {
+    addFeedClick: function(source, inEvent) {
         this.$.addFeedPopup.openAtEvent(inEvent);
-	},
-	confirmClick: function() {
-		enyo.log("confirming feed...");
-		this.$.feedSpinner.show();
-		this.app.api.addSubscription(this.$.feedInput.getValue(), this.addFeedSuccess.bind(this), function() {Feeder.notify("Could not add feed"); this.$.feedSpinner.hide(); this.$.addFeedPopup.close();}.bind(this));
-		//check for feeds
-	},
-	addFeedSuccess: function() {
-		Feeder.notify("Successfully added feed");
-		this.doRefreshFeeds();
+    },
+    confirmClick: function() {
+        enyo.log("confirming feed...");
+        this.$.feedSpinner.show();
+        this.app.api.addSubscription(this.$.feedInput.getValue(), this.addFeedSuccess.bind(this), function() {Feeder.notify("Could not add feed"); this.$.feedSpinner.hide(); this.$.addFeedPopup.close();}.bind(this));
+        //check for feeds
+    },
+    addFeedSuccess: function() {
+        Feeder.notify("Successfully added feed");
+        this.doRefreshFeeds();
         this.$.feedInput.setValue("");
         this.$.feedSpinner.hide();
-		this.$.addFeedPopup.close();
-	},
+            this.$.addFeedPopup.close();
+    },
     refreshClick: function() {
         this.doRefreshFeeds();
     },
-	confirmedDeleteItem: function(inSender, inIndex) {
-		enyo.log("wanted to delete item: ", inIndex);
-		this.app.api.unsubscribe(this.subscriptionSources.items[inIndex], this.unsubscribedFeed.bind(this));
-	},
-	unsubscribedFeed: function() {
-		Feeder.notify("Successfully removed feed");
+    confirmedDeleteItem: function(inSender, inIndex) {
+        enyo.log("wanted to delete item: ", inIndex);
+        this.app.api.unsubscribe(this.subscriptionSources.items[inIndex], this.unsubscribedFeed.bind(this));
+    },
+    unsubscribedFeed: function() {
+        Feeder.notify("Successfully removed feed");
         this.doRefreshFeeds();
     },
     headerClicked: function() {

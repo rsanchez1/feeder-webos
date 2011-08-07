@@ -51,7 +51,7 @@ body.light {
 }
 
 .dark .itemLists {
-    background-color: #262626;
+    background-color: #262626 !important;
     color: white;
 }
 

@@ -61,8 +61,8 @@ enyo.kind({
         //this.$.header.setContent(this.headerContent);
         this.$.headerContent.setContent(Encoder.htmlDecode(this.headerContent));
     },
-	offlineArticlesChanged: function() {
-		this.articlesChangedHandler();
+    offlineArticlesChanged: function() {
+        this.articlesChangedHandler();
         this.maxTop = 0;
 		enyo.log("changed offline articles");
         for (var i = this.offlineArticles.length; i--;) {
@@ -120,6 +120,12 @@ enyo.kind({
         //this.$.spinner.show();
         this.$.spinner.show();
         this.$.spinner.applyStyle("display", "inline-block");
+        this.overrodeHide = false;
+        this.originalHide = Preferences.hideReadArticles();
+        if (this.articles.showOrigin) {
+            this.overrodeHide = true;
+            Preferences.setHideReadArticles(false);
+        }
         this.articles.findArticles(this.foundArticles.bind(this), function() {enyo.log("failed to find articles");});
     },
     articlesChangedHandler: function() {
@@ -139,6 +145,10 @@ enyo.kind({
                     this.articles.items.splice(i, 1);
                 }
             }
+        }
+        if (this.overrodeHide) {
+            Preferences.setHideReadArticles(this.originalHide);
+            this.overrodeHide = false;
         }
         //enyo.log("Found articles: ", this.articles);
         this.$.spinner.hide();
