@@ -122,14 +122,9 @@ enyo.kind({
         this.$.spinner.applyStyle("display", "inline-block");
         this.overrodeHide = false;
         this.originalHide = Preferences.hideReadArticles();
-        if (this.articles.showOrigin) {
+        if (!!this.articles.query || this.articles.title == "Starred" || this.articles.title == "Shared") {
             this.overrodeHide = true;
-            //Preferences.setHideReadArticles(false);
-            if (!!this.articles.query) {
-                Preferences.setHideReadArticles(false);
-            } else {
-                Preferences.setHideReadArticles(Preferences.hideReadFolderArticles());
-            }
+            Preferences.setHideReadArticles(false);
         }
         this.articles.findArticles(this.foundArticles.bind(this), function() {enyo.log("failed to find articles");});
     },
@@ -225,7 +220,11 @@ enyo.kind({
                     } else {
                         this.$.title.removeClass("starred");
                     }
-                    this.$.origin.setContent(!!r.displayDateAndTime ? r.displayDateAndTime : r.displayDate);
+                    if (this.articles.showOrigin && (Preferences.groupFoldersByFeed())) {
+                        this.$.origin.setContent(!!r.displayDateAndTime ? r.displayDateAndTime : r.displayDate);
+                    } else {
+                        this.$.origin.setContent(r.origin);
+                    }
                     if (inIndex + 1 >= articles.length) {
                         this.$.articleItem.addClass("lastRow");
                     } else {

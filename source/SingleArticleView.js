@@ -76,13 +76,13 @@ enyo.kind({
 		this.app = enyo.application.app
     },
     articleChanged: function() {
+        var scrollTo = 0;
         /*
-        for (var i in this.article) {
-            if (this.article.hasOwnProperty(i)) {
-                enyo.log("property of article: ", i);
-            }
+        if (this.$.articleScroller.getScrollTop() > 200) {
+            scrollTo = -200;
         }
         */
+        this.$.articleScroller.setScrollTop(scrollTo);
         this.$.summary.removeClass("small");
         this.$.summary.removeClass("medium");
         this.$.summary.removeClass("large");
@@ -95,20 +95,11 @@ enyo.kind({
         }
         if (!this.article.isRead) {
             enyo.log("article not read, mark it read");
-			if (this.article.turnReadOn) {
-				this.article.turnReadOn(this.markedArticleRead.bind(this), function() {});
-			}
+            if (this.article.turnReadOn) {
+                this.article.turnReadOn(this.markedArticleRead.bind(this), function() {});
+            }
         }
-        //this.$.headerContent.setContent(Encoder.htmlDecode(this.article.title));
         this.$.articleTitle.setContent(Encoder.htmlDecode(Encoder.htmlEncode(this.article.title)));
-        // Adjust width of scroller to scroll through title without scrolling off page
-        /*
-        this.$.headerScroller.setScrollLeft(0);
-        this.$.headerWrapper.applyStyle("width", "5000px !important");
-        var width = (this.$.headerContent.node.clientWidth + 1) + "px !important";
-        enyo.log("new width for header will be: " + width);
-        this.$.headerWrapper.applyStyle("width", width);
-        */
         this.$.summary.setContent("<div class='summaryWrapper'>" + Encoder.htmlDecode(this.article.summary) + "</div>");
         var publishAuthor = "";
         if (!!this.article.displayDateAndTime) {
@@ -117,21 +108,9 @@ enyo.kind({
         publishAuthor += (!!this.article.author ? " by <span style='font-weight: 700'>" + Encoder.htmlDecode(this.article.author) + "</span>" : "");
         this.$.postDate.setContent(publishAuthor);
         this.$.postDate.show();
-        //this.$.about.setContent("by <span style='font-weight: 700'>" + (!!this.article.author ? this.article.author : "Author Unavailable") + "</span> on <span style='font-weight: 700'>" + this.article.origin + "</span>");
         this.$.source.setContent("<span style='font-weight: 700'>" + Encoder.htmlDecode(this.article.origin) + "</span>");
         this.$.source.show();
-        var scrollTo = 0;
-        /*
-        if (this.$.articleScroller.getScrollTop() > 200) {
-            scrollTo = -200;
-        }
-        */
-        this.$.articleScroller.scrollTo(0, scrollTo);
-        setTimeout(function() {
-            var scrollTo = 0;
-            this.$.articleScroller.scrollTo(0, scrollTo);
-        }.bind(this), 200);
-		this.offlineQuery();
+        this.offlineQuery();
         //set author/feed, everything else in article-assistant.js
         var aboutHeight = (this.$.articleTitle.node.scrollHeight) + (this.$.postDate.node.scrollHeight) + (this.$.source.node.scrollHeight);
         this.$.summary.applyStyle("min-height", (this.$.articleScroller.node.clientHeight - aboutHeight - 50) + "px !important");
@@ -213,7 +192,7 @@ enyo.kind({
                     scrollTo = -200;
                 }
                 */
-                this.$.articleScroller.scrollTo(0, scrollTo);
+                this.$.articleScroller.setScrollTop(scrollTo);
                 this.app.api.getPage(this.article.url, this.gotPage.bind(this), function() {Feeder.notify("Could not fetch article fulltext"); this.$.spinner.hide();}.bind(this));
             }
         }
@@ -536,6 +515,13 @@ enyo.kind({
         "<h2>Contact</h2>" +
         "<p>If you have any questions, contact <a href='mailto:support@sanchezapps.com'>support@sanchezapps.com</a> (NOTE: Not functional yet)." +
         "<h2>Special Thanks</h2>" +
+        "<ul class='gestureGuide'>" +
+        "<li>Darrin Holst - Developer of <a href='https://github.com/darrinholst/feeder-webos'>Feeder</a>, the premiere Google Reader app on webOS phones, on which this app is based</li>" +
+        "<li>Rob (speedtouch @ Precentral & webOSRoundup forums)</li>" +
+        "<li><a href='http://twitter.com/confusedgeek'>@confusedgeek</a></li>" +
+        "<li>baldric @ Precentral forums</li>" +
+        "<li>greg @ <a href='http://www.smartphonesoft.com'>smartphonesoft</a></li>" +
+        "</ul>" +
         "<p>Here would go any attribution to beta testers. If you would like to be mentioned here, contact me with how you want to be attributed (twitter, web site link, etc).</p>" +
         "</div>",
 });
