@@ -148,8 +148,10 @@ enyo.kind({
         var query = this.$.searchQuery.getValue();
         this.doFeedClicked(new Search(this.app.api, query));
     },
-    searchFocused: function() {
+    searchFocused: function(source, event) {
         Element.setStyle(this.$.searchQuery.node, {marginLeft: 0});
+        enyo.keyboard.setManualMode(true);
+        enyo.keyboard.show();
     },
     searchBlurred: function() {
         Element.setStyle(this.$.searchQuery.node, {marginLeft: "-8px"});
@@ -157,7 +159,6 @@ enyo.kind({
     searchKey: function(source, event) {
         if (event.keyCode == 13) {
             this.searchClick();
-            enyo.keyboard.setManualMode(true);
             enyo.keyboard.hide();
             enyo.keyboard.setManualMode(false);
         }

@@ -2,6 +2,7 @@ Preferences = {
   OLDEST_FIRST: "oldest-first",
   HIDE_READ_FEEDS: "hide-read-feeds",
   HIDE_READ_ARTICLES: "hide-read-articles",
+  HIDE_READ_FOLDER_ARTICLES: "hide-read-folder-articles",
   BACK_AFTER_MARK_AS_READ: "back-after-mark-as-read",
   ALLOW_LANDSCAPE: "allow-landscape",
   FONT_SIZE: "font-size",
@@ -135,6 +136,14 @@ Preferences = {
 
   setHideReadArticles: function(hideReadArticles) {
     this.setCookie(this.HIDE_READ_ARTICLES, hideReadArticles)
+  },
+
+  hideReadFolderArticles: function() {
+    return this.getCookie(this.HIDE_READ_FOLDER_ARTICLES, true)
+  },
+
+  setHideReadFolderArticles: function(hideReadFolderArticles) {
+    this.setCookie(this.HIDE_READ_FOLDER_ARTICLES, hideReadFolderArticles)
   },
 
   goBackAfterMarkAsRead: function() {

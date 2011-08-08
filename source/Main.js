@@ -22,8 +22,9 @@ enyo.kind({
             {name: "preferenesLabel", caption: "Preferences", onclick: "showPreferences"}
         ]},
 		{kind: "onecrayon.Database", name: "articlesDB", database: "ext:TouchFeedsArticles", version: 1, debug: false},
-        {kind: "ApplicationEvents", onWindowRotated: "windowRotated"},
+        {kind: "ApplicationEvents", onWindowRotated: "windowRotated", onApplicationRelaunch: "applicationRelaunch"},
         {kind: "Dashboard", name: "appDashboard"},
+        {kind: "PalmService", name: "setAlarm", service: "palm://com.palm.power/timeout/", method: "set", subscribed: true, onSuccess: "subscriptionSuccess", onFailure: "subscriptionFailure"},
     ],
 
     constructor: function() {
@@ -74,6 +75,7 @@ enyo.kind({
         this.$.appDashboard.push({icon: "small_icon.png", title: "Dashboard Test 2", text: "WebOS Roundup"});
         this.$.appDashboard.push({icon: "small_icon.png", title: "Dashboard Test 3", text: "Palm Developer Blog"});
         */
+        //this.$.setAlarm.call({"wakeup": true, "key": "touchFeedsNotification", "uri": "com.palm.applicationManager/launch", "params": {"id": "com.sanchezapps.touchfeedsbeta", "params": {"action": "alarmWakeup"}}, "in": "00:01:00"});
     },
 
     loginSuccess: function() {
@@ -291,6 +293,34 @@ enyo.kind({
            this.$.feeds.applyStyle("width", "384px");
            this.$.articles.applyStyle("width", "384px");
        }
+   },
+
+   applicationRelaunch: function(inSender) {
+       enyo.log("***********************************");
+       enyo.log("***********************************");
+       enyo.log("***********************************");
+       enyo.log("***********************************");
+       enyo.log("relaunched application");
+       var params = enyo.windowParams;
+       if (params.action !== undefined) {
+           return true;
+       }
+   },
+
+   subscriptionSuccess: function() {
+       enyo.log("***********************************");
+       enyo.log("***********************************");
+       enyo.log("***********************************");
+       enyo.log("***********************************");
+       enyo.log("set alarm");
+   },
+
+   subscriptionFailure: function() {
+       enyo.log("***********************************");
+       enyo.log("***********************************");
+       enyo.log("***********************************");
+       enyo.log("***********************************");
+       enyo.log("failed to set alarm");
    },
 
    feedsHeaderClicked: function() {
