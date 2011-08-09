@@ -246,6 +246,7 @@ enyo.kind({
                             for (var i = this.maxTop; i < scroller.top; i++) {
                                 if (!articles[i].isRead) {
                                     this.addToMarkReadQueue(articles[i], i);
+                                    this.$.articleItem.removeClass("unread-item");
                                     articles[i].isRead = true;
                                 }
                             }
@@ -257,6 +258,7 @@ enyo.kind({
                             for (var i = this.maxTop; i < articles.length; i++) {
                                 if (!articles[i].isRead && !articles[i].keepUnread) {
                                     this.addToMarkReadQueue(articles[i], i);
+                                    this.$.articleItem.removeClass("unread-item");
                                     articles[i].isRead = true;
                                 }
                             }
@@ -340,18 +342,24 @@ enyo.kind({
         this.itemsToMarkRead.push({article: article, index: index});
         this.markReadTimeout = setTimeout(function() {
             enyo.log("TRIGGERED MARK ARTICLE READ TIMEOUT");
-            for (var i = this.itemsToMarkRead.length; i--;) {
-                var article = this.itemsToMarkRead[i].article;
-                var index = this.itemsToMarkRead[i].index;
-                article.turnReadOn(this.markedArticleRead.bind(this, article, index), function() {enyo.log("could not mark article read");});
+            if (this.itemsToMarkRead.length == this.articles.items.length) {
+                var count = this.articles.getUnreadCount();
+                this.articles.markAllRead(this.markedAllArticlesRead.bind(this, count, true), function() {enyo.log("error marking all read");});
+            } else {
+                for (var i = this.itemsToMarkRead.length; i--;) {
+                    var article = this.itemsToMarkRead[i].article;
+                    var index = this.itemsToMarkRead[i].index;
+                    article.turnReadOn(this.markedArticleRead.bind(this, article, index), function() {enyo.log("could not mark article read");});
+                }
             }
             this.itemsToMarkRead = [];
             this.markReadTimeout = 0;
             enyo.log("FINISHED MARKING ARTICLES READ");
         }.bind(this), 1500);
     },
+
     markedArticleRead: function(article, index) {
-        this.finishArticleRead(index);
+        //this.finishArticleRead(index);
         this.doArticleRead(article, index);
     },
     articleItemClick: function(inSender, inEvent) {
@@ -561,33 +569,33 @@ enyo.kind({
 			}
 		}
     },
-	refreshClick: function() {
-		if (!this.offlineArticles.length) {
-			var scroller = this.$.articlesList.$.scroller;
-			this.maxTop = 0;
-			scroller.adjustTop(0);
-			scroller.adjustBottom(10);
-			scroller.top = 0;
-			scroller.bottom = 10;
-			this.articles.reset();
-			enyo.log("got articles");
-			this.articles.items = [];
-			this.$.articlesList.punt();
-			this.$.spinner.show();
-			this.$.spinner.applyStyle("display", "inline-block");
-			this.articles.findArticles(this.foundArticles.bind(this), function() {enyo.log("failed to find articles");});
-		}
-	},
-	fontClick: function(source, inEvent) {
+    refreshClick: function() {
+        if (!this.offlineArticles.length) {
+            var scroller = this.$.articlesList.$.scroller;
+            this.maxTop = 0;
+            scroller.adjustTop(0);
+            scroller.adjustBottom(10);
+            scroller.top = 0;
+            scroller.bottom = 10;
+            this.articles.reset();
+            enyo.log("got articles");
+            this.articles.items = [];
+            this.$.articlesList.punt();
+            this.$.spinner.show();
+            this.$.spinner.applyStyle("display", "inline-block");
+            this.articles.findArticles(this.foundArticles.bind(this), function() {enyo.log("failed to find articles");});
+        }
+    },
+    fontClick: function(source, inEvent) {
         this.$.fontsPopup.openAtEvent(inEvent);
     },
-	chooseFont: function(source, inEvent) {
+    chooseFont: function(source, inEvent) {
         Preferences.setArticleListFontSize(source.caption.toLowerCase());
         this.$.articlesList.removeClass("small");
         this.$.articlesList.removeClass("medium");
         this.$.articlesList.removeClass("large");
         this.$.articlesList.addClass(Preferences.getArticleListFontSize());
-	},
+    },
     markedAllArticlesRead: function(count, wasScrolling) {
         enyo.log("marked all articles read: ", count);
         this.$.spinner.hide();
