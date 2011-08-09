@@ -147,6 +147,7 @@ enyo.kind({
     searchClick: function() {
         var query = this.$.searchQuery.getValue();
         this.doFeedClicked(new Search(this.app.api, query));
+        this.$.searchQuery.setValue("");
     },
     searchFocused: function(source, event) {
         Element.setStyle(this.$.searchQuery.node, {marginLeft: 0});
