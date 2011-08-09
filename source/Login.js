@@ -59,6 +59,7 @@ enyo.kind({
         this.credentials.password = this.$.password.getValue();
         this.credentials.save();
         this.doLogin();
+        enyo.keyboard.hide();
     },
 
     loginFailure: function(response) {
@@ -73,6 +74,7 @@ enyo.kind({
         this.$.spinner.hide();
         this.$.loginError.hide();
         this.doCancel();
+        enyo.keyboard.hide();
     },
 
     inputChange: function(source, event) {

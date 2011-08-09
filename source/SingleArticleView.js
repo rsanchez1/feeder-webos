@@ -513,7 +513,7 @@ enyo.kind({
         "<h2>Open Source</h2>" +
         "<p>This app is open source. You can find the full source and license at <a href='https://github.com/rsanchez1/feeder-webos/tree/enyo'>TouchFeeds on Github</a>.</p>" + 
         "<h2>Contact</h2>" +
-        "<p>If you have any questions, contact <a href='mailto:support@sanchezapps.com'>support@sanchezapps.com</a> (NOTE: Not functional yet)." +
+        "<p>If you have any questions, contact <a href='mailto:support@sanchezapps.com'>support@sanchezapps.com</a>." +
         "<h2>Special Thanks</h2>" +
         "<ul class='gestureGuide'>" +
         "<li>Darrin Holst - Developer of <a href='https://github.com/darrinholst/feeder-webos'>Feeder</a>, the premiere Google Reader app on webOS phones, on which this app is based</li>" +

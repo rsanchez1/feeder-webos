@@ -37,6 +37,7 @@ enyo.kind({
 
     ready: function() {
         enyo.log("called ready method");
+        enyo.keyboard.setManualMode(true);
        var orientation = enyo.getWindowOrientation();
        if (orientation == "up" || orientation == "down") {
            this.$.feeds.applyStyle("width", "320px");
@@ -183,11 +184,9 @@ enyo.kind({
 
     openDialog: function() {
         enyo.log("opened login");
-        enyo.keyboard.setManualMode(true);
     },
 
     closeDialog: function() {
-        enyo.keyboard.setManualMode(false);
         this.$.slidingPane.selectViewByName('articles', true);
         this.$.login.close();
 
@@ -195,7 +194,6 @@ enyo.kind({
     },
 
     handleLogin: function() {
-        enyo.keyboard.setManualMode(false);
         enyo.log("successfully logged in");
         this.$.login.close();
         this.loginSuccess();

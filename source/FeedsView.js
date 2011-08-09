@@ -150,7 +150,6 @@ enyo.kind({
     },
     searchFocused: function(source, event) {
         Element.setStyle(this.$.searchQuery.node, {marginLeft: 0});
-        enyo.keyboard.setManualMode(true);
         enyo.keyboard.show();
     },
     searchBlurred: function() {
@@ -160,7 +159,6 @@ enyo.kind({
         if (event.keyCode == 13) {
             this.searchClick();
             enyo.keyboard.hide();
-            enyo.keyboard.setManualMode(false);
         }
     },
     reloadFeeds: function() {
