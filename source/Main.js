@@ -222,7 +222,8 @@ enyo.kind({
     },
 
     articleClicked: function(thing, article, index, maxIndex) {
-        this.$.singleArticleView.$.articleScroller.scrollTo(0, 0);
+        //this.$.singleArticleView.$.articleScroller.scrollTo(0, 0);
+        this.$.singleArticleView.$.articleScroller.setScrollTop(0);
         this.$.singleArticleView.setArticle(article);
         this.$.singleArticleView.setIndex(index);
         this.$.singleArticleView.setMaxIndex(maxIndex);

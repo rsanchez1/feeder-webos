@@ -16,7 +16,7 @@ enyo.kind({
         onSelectArticle: "",
         onRead: "",
         onStarred: "",
-		onChangedOffline: "",
+        onChangedOffline: "",
     },
     onSlideComplete: "resizedPane",
     components: [
@@ -115,7 +115,7 @@ enyo.kind({
         var aboutHeight = (this.$.articleTitle.node.scrollHeight) + (this.$.postDate.node.scrollHeight) + (this.$.source.node.scrollHeight);
         this.$.summary.applyStyle("min-height", (this.$.articleScroller.node.clientHeight - aboutHeight - 50) + "px !important");
         $A(this.$.summary.node.getElementsByTagName("a")).each(function(anchor) {
-            if (anchor.href.indexOf("ads") >= 0 && (anchor.href.indexOf("ads") - anchor.href.indexOf("uploads") !== 4)) {
+            if ((anchor.href.indexOf("ads") >= 0 && (anchor.href.indexOf("ads") - anchor.href.indexOf("uploads") !== 4)) || anchor.href.indexOf("auslieferung") >= 0) {
                 enyo.log(anchor.href);
                 enyo.log("found advertisement link, remove");
                 Element.remove(anchor);
@@ -123,6 +123,8 @@ enyo.kind({
             }
         });
         $A(this.$.summary.node.getElementsByTagName("img")).each(function(image) {
+            enyo.log("attaching click end event to image");
+            image.onclick = function(event) {enyo.log("CALLED CLICK EVENT FOR IMAGE"); event.stopPropagation(); event.preventDefault(); return -1;};
             image.onload = function() {
                 enyo.log("image loaded");
                 var image = this;
@@ -133,14 +135,12 @@ enyo.kind({
                     Element.remove(image);
                     //Element.setStyle(anchor, {border: "3px solid #f00"});
                 } else {
-                    enyo.log("attaching click end event to image");
-                    image.onclick = function(event) {enyo.log("CALLED CLICK EVENT FOR IMAGE"); event.stopPropagation(); event.preventDefault(); return -1;};
                     if (image.title !== "") {
                         var insertAfter = image;
                         if (Element.match(Element.up(image), "a")) {
                             insertAfter = Element.up(image);
                         }
-                        Element.insert(insertAfter, {after: "<span class='imageCaption' style='width: " + Element.measure(image, "width") + "px;'>" + image.title + "</span>"});
+                        Element.insert(insertAfter, {after: "<span class='imageCaption' style='width: " + Element.measure(image, "width") + "px; max-width: 100% !important;'>" + image.title + "</span>"});
                     }
                 }
             };
@@ -234,13 +234,13 @@ enyo.kind({
     readClick: function() {
         if (!!this.article.title) {
             if (this.article.isRead) {
-				if (this.article.turnReadOff) {
-					this.article.turnReadOff(this.markedArticleRead.bind(this), function() {});
-				}
+                if (this.article.turnReadOff) {
+                    this.article.turnReadOff(this.markedArticleRead.bind(this), function() {});
+                }
             } else {
-				if (this.article.turnReadOn) {
-					this.article.turnReadOn(this.markedArticleRead.bind(this), function() {});
-				}
+                if (this.article.turnReadOn) {
+                    this.article.turnReadOn(this.markedArticleRead.bind(this), function() {});
+                }
             }
         }
     },
@@ -345,7 +345,7 @@ enyo.kind({
             });
         }
     },
-	offlineClick: function() {
+    offlineClick: function() {
         if (!!this.article.title) {
             this.$.spinner.show();
             if (this.isOffline) {
@@ -374,24 +374,25 @@ enyo.kind({
                         url: Encoder.htmlEncode(this.article.url)
                     }]
                 }, {
-                    onSuccess: function() {enyo.windows.addBannerMessage("Saved article offline", "{}"); this.$.spinner.hide(); this.offlineQuery(); this.doChangedOffline();}.bind(this),
+                    onSuccess: function(results) {enyo.windows.addBannerMessage("Saved article offline", "{}"); this.$.spinner.hide(); this.offlineQuery(); this.doChangedOffline();}.bind(this),
                     onFailure: function() {Feeder.notify("Failed to save article offline"); this.$.spinner.hide();}.bind(this)
                 });
             }
         }
     },
-	checkIfOffline: function(results) {
-		if (!!results[0] && !!results[0]["COUNT(*)"]) {
-			this.isOffline = true;
-			this.$.offlineButton.setIcon("images/delete-article.png");
-		} else {
-			this.isOffline = false;
-			this.$.offlineButton.setIcon("images/offline-article.png");
-		}
-	},
-	offlineQuery: function() {
-		enyo.log("getting number of offline articles");
-		this.app.$.articlesDB.query('SELECT COUNT(*) FROM articles WHERE title="' + Encoder.htmlEncode(this.article.title) + '"', {onSuccess: this.checkIfOffline.bind(this), onFailure: function() {enyo.log("failed to check if article offline");}});
+    checkIfOffline: function(results) {
+        if (results.length) {
+            this.isOffline = true;
+            this.article.articleID = results[0].articleID;
+            this.$.offlineButton.setIcon("images/delete-article.png");
+        } else {
+            this.isOffline = false;
+            this.$.offlineButton.setIcon("images/offline-article.png");
+        }
+    },
+    offlineQuery: function() {
+        enyo.log("getting number of offline articles");
+        this.app.$.articlesDB.query('SELECT * FROM articles WHERE title="' + Encoder.htmlEncode(this.article.title) + '"', {onSuccess: this.checkIfOffline.bind(this), onFailure: function() {enyo.log("failed to check if article offline");}});
 	},
     resizedPane: function() {
         enyo.log("resizing article");
@@ -417,7 +418,7 @@ enyo.kind({
             enyo.log("dragged to the left");
             if (this.index < this.maxIndex) {
                 this.$.summary.applyStyle("margin-left", "-110px !important");
-                setTimeout(this.restoreRight.bind(this, 15), 16);
+                setTimeout(this.restoreRight.bind(this, 15), 8);
                 this.doSelectArticle(this.index + 1);
             }
         }
@@ -425,24 +426,21 @@ enyo.kind({
     summaryGestureStart: function(thing1, event) {
         enyo.log("gesture dragging start");
         this.gestureY = +event.centerY;
-        enyo.log(event.pageY);
-        enyo.log(event.layerY);
         enyo.log(event.centerY);
     },
     summaryGestureEnd: function(thing1, event) {
         enyo.log("gesture dragging end");
         enyo.log(this.gestureY);
-        var diff = event.centerY - this.gestureY;
-        enyo.log(diff);
-        enyo.log(event.pageY);
-        enyo.log(event.layerY);
         enyo.log(event.centerY);
-        if (diff > 0) {
+        var diff = +(event.centerY - this.gestureY);
+        enyo.log(diff);
+        if (diff > 100) {
             //dragged up
-            this.starClick();
-        } else {
+            this.starClick.bind(this)();
+        }
+        if (diff < -100) {
             //dragged down
-            this.offlineClick();
+            this.offlineClick.bind(this)();
         }
     },
     restoreLeft: function(adjust) {
@@ -456,7 +454,7 @@ enyo.kind({
         var position = -120 + (15.5 * (15 - adjust)) - (((15 - adjust) * (15 - adjust)) / 2)
         this.$.summary.applyStyle("margin-left", (Math.floor(position) + 10) + "px !important");
         if (adjust > 0) {
-            setTimeout(this.restoreRight.bind(this, adjust - 1), 16);
+            setTimeout(this.restoreRight.bind(this, adjust - 1), 8);
         }
     },
     scrollerDragFinish: function(thing, event) {

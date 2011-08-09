@@ -184,7 +184,6 @@ enyo.kind({
         }
     },
     getListArticles: function(inSender, inIndex) {
-		globalSender = inSender;
         var articles = [];
         if (this.offlineArticles.length) {
             articles = this.offlineArticles;
@@ -253,7 +252,6 @@ enyo.kind({
                         }
                         if (scroller.bottom >= articles.length - (this.$.articlesList.getLookAhead()) && !this.offlineArticles.length) {
                             var count = this.articles.getUnreadCount();
-                            //this.articles.markAllRead(this.markedAllArticlesRead.bind(this, count, true), function() {enyo.log("error marking all read");});
                             for (var i = this.maxTop; i < articles.length; i++) {
                                 if (!articles[i].isRead && !articles[i].keepUnread) {
                                     this.addToMarkReadQueue(articles[i], i);
@@ -502,8 +500,8 @@ enyo.kind({
         }
     },
     selectArticle: function(index) {
-        var previousIndex = this.app.$.singleArticleView.getIndex();
         this.selectedRow = index;
+        var previousIndex = this.app.$.singleArticleView.getIndex();
         //var scrollTo = document.getElementById("page-" + index).offsetTop;
         //enyo.log("scrolling to: ", scrollTo);
         //this.$.scroller.scrollTo(-scrollTo, 0);
@@ -529,17 +527,21 @@ enyo.kind({
             scroller.bottom = scrollBottom;
         }
         this.articleClicked = false;
-		var article;
-		var length = 0;
-		if (this.offlineArticles.length) {
-			article = this.offlineArticles[index];
-			length = this.offlineArticles.length;
-		} else {
-			article = this.articles.items[index];
-			length = this.articles.items.length;
-		}
-        this.$.articlesList.refresh();
+        var article;
+        var length = 0;
+        if (this.offlineArticles.length) {
+            article = this.offlineArticles[index];
+            length = this.offlineArticles.length;
+        } else {
+            article = this.articles.items[index];
+            length = this.articles.items.length;
+        }
         this.doArticleClicked(article, index, length - 1);
+        this.$.articlesList.refresh();
+        /*
+        this.$.articlesList.updateRow(index);
+        this.$.articlesList.updateRow(previousIndex);
+        */
     },
     finishArticleRead: function(index) {
         this.$.articlesList.updateRow(index);
