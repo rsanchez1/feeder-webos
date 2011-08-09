@@ -257,7 +257,7 @@ body.light {
 }
 
 .articleTitle.starred {
-    background: url(starred-grey.png) 2px 1px no-repeat no-repeat;
+    background: url(starred-grey.png) 0 1px no-repeat no-repeat;
     /*padding-left: 20px;*/
     text-indent: 20px;
 }

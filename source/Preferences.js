@@ -29,12 +29,8 @@ enyo.kind({
             {className: "preferencesToggle", name: "feedsToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "feedsToggle"}
         ]},
         {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
-            {className: "preferencesLabel", content: "Hide read feed articles:", flex: 3},
+            {className: "preferencesLabel", content: "Hide read articles:", flex: 3},
             {className: "preferencesToggle", name: "articlesToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "articlesToggle"}
-        ]},
-        {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
-            {className: "preferencesLabel", content: "Hide read folder articles:", flex: 3},
-            {className: "preferencesToggle", name: "articlesFolderToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "articlesFolderToggle"}
         ]},
         {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
             {className: "preferencesLabel", content: "Group folder articles by:", flex: 3},
@@ -63,7 +59,7 @@ enyo.kind({
         this.$.scrollToggle.setState(Preferences.markReadAsScroll());
         this.$.feedsToggle.setState(Preferences.hideReadFeeds());
         this.$.articlesToggle.setState(Preferences.hideReadArticles());
-        this.$.articlesFolderToggle.setState(Preferences.hideReadFolderArticles());
+        //this.$.articlesFolderToggle.setState(Preferences.hideReadFolderArticles());
         this.$.groupToggle.setState(Preferences.groupFoldersByFeed());
     },
 
