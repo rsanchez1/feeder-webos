@@ -111,6 +111,18 @@ enyo.kind({
                 }
             );
         }
+        setTimeout(this.checkFeedsRefreshed.bind(this), 5000);
+    },
+
+    checkFeedsRefreshed: function() {
+        enyo.log("CHECKING IF FEEDS SUCCESSFULLY REFRESHED");
+        var numberOfItems = this.$.feedsView.getStickySourcesLength();
+        if (numberOfItems < 4) {
+            enyo.log("feeds not successfully refreshed, refresh again");
+            this.refreshFeeds();
+        } else {
+            enyo.log("feeds successfully refreshed");
+        }
     },
 
     filterAndRefresh: function(success) {

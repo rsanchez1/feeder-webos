@@ -49,13 +49,16 @@ enyo.kind({
         ]},
 		{name: "addFeedPopup", kind: "ModalDialog", components: [
 			{kind: "RowGroup", caption: "Enter Feed URL", components: [
-				{kind: "Input", name: "feedInput", hint: "", value: "", flex: 3},
+				{kind: "Input", name: "feedInput", hint: "", value: "", flex: 3, onfocus: "feedAddFocused", onblur: "feedAddBlurred", onkeypress: "feedAddKey"},
 			]},
 			{layoutKind: "HFlexLayout", pack: "center", components: [
 				{kind: "Button", caption: "", flex: 1, style: "height: 2.0em !important; margin-bottom: 20px !important;", className: "enyo-button-dark", onclick: "confirmClick", components: [
-					{name: "feedLabel", content: "OK", style: "float: left; left: 45%; position: relative; width: auto; font-size: 1.15em !important; padding-top: 0.3em !important;"},
+					{name: "feedLabel", content: "OK", style: "float: left; left: 35%; position: relative; width: auto; font-size: 1.15em !important; padding-top: 0.3em !important;"},
 					{name: "feedSpinner", kind: "Spinner", showing: false}
 				]},
+                {kind: "Button", caption: "Cancel", flex: 1, style: "height: 2.0em !important;", className: "enyo-button", onclick: "cancelClick", components: [
+                    {name: "cancelLabel", content: "Cancel", style: "float: left; left: 5%; position: relative; width: auto; font-size: 1.15em !important; padding-top: 0.3em !important;"},
+                ]},
 			]}
 		]},
     ],
@@ -81,6 +84,9 @@ enyo.kind({
     stickySourcesChanged: function() {
         enyo.log("changed sticky sources");
         this.$.stickySourcesList.render();
+    },
+    getStickySourcesLength: function() {
+        return this.stickySources.items.length ? this.stickySources.items.length : 0;
     },
     setupStickySources: function(inSender, inIndex) {
         enyo.log("sticky sources index: ", inIndex);
@@ -109,6 +115,7 @@ enyo.kind({
         }
     },
     subscriptionSourcesChanged: function() {
+        enyo.log("changed subscription sources");
         this.showSpinner = false;
         this.$.spinner.hide();
         this.$.sourcesDivider.show();
@@ -153,13 +160,23 @@ enyo.kind({
         Element.setStyle(this.$.searchQuery.node, {marginLeft: 0});
         enyo.keyboard.show();
     },
+    feedAddFocused: function(source, event) {
+        enyo.keyboard.show();
+    },
     searchBlurred: function() {
         Element.setStyle(this.$.searchQuery.node, {marginLeft: "-8px"});
+    },
+    feedAddBlurred: function() {
     },
     searchKey: function(source, event) {
         if (event.keyCode == 13) {
             this.searchClick();
             enyo.keyboard.hide();
+        }
+    },
+    feedAddKey: function(source, event) {
+        if (event.keyCode == 13) {
+            this.confirmClick();
         }
     },
     reloadFeeds: function() {
@@ -174,7 +191,12 @@ enyo.kind({
         enyo.log("confirming feed...");
         this.$.feedSpinner.show();
         this.app.api.addSubscription(this.$.feedInput.getValue(), this.addFeedSuccess.bind(this), function() {Feeder.notify("Could not add feed"); this.$.feedSpinner.hide(); this.$.addFeedPopup.close();}.bind(this));
+        enyo.keyboard.hide();
         //check for feeds
+    },
+    cancelClick: function() {
+        this.$.addFeedPopup.close();
+        enyo.keyboard.hide();
     },
     addFeedSuccess: function() {
         Feeder.notify("Successfully added feed");

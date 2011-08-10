@@ -70,7 +70,12 @@ enyo.kind({
             this.offlineArticles[i].sortOrigin = this.offlineArticles[i].origin.replace(/[^a-zA-Z 0-9 ]+/g,'');
         }
         this.$.spinner.hide();
-		//this.$.articlesList.punt();
+        if (!!this.articles.reset) {
+            this.articles.reset();
+        }
+        if (!!this.articles.items) {
+            this.articles.items = [];
+        }
         if (Preferences.groupFoldersByFeed()) {
             this.offlineArticles.sort(this.originSortingFunction);
             this.offlineArticles = this.sortSortedArticlesByDate(this.offlineArticles);
@@ -360,7 +365,7 @@ enyo.kind({
     },
 
     markedArticleRead: function(article, index) {
-        //this.finishArticleRead(index);
+        this.finishArticleRead(index);
         this.doArticleRead(article, index);
     },
     articleItemClick: function(inSender, inEvent) {
@@ -600,6 +605,12 @@ enyo.kind({
         this.$.articlesList.removeClass("medium");
         this.$.articlesList.removeClass("large");
         this.$.articlesList.addClass(Preferences.getArticleListFontSize());
+        if (this.isRendered) {
+            this.$.articlesList.refresh();
+        } else {
+            this.isRendered = true;
+            this.$.articlesList.render();
+        }
     },
     markedAllArticlesRead: function(count, wasScrolling) {
         enyo.log("marked all articles read: ", count);

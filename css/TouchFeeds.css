@@ -185,12 +185,6 @@ body.light {
 	font-weight: normal;
     white-space: normal !important;
 	overflow: hidden;
-	/*
-	height: 0.9rem;
-	text-overflow: ellipsis;
-	overflow: hidden;
-	white-space: nowrap;
-	*/
 }
 
 .unread-item .articleTitle {
@@ -201,7 +195,7 @@ body.light {
     font-weight: normal;
     font-size: 0.7rem;
     min-height: 0.9rem;
-    max-height: 2.0rem;
+    max-height: 1.8rem;
 }
 
 .dark .unread-item .articleTitle {
@@ -211,13 +205,13 @@ body.light {
 .small .articleTitle {
 	font-size: 0.5rem;
     min-height: 0.7rem;
-    max-height: 1.6rem;
+    max-height: 1.3rem;
 }
 
 .dark .small .articleTitle {
     font-size: 0.6rem;
     min-height: 0.8rem;
-    max-height: 1.7rem;
+    max-height: 1.5rem;
 }
 
 .large .articleTitle {
@@ -229,7 +223,7 @@ body.light {
 .dark .large .articleTitle {
     font-size: 0.8rem;
     min-height: 1.0rem;
-    max-height: 2.2rem;
+    max-height: 2.1rem;
 }
 
 .articleOrigin {
