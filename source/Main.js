@@ -14,7 +14,7 @@ enyo.kind({
                 {name: "singleArticleView", dragAnywhere: false, kind: "TouchFeeds.SingleArticleView", flex: 1, components: [], onSelectArticle: "selectArticle", onRead: "readArticle", onChangedOffline: "changeOffline", onStarred: "starredArticle"},
             ]},
             {name: "login", className: "enyo-bg", kind: "TouchFeeds.Login", onCancel: "closeDialog", onLogin: "handleLogin", onOpen: "openDialog"},
-            {name: "preferences", className: "enyo-bg", kind: "TouchFeeds.Preferences", onCancel: "closePreferences", onGroupChange: "groupChange", onShowHideFeedsChange: "showHideFeedsChange", onShowHideArticlesChange: "showHideArticlesChange"}
+            {name: "preferences", className: "enyo-bg", kind: "TouchFeeds.Preferences", onCancel: "closePreferences", onGroupChange: "groupChange", onSortChange: "sortChange", onShowHideFeedsChange: "showHideFeedsChange", onShowHideArticlesChange: "showHideArticlesChange", onEnableAnimations: "animationsChanged"}
         ]},
         {kind: "AppMenu", lazy: false, components: [
             {kind: "EditMenu"},
@@ -38,6 +38,7 @@ enyo.kind({
     ready: function() {
         enyo.log("called ready method");
         enyo.keyboard.setManualMode(true);
+       this.$.slidingPane.setCanAnimate(Preferences.enableAnimations());
        var orientation = enyo.getWindowOrientation();
        if (orientation == "up" || orientation == "down") {
            this.$.feeds.applyStyle("width", "320px");
@@ -331,11 +332,19 @@ enyo.kind({
        this.$.articlesView.reloadArticles();
    },
 
+   sortChange: function() {
+       this.$.articlesView.reloadArticles();
+   },
+
    showHideFeedsChange: function() {
        this.$.feedsView.refreshFeeds();
    },
 
    showHideArticlesChange: function() {
        this.$.articlesView.refreshArticles();
-   }
+   },
+
+   animationsChanged: function() {
+       this.$.slidingPane.setCanAnimate(Preferences.enableAnimations());
+   },
 });

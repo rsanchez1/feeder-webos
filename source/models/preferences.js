@@ -25,6 +25,15 @@ Preferences = {
   ARTICLE_LIST_FONT_FACE: "article-list-font-face",
   COLOR_SCHEME: "color-scheme",
   GROUP_FOLDERS_BY_FEED: "group-folders-by-feed",
+  ENABLE_ANIMATIONS: "enable-animations",
+
+  enableAnimations: function() {
+      return this.getCookie(this.ENABLE_ANIMATIONS, true);
+  },
+
+  setEnableAnimations: function(enableAnimations) {
+      this.setCookie(this.ENABLE_ANIMATIONS, enableAnimations);
+  },
 
   groupFoldersByFeed: function() {
       return this.getCookie(this.GROUP_FOLDERS_BY_FEED, true);

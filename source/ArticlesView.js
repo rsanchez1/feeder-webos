@@ -75,7 +75,11 @@ enyo.kind({
             this.offlineArticles.sort(this.originSortingFunction);
             this.offlineArticles = this.sortSortedArticlesByDate(this.offlineArticles);
         } else {
-            this.offlineArticles.sort(function(a, b) {return b.sortDate - a.sortDate;});
+            if (Preferences.isOldestFirst()) {
+                this.offlineArticles.sort(function(a, b) {return a.sortDate - b.sortDate;});
+            } else {
+                this.offlineArticles.sort(function(a, b) {return b.sortDate - a.sortDate;});
+            }
         }
         if (this.isRendered) {
             this.$.articlesList.refresh();
@@ -627,9 +631,17 @@ enyo.kind({
                 i++;
             }
             if (!!temp[0].sortDateTime) {
-                temp.sort(function(a, b) {return b.sortDateTime - a.sortDateTime;});
+                if (Preferences.isOldestFirst()) {
+                    temp.sort(function(a, b) {return a.sortDateTime - b.sortDateTime;});
+                } else {
+                    temp.sort(function(a, b) {return b.sortDateTime - a.sortDateTime;});
+                }
             } else {
-                temp.sort(function(a, b) {return b.sortDate - a.sortDate;});
+                if (Preferences.isOldestFirst()) {
+                    temp.sort(function(a, b) {return a.sortDate - b.sortDate;});
+                } else {
+                    temp.sort(function(a, b) {return b.sortDate - a.sortDate;});
+                }
             }
             for (var j = 0; j < temp.length; j++) {
                 articles[start + j] = temp[j];
@@ -654,7 +666,11 @@ enyo.kind({
                     delete this.itemsToHide[origin];
                 }
             }
-            articles.sort(function(a, b) {return b.sortDate - a.sortDate;});
+            if (Preferences.isOldestFirst()) {
+                articles.sort(function(a, b) {return a.sortDate - b.sortDate;});
+            } else {
+                articles.sort(function(a, b) {return b.sortDate - a.sortDate;});
+            }
             this.offlineArticlesChanged();
         } else {
             if (this.articles.showOrigin) {

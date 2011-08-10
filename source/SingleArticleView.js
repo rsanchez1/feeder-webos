@@ -409,16 +409,20 @@ enyo.kind({
         if (+event.dx > 100) {
             enyo.log("dragged to the right");
             if (this.index > 0) {
-                this.$.summary.applyStyle("margin-left", "130px !important");
-                setTimeout(this.restoreLeft.bind(this, 15), 16);
+                if (Preferences.enableAnimations()) {
+                    this.$.summary.applyStyle("margin-left", "130px !important");
+                    setTimeout(this.restoreLeft.bind(this, 15), 16);
+                }
                 this.doSelectArticle(this.index - 1);
             }
         }
         if (+event.dx < -100) {
             enyo.log("dragged to the left");
             if (this.index < this.maxIndex) {
-                this.$.summary.applyStyle("margin-left", "-110px !important");
-                setTimeout(this.restoreRight.bind(this, 15), 8);
+                if (Preferences.enableAnimations()) {
+                    this.$.summary.applyStyle("margin-left", "-110px !important");
+                    setTimeout(this.restoreRight.bind(this, 15), 8);
+                }
                 this.doSelectArticle(this.index + 1);
             }
         }

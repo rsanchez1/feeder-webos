@@ -7,7 +7,9 @@ enyo.kind({
         onCancel: "",
         onGroupChange: "",
         onShowHideFeedsChange: "",
-        onShowHideArticlesChange: ""
+        onShowHideArticlesChange: "",
+        onEnableAnimations: "",
+        onSortChange: "",
     },
     components: [
         {layoutKind: "HFlexLayout", pack: "center", components: [
@@ -17,6 +19,24 @@ enyo.kind({
                     {caption: "Standard", value: ""},
                     {caption: "Light", value: "light"},
                     {caption: "Dark", value: "dark"}
+                ]}
+            ]}
+        ]},
+        {layoutKind: "HFlexLayout", pack: "center", components: [
+            {content: "Sort articles by date:", flex: 2, style: "padding-top: 15px;"},
+            {kind: "Button", flex: 1, components: [
+                {kind: "ListSelector", name: "sortDateSelector", onChange: "dateChanged", items: [
+                    {caption: "Newest First", value: false},
+                    {caption: "Oldest First", value: true}
+                ]}
+            ]}
+        ]},
+        {layoutKind: "HFlexLayout", pack: "center", components: [
+            {content: "Group folder articles by:", flex: 3, style: "padding-top: 15px;"},
+            {kind: "Button", flex: 1, components: [
+                {kind: "ListSelector", name: "groupToggle", onChange: "groupToggle", items: [
+                    {caption: "Feed", value: true},
+                    {caption: "Date", value: false}
                 ]}
             ]}
         ]},
@@ -33,8 +53,8 @@ enyo.kind({
             {className: "preferencesToggle", name: "articlesToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "articlesToggle"}
         ]},
         {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
-            {className: "preferencesLabel", content: "Group folder articles by:", flex: 3},
-            {className: "preferencesToggle", name: "groupToggle", kind: "ToggleButton", flex: 1, onLabel: "Feed", offLabel: "Date", onChange: "groupToggle", className: "groupToggle"}
+            {className: "preferencesLabel", content: "Enable Animations:", flex: 3},
+            {className: "preferencesToggle", name: "animationsToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "animationsToggle", className: "groupToggle"}
         ]},
         {layoutKind: "HFlexLayout", pack: "center", components: [
             {kind: "Button", caption: "OK", flex: 1, className: "enyo-button-dark", onclick: "okClick"}
@@ -60,7 +80,8 @@ enyo.kind({
         this.$.feedsToggle.setState(Preferences.hideReadFeeds());
         this.$.articlesToggle.setState(Preferences.hideReadArticles());
         //this.$.articlesFolderToggle.setState(Preferences.hideReadFolderArticles());
-        this.$.groupToggle.setState(Preferences.groupFoldersByFeed());
+        this.$.groupToggle.setValue(Preferences.groupFoldersByFeed());
+        this.$.sortDateSelector.setValue(Preferences.isOldestFirst());
     },
 
     colorChanged: function(inSender, inValue, inOldValue) {
@@ -69,6 +90,16 @@ enyo.kind({
         Element.removeClassName(body, "dark");
         Element.addClassName(body, inValue);
         Preferences.setColorScheme(inValue);
+    },
+    
+    dateChanged: function(inSender, inValue, inOldValue) {
+        Preferences.setOldestFirst(inValue);
+        this.doSortChange();
+    },
+
+    groupToggle: function(inSender, inValue, inOldValue) {
+        Preferences.setGroupFoldersByFeed(inValue);
+        this.doGroupChange();
     },
 
     scrollToggle: function(inSender, inState) {
@@ -90,9 +121,9 @@ enyo.kind({
         this.doShowHideArticlesChange();
     },
 
-    groupToggle: function(inSender, inState) {
-        Preferences.setGroupFoldersByFeed(inState);
-        this.doGroupChange();
+    animationsToggle: function(inSender, inState) {
+        Preferences.setEnableAnimations(inState);
+        this.doEnableAnimations();
     },
 
     okClick: function() {
