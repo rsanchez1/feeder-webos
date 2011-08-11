@@ -477,6 +477,13 @@ enyo.kind({
         this.$.summary.setContent(this.introText);
         this.$.postDate.hide();
         this.$.source.hide();
+        var scrollTo = 0;
+        /*
+        if (this.$.articleScroller.getScrollTop() > 200) {
+            scrollTo = -200;
+        }
+        */
+        this.$.articleScroller.setScrollTop(scrollTo);
     },
 	introText: "<div class='touchFeedsSummary'>" +
         "<p>TouchFeeds is a Google Reader app that connects you with the websites you love. Easily navigate your feeds and articles with sliding panels. Read articles the way you want to with customizable font sizes, color schemes, the ability to fetch the full text for articles, and an offline mode that lets you read anywhere.</p>" +
@@ -523,8 +530,9 @@ enyo.kind({
         "<li><a href='http://twitter.com/confusedgeek'>@confusedgeek</a></li>" +
         "<li>baldric @ Precentral forums</li>" +
         "<li>greg @ <a href='http://www.smartphonesoft.com'>smartphonesoft</a></li>" +
+        "<li><a href='http://twitter.com/jacqofspeed'>@jacqofspeed</a></li>" +
+        "<li><a href='http://twitter.com/jkendrick'>@jkendrick</a> - James Kendrick of ZDNet Mobile News</li>" +
         "</ul>" +
-        "<p>Here would go any attribution to beta testers. If you would like to be mentioned here, contact me with how you want to be attributed (twitter, web site link, etc).</p>" +
         "</div>",
 });
 
