@@ -23,7 +23,7 @@ enyo.kind({
             {name: "preferenesLabel", caption: "Preferences", onclick: "showPreferences"}
         ]},
         {kind: "onecrayon.Database", name: "articlesDB", database: "ext:TouchFeedsArticles", version: 1, debug: false},
-        {kind: "ApplicationEvents", onWindowRotated: "windowRotated", onApplicationRelaunch: "applicationRelaunch"},
+        {kind: "ApplicationEvents", onWindowRotated: "windowRotated", onApplicationRelaunch: "applicationRelaunch", onUnload: "cleanup"},
     ],
 
     constructor: function() {
@@ -77,26 +77,9 @@ enyo.kind({
         enyo.log("logged in successfully");
         this.loggedIn = true;
         this.sources = new AllSources(this.api);
-		this.refreshFeeds();
+        this.refreshFeeds();
         this.$.loginLabel.setCaption("Logout");
-		/*
-        this.refreshFeeds(function() {
-            this.$.articlesView.setHeaderContent("All Items");
-            this.$.articlesView.setArticles(this.sources.stickySources.items[0]);
-        }.bind(this));
-		*/
-        /*
-        this.api.getUnreadCounts(function(counts) {
-            enyo.log("GOT UNREAD COUNT");
-            var unreadCount = 0;
-            $A(counts).each(function(count) {
-                if (count.count && Preferences.wantsNotificationFor(count.id)) {
-                    unReadCount += count.count;
-                }
-            });
-            enyo.log("UNREAD COUNT: ", unreadCount);
-        });
-        */
+        enyo.application.launcher.$.appDashboard.setAlarm();
     },
 
     refreshFeeds: function(callback) {
@@ -396,4 +379,8 @@ enyo.kind({
    timerChanged: function() {
         enyo.application.launcher.$.appDashboard.setAlarm();
    },
+
+   cleanup: function() {
+        enyo.application.launcher.$.appDashboard.setAlarm();
+   }
 });

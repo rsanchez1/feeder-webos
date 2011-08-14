@@ -119,33 +119,41 @@ enyo.kind({
                 enyo.log(anchor.href);
                 enyo.log("found advertisement link, remove");
                 Element.remove(anchor);
-                //Element.setStyle(anchor, {border: "3px solid #f00"});
             }
         });
         $A(this.$.summary.node.getElementsByTagName("img")).each(function(image) {
             enyo.log("attaching click end event to image");
-            image.onclick = function(event) {enyo.log("CALLED CLICK EVENT FOR IMAGE"); event.stopPropagation(); event.preventDefault(); return -1;};
-            image.onload = function() {
-                enyo.log("image loaded");
-                var image = this;
-                var dimensions = Element.measure(image, "width") * Element.measure(image, "height");
-                if (dimensions <= 1) {
-                    enyo.log(dimensions);
-                    enyo.log("found tracking pixel, remove");
-                    Element.remove(image);
-                    //Element.setStyle(anchor, {border: "3px solid #f00"});
-                } else {
-                    if (image.title !== "") {
-                        var insertAfter = image;
-                        if (Element.match(Element.up(image), "a")) {
-                            insertAfter = Element.up(image);
-                        }
-                        Element.insert(insertAfter, {after: "<span class='imageCaption' style='width: " + Element.measure(image, "width") + "px; max-width: 100% !important;'>" + image.title + "</span>"});
-                    }
-                }
-            };
+            image.onclick = this.imageClickEvent;
+            image.onload = this.imageOnload;
         });
     },
+
+    imageClickEvent: function(event) {
+        enyo.log("CALLED CLICK EVENT FOR IMAGE");
+        event.stopPropagation();
+        event.preventDefault();
+        return -1;
+    },
+
+    imageOnload: function() {
+        enyo.log("image loaded");
+        var image = this;
+        var dimensions = Element.measure(image, "width") * Element.measure(image, "height");
+        if (dimensions <= 1) {
+            enyo.log(dimensions);
+            enyo.log("found tracking pixel, remove");
+            Element.remove(image);
+        } else {
+            if (image.title !== "") {
+                var insertAfter = image;
+                if (Element.match(Element.up(image), "a")) {
+                    insertAfter = Element.up(image);
+                }
+                Element.insert(insertAfter, {after: "<span class='imageCaption' style='width: " + Element.measure(image, "width") + "px; max-width: 100% !important;'>" + image.title + "</span>"});
+            }
+        }
+    },
+
     markedArticleRead: function() {
         if (!this.article.isRead) {
             enyo.log("marked an article read");
@@ -521,6 +529,7 @@ enyo.kind({
         "</ul>" +
         "<h2>Notifications</h2>" +
         "<p>You can set up notifications to keep up with the news as it happens. When you tap the notifications icon in the Feeds pane toolbar, the Notifications preferences menu will pop up. You can turn off notifications or set them to check for new articles on your desired schedule. You can Toggle All Subscriptions for notifications. If you already have a few subscriptions set up for notifications, these will be removed, but if you have no subscriptions set up for notifications, all subscriptions will be set up for notifications. You can also toggle notificatoins for individual subscriptions by tapping on them. Any subscription set up for notifications will be <span style='color: #ff4a00 !important;'>orange</span>.</p>" + 
+        "<p>When you have new articles to read, a TouchFeeds notification icon will appear in the notifications area. New articles are displayed using grouped notifications. You can swipe away new article notifications until you reach the feed you want to read. You can tap the notification text for the feed you want to read to launch TouchFeeds and read that feed, or you can tap the icon to just launch TounchFeeds.</p>" +
         "<h2>Viewing Folders</h2>" +
         "<p>In the Feeds pane, feeds will have an RSS icon, and folders will have a folder icon. When you view a folder, you can choose to sort articles in the folder by feed. When the articles are sorted by feeds, you can tap the feed divider to show or hide all articles for that feed. You can also tap the folder header to show or hide all articles in every feed.</p>" +
         "<p>This also applies to All Items, Starred, Shared, and Offline Articles.</p>" +

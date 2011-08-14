@@ -47,5 +47,6 @@ enyo.kind({
 
     cleanup: function() {
         enyo.log("clean up, clean up, everybody everywhere...");
+        this.$.appDashboard.setAlarm();
     }
 });
