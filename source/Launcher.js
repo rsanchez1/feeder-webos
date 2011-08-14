@@ -10,6 +10,8 @@ enyo.kind({
     startup: function() {
         var params = enyo.windowParams;
         this.relaunch(params);
+        enyo.application.Metrix = new Metrix();
+        enyo.application.Metrix.postDeviceData();
     },
 
     relaunch: function(params) {

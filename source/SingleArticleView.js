@@ -496,6 +496,7 @@ enyo.kind({
         "<p>TouchFeeds features many buttons that allow you to quickly interact with your feeds.</p>" +
         "<ul class='iconGuide'> " +
         "<li class='addFeed'><div class='icon'></div>Add a feed to Google Reader</li>" +
+        "<li class='notification'><div class='icon'></div>Bring up your notification preferences</li>" +
         "<li class='refresh'><div class='icon'></div>Refresh your list of feeds or articles</li>" +
         "<li class='star'><div class='icon'></div>The article is starred. Tap this icon to remove the star.</li>" +
         "<li class='noStar'><div class='icon'></div>The article is not starred. Tap this icon to add a star.</li>" +
@@ -518,6 +519,8 @@ enyo.kind({
         "<li>In the center Articles pane, swipe an article row to star that article or to remove a star.</li>" +
         "<li>In the left-most Feeds pane, swipe a feed row to remove that feed from Google Reader.</li>" +
         "</ul>" +
+        "<h2>Notifications</h2>" +
+        "<p>You can set up notifications to keep up with the news as it happens. When you tap the notifications icon in the Feeds pane toolbar, the Notifications preferences menu will pop up. You can turn off notifications or set them to check for new articles on your desired schedule. You can Toggle All Subscriptions for notifications. If you already have a few subscriptions set up for notifications, these will be removed, but if you have no subscriptions set up for notifications, all subscriptions will be set up for notifications. You can also toggle notificatoins for individual subscriptions by tapping on them. Any subscription set up for notifications will be <span style='color: #ff4a00 !important;'>orange</span>.</p>" + 
         "<h2>Viewing Folders</h2>" +
         "<p>In the Feeds pane, feeds will have an RSS icon, and folders will have a folder icon. When you view a folder, you can choose to sort articles in the folder by feed. When the articles are sorted by feeds, you can tap the feed divider to show or hide all articles for that feed. You can also tap the folder header to show or hide all articles in every feed.</p>" +
         "<p>This also applies to All Items, Starred, Shared, and Offline Articles.</p>" +

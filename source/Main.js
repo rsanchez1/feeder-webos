@@ -146,14 +146,14 @@ enyo.kind({
                 if (!!enyo.application.launcher.messageTapped) {
                     enyo.log("MESSAGE WAS TAPPED");
                     var notification = enyo.application.launcher.$.appDashboard.$.appDashboard.pop();
-                    enyo.log("SUBSCRIPTION ID: ", notification.subscriptionID);
-                    for (var i = this.sources.subscriptionSources.items.length; i--;) {
-                        if (this.sources.subscriptionSources.items[i].id == notification.subscriptionID) {
-                            enyo.log("CLICKING A FEED");
-                            this.feedClicked("", this.sources.subscriptionSources.items[i]);
-                            enyo.application.launcher.$.appDashboard.removeDashboard();
-                            enyo.log("FEED CLICKED");
-                        }
+                    var subscription = this.sources.subscriptionSources.items.find(function(subscription) {return subscription.title.replace(/[^0-9a-zA-Z]/g, "").toLowerCase() == notification.idTitle;});
+                    if (typeof subscription == "undefined") {
+                        enyo.log("failed to get subscription");
+                    } else {
+                        enyo.log("CLICKING A FEED");
+                        this.feedClicked("", subscription);
+                        enyo.application.launcher.$.appDashboard.removeDashboard();
+                        enyo.log("FEED CLICKED");
                     }
                     enyo.application.launcher.messageTapped = false;
                 }

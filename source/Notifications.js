@@ -7,6 +7,7 @@ enyo.kind({
         onTimerChange: "",
         onCancel: "",
     },
+    isRendered: false,
     components: [
         {layoutKind: "HFlexLayout", pack: "center", components: [
             {content: "Notifications:", flex: 1, style: "padding-top: 15px;"},
@@ -22,8 +23,11 @@ enyo.kind({
                 ]}
             ]}
         ]},
+        {layoutkind: "hflexlayout", pack: "center", components: [
+            {kind: "Button", caption: "Toggle All Subscriptions", flex: 1, className: "enyo-button-dark", onclick: "toggleClick"}
+        ]},
         {kind: "Scroller", style: "height: 500px; border: 1px solid #aaa;", flex: 1, components: [
-            {name: "subscriptionSourcesList", kind: "VirtualRepeater", onSetupRow: "setupSubscriptionSources", components: [
+            {name: "subscriptionSourcesList", kind: "VirtualList", onSetupRow: "setupSubscriptionSources", components: [
                 {name: "subscriptionItem", kind: "Item", layoutKind: "VFlexLayout", components: [
                     {name: "title", style: "display: inline-block; width: 85%; margin-left: 5px; font-size: 0.7rem; font-weight: normal !important; height: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"},
                     ],
@@ -32,7 +36,7 @@ enyo.kind({
             ]
             }
         ]},
-        {layoutKind: "HFlexLayout", pack: "center", components: [
+        {layoutkind: "hflexlayout", pack: "center", components: [
             {kind: "Button", caption: "OK", flex: 1, className: "enyo-button-dark", onclick: "okClick"}
         ]}
     ],
@@ -52,14 +56,20 @@ enyo.kind({
         if (!this.subscriptionSources) {
             return;
         }
-        this.$.subscriptionSourcesList.render();
+        //Preferences.setWatchedFeeds([]);
         this.prepareFeeds();
+        if (this.isRendered) {
+            this.$.subscriptionSourcesList.refresh();
+        } else {
+            this.$.subscriptionSourcesList.render();
+            this.isRendered = true;
+        }
     },
 
     prepareFeeds: function() {
         var watchedFeeds = Preferences.getWatchedFeeds()
         this.subscriptionSources.each(function(subscription) {
-            subscription.feedWatched = watchedFeeds.any(function(n) {return n == subscription.id});
+            subscription.feedWatched = watchedFeeds.any(function(n) {return n == subscription.title.replace(/[^0-9a-zA-Z]/g, '').toLowerCase();});
         });
     },
 
@@ -96,15 +106,34 @@ enyo.kind({
         enyo.log("CLICKED SUBSCRIPTION ITEM");
         var subscription = this.subscriptionSources[inEvent.rowIndex];
         if (subscription.feedWatched) {
-          Preferences.removeNotificationFeed(subscription.id)
+          Preferences.removeNotificationFeed(subscription.title.replace(/[^0-9a-zA-Z]/g, '').toLowerCase());
         } else {
-          Preferences.addNotificationFeed(subscription.id)
+          Preferences.addNotificationFeed(subscription.title.replace(/[^0-9a-zA-Z]/g, '').toLowerCase());
         }
         this.prepareFeeds();
-        this.$.subscriptionSourcesList.renderRow(inEvent.rowIndex);
+        this.$.subscriptionSourcesList.updateRow(inEvent.rowIndex);
     },
 
     okClick: function() {
         this.doCancel();
+    },
+
+    toggleClick: function() {
+        if (this.subscriptionSources.any(function(feed) {return !!feed.feedWatched;})) {
+            this.subscriptionSources.each(function(feed) {
+                if (feed.feedWatched) {
+                    Preferences.removeNotificationFeed(feed.title.replace(/[^0-9a-zA-Z]/g, '').toLowerCase());
+                    feed.feedWatched = false;
+                }
+            });
+        } else {
+            // since there are no watched feeds, add them all
+            enyo.log("adding all feeds");
+            this.subscriptionSources.each(function(feed) {
+                Preferences.addNotificationFeed(feed.title.replace(/[^0-9a-zA-Z]/g, '').toLowerCase());
+                feed.feedWatched = true;
+            });
+        }
+        this.$.subscriptionSourcesList.refresh();
     },
 });

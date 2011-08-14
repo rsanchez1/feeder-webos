@@ -285,7 +285,7 @@ Preferences = {
   },
 
   setCookie: function(name, value) {
-    enyo.log("setting " + name + " to " + value)
+    //enyo.log("setting " + name + " to " + value)
     //this.cookieFor(name).put(value)
     enyo.setCookie(name, enyo.json.stringify(value));
   },

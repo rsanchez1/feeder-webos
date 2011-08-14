@@ -52,7 +52,6 @@ enyo.kind({
             sources.findAll(
                 function() {
                     enyo.log("setting up dashboard");
-                    //this.$.appDashboard.setLayers([]);
                     var allSubscriptions = sources.subscriptions.items.slice(0);
                     var watchedFeeds = Preferences.getWatchedFeeds();
                     var watchedFeedsObj = {};
@@ -61,9 +60,16 @@ enyo.kind({
                     }
                     enyo.log("preparing to match feeds");
                     allSubscriptions.each(function(feed) {
-                        if (!!watchedFeedsObj[feed.id] && !!feed.unreadCount) {
+                        var idTitle = feed.title.replace(/[^0-9a-zA-Z]/g, "").toLowerCase();
+                        if (!!watchedFeedsObj[idTitle] && !!feed.unreadCount) {
                             enyo.log("pushing to dashboard");
-                            dashboard.push({icon: "small_icon.png", title: Encoder.htmlDecode(feed.title), text: "You have " + feed.unreadCount + " new articles to read.", subscriptionID: feed.id});
+                            var layer = dashboard.layers.find(function(layer) {return layer.idTitle == idTitle;});
+                            if (typeof layer === "undefined") {
+                                dashboard.push({icon: "small_icon.png", title: Encoder.htmlDecode(feed.title), text: "You have " + feed.unreadCount + " new articles to read.", idTitle: idTitle});
+                            } else {
+                                layer.text = "You have " + feed.unreadCount + " new article" + (feed.unreadCount > 1 ? "s" : "") + " to read.";
+                                dashboard.updateWindow();
+                            }
                             enyo.log("finished pushing");
                         }
                     });
