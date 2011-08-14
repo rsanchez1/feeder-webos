@@ -71,13 +71,13 @@ var AllSubscriptions = Class.create(SubscriptionContainer, {
   },
 
   sort: function(success, failure) {
-    enyo.log("sorting subscriptions");
+    //enyo.log("sorting subscriptions");
     if(Preferences.isManualFeedSort()) {
-      enyo.log("manual sort");
+      //enyo.log("manual sort");
       this.sortManually(success, failure)
     }
     else {
-      enyo.log("alphabetical sort");
+      //enyo.log("alphabetical sort");
       this.sortAlphabetically(success, failure)
     }
   },
@@ -86,7 +86,7 @@ var AllSubscriptions = Class.create(SubscriptionContainer, {
     var self = this
 
     if(self.sorted == "alphabetic") {
-      enyo.log("was sorted alphabetically");
+      //enyo.log("was sorted alphabetically");
       success()
     }
     else {
@@ -99,7 +99,7 @@ var AllSubscriptions = Class.create(SubscriptionContainer, {
       })
 
       self.sorted = "alphabetic"
-      enyo.log("finished sorting, call success");
+      //enyo.log("finished sorting, call success");
       success()
     }
   },

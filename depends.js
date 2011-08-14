@@ -25,11 +25,14 @@ enyo.depends(
     "source/models/starred.js",
     "source/models/subscription.js",
     //START VIEWS
+    "source/Dashboard.js",
+    "source/Launcher.js",
     "source/Main.js",
     "source/FeedsView.js",
     "source/ArticlesView.js",
     "source/SingleArticleView.js",
     "source/Login.js",
     "source/Preferences.js",
+    "source/Notifications.js",
     "css/TouchFeeds.css"
 );

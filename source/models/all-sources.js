@@ -1,6 +1,6 @@
 var AllSources = Class.create({
   initialize: function(api) {
-    enyo.log("Initializing all sources");
+    //enyo.log("Initializing all sources");
     this.all = new AllArticles(api)
     this.starred = new Starred(api)
     this.shared = new Shared(api)
@@ -11,12 +11,12 @@ var AllSources = Class.create({
   },
 
   findAll: function(success, failure) {
-    enyo.log("Finding all");
+    //enyo.log("Finding all");
     var self = this
 
     self.subscriptions.findAll(
       function() {
-        enyo.log("Successfully found all");
+        //enyo.log("Successfully found all");
         self.all.setUnreadCount(self.subscriptions.getUnreadCount())
         success()
       },
@@ -26,22 +26,22 @@ var AllSources = Class.create({
   },
 
   sortAndFilter: function(success, failure) {
-    enyo.log("Sorting and filtering");
+    //enyo.log("Sorting and filtering");
     var self = this
     self.subscriptionSources.items.clear()
 
     self.subscriptions.sort(
       function() {
-        enyo.log("called success from all sorts");
+        //enyo.log("called success from all sorts");
         var hideReadFeeds = Preferences.hideReadFeeds()
-        enyo.log("should hide read feeds? ", hideReadFeeds);
+        //enyo.log("should hide read feeds? ", hideReadFeeds);
 
         self.subscriptions.items.each(function(subscription) {
           if(!hideReadFeeds || (hideReadFeeds && subscription.unreadCount)) {
             self.subscriptionSources.items.push(subscription)
           }
         })
-        enyo.log("calling success callback for sortAndFilter");
+        //enyo.log("calling success callback for sortAndFilter");
 
         success()
       },
@@ -68,10 +68,10 @@ var AllSources = Class.create({
   nukedEmAll: function() {
     this.all.clearUnreadCount()
 
-    enyo.log("Marked EVERYTHING read")
+    //enyo.log("Marked EVERYTHING read")
 
     this.subscriptions.items.each(function(item) {
-      enyo.log("Marking " + item.id + " read")
+      //enyo.log("Marking " + item.id + " read")
 
       if(item.isFolder) {
         item.subscriptions.items.each(function(subscription) {

@@ -347,7 +347,7 @@ var Api = Class.create({
   },
 
   mapSearchResults: function(response) {
-    console.log(response.responseText)
+    //console.log(response.responseText)
   },
 
   setArticleRead: function(articleId, subscriptionId, success, failure) {

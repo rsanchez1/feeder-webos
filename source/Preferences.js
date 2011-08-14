@@ -91,7 +91,7 @@ enyo.kind({
         Element.addClassName(body, inValue);
         Preferences.setColorScheme(inValue);
     },
-    
+
     dateChanged: function(inSender, inValue, inOldValue) {
         Preferences.setOldestFirst(inValue);
         this.doSortChange();

@@ -21,7 +21,7 @@ var Sharing = {
 
   getPopupFor: function(article) {
     var sortOrder = Preferences.getSharingOptionsSortOrder()
-    console.log(sortOrder)
+    //console.log(sortOrder)
 
     if(sortOrder.length) {
       sortOrder.each(function(id, i) {

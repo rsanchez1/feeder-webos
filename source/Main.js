@@ -5,7 +5,7 @@ enyo.kind({
     components: [
         {name: "slidingPane", kind: "SlidingPane", fixedWidth: true, flex: 1, onSelectView: "slidingSelected", components: [
             {name: "feeds", width: "320px", fixedWidth: true, components: [
-                {name: "feedsView", kind: "TouchFeeds.FeedsView", headerContent: "TouchFeeds", flex: 1, components: [], onFeedClicked: "feedClicked", onRefreshFeeds: "refreshFeeds", onHeaderClicked: "feedsHeaderClicked"}
+                {name: "feedsView", kind: "TouchFeeds.FeedsView", headerContent: "TouchFeeds", flex: 1, components: [], onFeedClicked: "feedClicked", onRefreshFeeds: "refreshFeeds", onHeaderClicked: "feedsHeaderClicked", onNotificationClicked: "notificationClicked"}
             ]},
             {name: "articles", width: "320px", fixedWidth: true, components: [
                 {name: "articlesView", kind: "TouchFeeds.ArticlesView", headerContent: "All Items", flex: 1, components: [], onArticleClicked: "articleClicked", onArticleRead: "articleRead", onAllArticlesRead: "markedAllRead"}
@@ -14,17 +14,16 @@ enyo.kind({
                 {name: "singleArticleView", dragAnywhere: false, kind: "TouchFeeds.SingleArticleView", flex: 1, components: [], onSelectArticle: "selectArticle", onRead: "readArticle", onChangedOffline: "changeOffline", onStarred: "starredArticle"},
             ]},
             {name: "login", className: "enyo-bg", kind: "TouchFeeds.Login", onCancel: "closeDialog", onLogin: "handleLogin", onOpen: "openDialog"},
-            {name: "preferences", className: "enyo-bg", kind: "TouchFeeds.Preferences", onCancel: "closePreferences", onGroupChange: "groupChange", onSortChange: "sortChange", onShowHideFeedsChange: "showHideFeedsChange", onShowHideArticlesChange: "showHideArticlesChange", onEnableAnimations: "animationsChanged"}
+            {name: "preferences", className: "enyo-bg", kind: "TouchFeeds.Preferences", onCancel: "closePreferences", onGroupChange: "groupChange", onSortChange: "sortChange", onShowHideFeedsChange: "showHideFeedsChange", onShowHideArticlesChange: "showHideArticlesChange", onEnableAnimations: "animationsChanged", onTimerChange: "timerChanged"},
+            {name: "notifications", className: "enyo-bg", kind: "TouchFeeds.Notifications", onCancel: "closeNotifications", onTimerChange: "timerChanged"}
         ]},
         {kind: "AppMenu", lazy: false, components: [
             {kind: "EditMenu"},
             {name: "loginLabel", caption: "Login", onclick: "showLogin"},
             {name: "preferenesLabel", caption: "Preferences", onclick: "showPreferences"}
         ]},
-		{kind: "onecrayon.Database", name: "articlesDB", database: "ext:TouchFeedsArticles", version: 1, debug: false},
+        {kind: "onecrayon.Database", name: "articlesDB", database: "ext:TouchFeedsArticles", version: 1, debug: false},
         {kind: "ApplicationEvents", onWindowRotated: "windowRotated", onApplicationRelaunch: "applicationRelaunch"},
-        {kind: "Dashboard", name: "appDashboard"},
-        {kind: "PalmService", name: "setAlarm", service: "palm://com.palm.power/timeout/", method: "set", subscribed: true, onSuccess: "subscriptionSuccess", onFailure: "subscriptionFailure"},
     ],
 
     constructor: function() {
@@ -72,12 +71,6 @@ enyo.kind({
             setTimeout(function() {this.$.login.openAtCenter();}.bind(this), 0);
         }
         Element.addClassName(document.body, Preferences.getColorScheme());
-        /*
-        this.$.appDashboard.push({icon: "small_icon.png", title: "Dashboard Test", text: "PreCentral"});
-        this.$.appDashboard.push({icon: "small_icon.png", title: "Dashboard Test 2", text: "WebOS Roundup"});
-        this.$.appDashboard.push({icon: "small_icon.png", title: "Dashboard Test 3", text: "Palm Developer Blog"});
-        */
-        //this.$.setAlarm.call({"wakeup": true, "key": "touchFeedsNotification", "uri": "com.palm.applicationManager/launch", "params": {"id": "com.sanchezapps.touchfeedsbeta", "params": {"action": "alarmWakeup"}}, "in": "00:01:00"});
     },
 
     loginSuccess: function() {
@@ -92,6 +85,18 @@ enyo.kind({
             this.$.articlesView.setArticles(this.sources.stickySources.items[0]);
         }.bind(this));
 		*/
+        /*
+        this.api.getUnreadCounts(function(counts) {
+            enyo.log("GOT UNREAD COUNT");
+            var unreadCount = 0;
+            $A(counts).each(function(count) {
+                if (count.count && Preferences.wantsNotificationFor(count.id)) {
+                    unReadCount += count.count;
+                }
+            });
+            enyo.log("UNREAD COUNT: ", unreadCount);
+        });
+        */
     },
 
     refreshFeeds: function(callback) {
@@ -103,6 +108,7 @@ enyo.kind({
             this.sources.findAll(
                 function() {
                     enyo.log("Filtering and refreshing...");
+                    this.allSubscriptions = this.sources.subscriptions.items.slice(0);
                     this.filterAndRefresh(callback);
                 }.bind(this),
 
@@ -137,12 +143,30 @@ enyo.kind({
                 }
                 this.$.feedsView.setStickySources(this.sources.stickySources);
                 this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
+                if (!!enyo.application.launcher.messageTapped) {
+                    enyo.log("MESSAGE WAS TAPPED");
+                    var notification = enyo.application.launcher.$.appDashboard.$.appDashboard.pop();
+                    enyo.log("SUBSCRIPTION ID: ", notification.subscriptionID);
+                    for (var i = this.sources.subscriptionSources.items.length; i--;) {
+                        if (this.sources.subscriptionSources.items[i].id == notification.subscriptionID) {
+                            enyo.log("CLICKING A FEED");
+                            this.feedClicked("", this.sources.subscriptionSources.items[i]);
+                            enyo.application.launcher.$.appDashboard.removeDashboard();
+                            enyo.log("FEED CLICKED");
+                        }
+                    }
+                    enyo.application.launcher.messageTapped = false;
+                }
             }.bind(this),
 
             function() {
                 enyo.log("Error sorting and filtering");
             }
         );
+    },
+
+    getSubscriptionSources: function() {
+        return this.allSubscriptions;
     },
 
     loginFailure: function() {
@@ -178,6 +202,10 @@ enyo.kind({
 
     closePreferences: function() {
         this.$.preferences.close();
+    },
+
+    closeNotifications: function() {
+        this.$.notifications.close();
     },
 
     showLogin: function() {
@@ -267,6 +295,7 @@ enyo.kind({
     articleRead: function(thing, article, index) {
         this.sources.articleRead(article.subscriptionId);
         this.sources.sortAndFilter(function() {
+            this.$.feedsView.setChangeId(article.subscriptionId);
             this.$.feedsView.setStickySources(this.sources.stickySources);
             this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
         }.bind(this), function() {enyo.log("error sorting and filtering");});
@@ -340,6 +369,10 @@ enyo.kind({
         this.$.slidingPane.selectViewByName('singleArticle', true);
    },
 
+   notificationClicked: function() {
+       this.$.notifications.openAtCenter();
+   },
+
    groupChange: function() {
        this.$.articlesView.reloadArticles();
    },
@@ -358,5 +391,9 @@ enyo.kind({
 
    animationsChanged: function() {
        this.$.slidingPane.setCanAnimate(Preferences.enableAnimations());
+   },
+
+   timerChanged: function() {
+        enyo.application.launcher.$.appDashboard.setAlarm();
    },
 });

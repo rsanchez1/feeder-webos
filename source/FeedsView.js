@@ -6,12 +6,14 @@ enyo.kind({
         headerContent: "",
         showSpinner: false,
         stickySources: [],
+        changeId: "",
         subscriptionSources: []
     },
     events: {
         onFeedClicked: "",
         onRefreshFeeds: "",
         onHeaderClicked: "",
+        onNotificationClicked: "",
     },
     components: [
         //{name: "header", kind: "Header"},
@@ -46,6 +48,7 @@ enyo.kind({
         {kind: "Toolbar", components: [
             {name: "addFeedButton", kind: "IconButton", icon: "images/icon_rss_add.png", onclick: "addFeedClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 0; top: 11px;"},
             {name: "refreshButton", kind: "IconButton", icon: "images/refresh.png", onclick: "refreshClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 60px; top: 11px;"},
+            {name: "notificationButton", kind: "IconButton", icon: "images/icon_bell.png", onclick: "notificationClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 120px; top: 11px;"},
         ]},
 		{name: "addFeedPopup", kind: "ModalDialog", components: [
 			{kind: "RowGroup", caption: "Enter Feed URL", components: [
@@ -86,6 +89,9 @@ enyo.kind({
         this.$.stickySourcesList.render();
     },
     getStickySourcesLength: function() {
+        if (!this.stickySources && !this.stickySources.items) {
+            return 0;
+        }
         return this.stickySources.items.length ? this.stickySources.items.length : 0;
     },
     setupStickySources: function(inSender, inIndex) {
@@ -119,7 +125,18 @@ enyo.kind({
         this.showSpinner = false;
         this.$.spinner.hide();
         this.$.sourcesDivider.show();
-        this.$.subscriptionSourcesList.render();
+        if (this.changeId !== "") {
+            var index = 0;
+            for (var i = this.subscriptionSources.items.length; i--;) {
+                if (this.subscriptionSources.items[i].subscriptionId == this.changeId) {
+                    index = i;
+                }
+            }
+            this.$.subscriptionSourcesList.renderRow(index);
+            this.changeId = "";
+        } else {
+            this.$.subscriptionSourcesList.render();
+        }
     },
     setupSubscriptionSources: function(inSender, inIndex) {
         if (!!this.subscriptionSources.items) {
@@ -207,6 +224,9 @@ enyo.kind({
     },
     refreshClick: function() {
         this.doRefreshFeeds();
+    },
+    notificationClick: function() {
+        this.doNotificationClicked();
     },
     confirmedDeleteItem: function(inSender, inIndex) {
         enyo.log("wanted to delete item: ", inIndex);

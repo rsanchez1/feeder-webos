@@ -70,10 +70,10 @@ enyo.kind({
         this.inherited(arguments);
         //this.$.headerContent.setContent("Welcome to TouchFeeds");
         this.$.articleTitle.setContent("Welcome to TouchFeeds");
-		this.$.summary.setContent(this.introText);
+        this.$.summary.setContent(this.introText);
         this.$.postDate.hide();
         this.$.source.hide();
-		this.app = enyo.application.app
+        this.app = enyo.application.app
     },
     articleChanged: function() {
         var scrollTo = 0;
@@ -249,6 +249,8 @@ enyo.kind({
         enyo.log(this.index);
         if (this.index > 0) {
             this.doSelectArticle(this.index - 1);
+        } else {
+            this.app.$.slidingPane.selectViewByName('feeds', true);
         }
     },
     nextClick: function() {
@@ -257,6 +259,8 @@ enyo.kind({
         enyo.log(this.maxIndex);
         if (this.index < this.maxIndex) {
             this.doSelectArticle(this.index + 1);
+        } else {
+            this.app.$.slidingPane.selectViewByName('feeds', true);
         }
     },
     fontClick: function(source, inEvent) {

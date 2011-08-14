@@ -3,8 +3,9 @@
 	"version": "1.0.0",
 	"vendor": "Sanchez Apps",
 	"type": "web",
-	"main": "index.html",
+	"main": "launcher.html",
 	"title": "TouchFeeds",
 	"uiRevision": "2",
-        "icon": "icon.png"
+        "icon": "icon.png",
+        "noWindow": true
 }
