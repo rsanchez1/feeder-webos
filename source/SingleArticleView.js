@@ -121,10 +121,12 @@ enyo.kind({
                 Element.remove(anchor);
             }
         });
+        var imageClickEvent = this.imageClickEvent;
+        var imageOnload = this.imageOnload;
         $A(this.$.summary.node.getElementsByTagName("img")).each(function(image) {
             enyo.log("attaching click end event to image");
-            image.onclick = this.imageClickEvent;
-            image.onload = this.imageOnload;
+            image.onclick = imageClickEvent;
+            image.onload = imageOnload;
         });
     },
 

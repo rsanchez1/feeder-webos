@@ -23,6 +23,15 @@ enyo.kind({
             ]}
         ]},
         {layoutKind: "HFlexLayout", pack: "center", components: [
+            {content: "Sort Feeds:", flex: 1, style: "padding-top: 15px;"},
+            {kind: "Button", flex: 1, components: [
+                {kind: "ListSelector", name: "sortFeedsSelector", onChange: "sortChanged", items: [
+                    {caption: "Alphabetically", value: false},
+                    {caption: "Manually", value: true},
+                ]}
+            ]}
+        ]},
+        {layoutKind: "HFlexLayout", pack: "center", components: [
             {content: "Sort articles by date:", flex: 2, style: "padding-top: 15px;"},
             {kind: "Button", flex: 1, components: [
                 {kind: "ListSelector", name: "sortDateSelector", onChange: "dateChanged", items: [
@@ -94,6 +103,7 @@ enyo.kind({
     componentsReady: function() {
         this.inherited(arguments);
         this.$.colorSchemeSelector.setValue(Preferences.getColorScheme());
+        this.$.sortFeedsSelector.setValue(Preferences.isManualFeedSort());
         this.$.scrollToggle.setState(Preferences.markReadAsScroll());
         this.$.feedsToggle.setState(Preferences.hideReadFeeds());
         this.$.articlesToggle.setState(Preferences.hideReadArticles());
@@ -114,6 +124,11 @@ enyo.kind({
 
     dateChanged: function(inSender, inValue, inOldValue) {
         Preferences.setOldestFirst(inValue);
+        this.doSortChange();
+    },
+    
+    sortChanged: function(inSender, inValue, inOldValue) {
+        Preferences.setManualFeedSort(inValue);
         this.doSortChange();
     },
 

@@ -362,6 +362,7 @@ enyo.kind({
 
    sortChange: function() {
        this.$.articlesView.reloadArticles();
+       this.$.feedsView.refreshFeeds();
    },
 
    showHideFeedsChange: function() {
