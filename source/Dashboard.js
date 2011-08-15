@@ -15,7 +15,6 @@ enyo.kind({
     setAlarm: function() {
         enyo.log("setting alarm for dashboard");
         enyo.log(Preferences.notificationInterval());
-        //TODO: set this to refresh instead of alarm wakeup
         if (Preferences.notificationInterval() == "00:00:00") {
             this.$.clearAlarm.call({"key": "com.sanchezapps.touchfeeds.sync"});
         } else {
@@ -27,7 +26,7 @@ enyo.kind({
                     "id": "com.sanchezapps.touchfeeds",
                     "params": {"action": "alarmWakeup"}
                 },
-                "in": "00:06:00"
+                "in": Preferences.notificationInterval()
             };
             this.$.setAlarm.call(params);
         }
@@ -65,7 +64,7 @@ enyo.kind({
                             enyo.log("pushing to dashboard");
                             var layer = dashboard.layers.find(function(layer) {return layer.idTitle == idTitle;});
                             if (typeof layer === "undefined") {
-                                dashboard.push({icon: "small_icon.png", title: Encoder.htmlDecode(feed.title), text: "You have " + feed.unreadCount + " new articles to read.", idTitle: idTitle});
+                                dashboard.push({icon: "small_icon.png", title: Encoder.htmlDecode(feed.title), text: "You have " + feed.unreadCount + " new article" + (feed.unreadCount > 1 ? "s" : "") + " to read.", idTitle: idTitle});
                             } else {
                                 layer.text = "You have " + feed.unreadCount + " new article" + (feed.unreadCount > 1 ? "s" : "") + " to read.";
                                 dashboard.updateWindow();

@@ -54,6 +54,7 @@ enyo.kind({
         this.$.intervalSelector.setValue(Preferences.notificationInterval());
         this.subscriptionSources = enyo.application.app.getSubscriptionSources();
         if (!this.subscriptionSources) {
+            setTimeout(this.componentsReady.bind(this), 300);
             return;
         }
         //Preferences.setWatchedFeeds([]);

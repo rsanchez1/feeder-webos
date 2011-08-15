@@ -21,6 +21,7 @@ enyo.kind({
     markReadTimeout: 0,
     itemsToMarkRead: [],
     itemsToHide: {},
+    originCount: {},
     components: [
         //{name: "header", kind: "Header"},
         {name: "header", kind: "PageHeader", components: [
@@ -143,6 +144,7 @@ enyo.kind({
         this.$.articlesList.removeClass("large");
         this.$.articlesList.addClass(Preferences.getArticleListFontSize());
         this.itemsToHide = {};
+        this.originCount = {};
     },
     foundArticles: function() {
         enyo.log("Found articles");
@@ -213,7 +215,11 @@ enyo.kind({
                     this.$.articleItem.hide();
                     this.$.articleItem.addClass("firstRow");
                     this.$.articleItem.addClass("lastRow");
-                    this.$.divider.setCaption(r.origin);
+                    if (!!r.displayOrigin) {
+                        this.$.divider.setCaption(r.displayOrigin);
+                    } else {
+                        this.$.divider.setCaption(r.origin);
+                    }
                     this.$.divider.canGenerate = true;
                 } else {
                     this.$.articleItem.show();
@@ -300,7 +306,11 @@ enyo.kind({
                                 this.$.articleItem.removeClass("firstRow");
                             }
                         } else {
-                            this.$.divider.setCaption(r.origin);
+                            if (!!r.displayOrigin) {
+                                this.$.divider.setCaption(r.displayOrigin);
+                            } else {
+                                this.$.divider.setCaption(r.origin);
+                            }
                             this.$.divider.canGenerate = true;
                             this.$.articleItem.addClass("firstRow");
                             if (inIndex + 1 < articles.length && articles[inIndex + 1].origin != r.origin) {
@@ -654,8 +664,15 @@ enyo.kind({
                     temp.sort(function(a, b) {return b.sortDate - a.sortDate;});
                 }
             }
+            var numberOfArticles = temp.length;
             for (var j = 0; j < temp.length; j++) {
                 articles[start + j] = temp[j];
+                if (!!this.originCount[articles[start + j].origin]) {
+                    articles[start + j].displayOrigin = "(" + this.originCount[articles[start + j].origin] + ") " + articles[start + j].origin;
+                } else {
+                    articles[start + j].displayOrigin = "(" + numberOfArticles + ") " + articles[start + j].origin;
+                    this.originCount[articles[start + j].origin] = numberOfArticles;
+                }
             }
             start = i;
         }
