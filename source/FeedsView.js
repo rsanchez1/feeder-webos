@@ -46,9 +46,9 @@ enyo.kind({
             }
         ]},
         {kind: "Toolbar", components: [
-            {name: "addFeedButton", kind: "IconButton", icon: "images/icon_rss_add.png", onclick: "addFeedClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 0; top: 11px;"},
-            {name: "refreshButton", kind: "IconButton", icon: "images/refresh.png", onclick: "refreshClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 60px; top: 11px;"},
-            {name: "notificationButton", kind: "IconButton", icon: "images/icon_bell.png", onclick: "notificationClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 120px; top: 11px;"},
+            {name: "addFeedButton", kind: "IconButton", icon: "images/icon_rss_add.png", onclick: "addFeedClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 60px; top: 11px;"},
+            {name: "refreshButton", kind: "IconButton", icon: "images/refresh.png", onclick: "refreshClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 120px; top: 11px;"},
+            {name: "notificationButton", kind: "IconButton", icon: "images/icon_bell.png", onclick: "notificationClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 180px; top: 11px;"},
         ]},
 		{name: "addFeedPopup", kind: "ModalDialog", components: [
 			{kind: "RowGroup", caption: "Enter Feed URL", components: [

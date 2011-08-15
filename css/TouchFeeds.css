@@ -309,7 +309,11 @@ body.light {
 }
 
 .touchFeedsSummary li.addFeed .icon {
-    background: #a8a8a8 url(../images/icon_rss_add.png) 0 0 no-repeat;
+    background: #a8a8a8 url(../images/icon_rss_add.png) -1px -1px no-repeat;
+}
+
+.touchFeedsSummary .li.notification .icon {
+    background: #a8a8a8 url(../images/icon_bell.png) 0 0 no-repeat;
 }
 
 .touchFeedsSummary li.refresh .icon {
