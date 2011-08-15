@@ -344,6 +344,7 @@ enyo.kind({
                 this.$.openAppService.call({
                     id: "com.palm.app.enyo-facebook",
                     params: {
+                        type: "status",
                         statusText: Encoder.htmlEncode(this.article.title) + " -- " + Encoder.htmlEncode(this.article.url)
                     }
                 });
