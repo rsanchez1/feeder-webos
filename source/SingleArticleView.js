@@ -60,9 +60,9 @@ enyo.kind({
             {caption: "Share with Twitter", shareValue: "twitter", onclick: "chooseShare"},
             {caption: "Share with Facebook", shareValue: "facebook", onclick: "chooseShare"},
             {caption: "Share with Read it Later", shareValue: "readitlater", onclick: "chooseShare"},
+            {caption: "Share with Paper Mache", shareValue: "paper", onclick: "chooseShare"},
             {caption: "Share via Email", shareValue: "email", onclick: "chooseShare"},
             {caption: "Share via SMS", shareValue: "sms", onclick: "chooseShare"},
-            {caption: "Share with Paper Mache", shareValue: "paper", onclick: "chooseShare"}
         ]},
         {name: "openAppService", kind: "PalmService", service: "palm://com.palm.applicationManager/", method: "launch"}
     ],
@@ -324,10 +324,30 @@ enyo.kind({
             window.open("https://readitlaterlist.com/save?url=" + Encoder.htmlEncode(this.article.url) + "&title=" + Encoder.htmlEncode(this.article.title));
         }
         if (source.shareValue == "twitter") {
-            window.open("http://twitter.com/home?status=" + Encoder.htmlEncode(this.article.title) + " -- " + Encoder.htmlEncode(this.article.url));
+            enyo.log(Preferences.twitterSharingOption());
+            if (Preferences.twitterSharingOption() == "spaz") {
+                this.$.openAppService.call({
+                    id: "com.funkatron.app.spaz-hd",
+                    params: {
+                        action: "post",
+                        msg: Encoder.htmlEncode(this.article.title) + " -- " + Encoder.htmlEncode(this.article.url)
+                    }
+                });
+            } else {
+                window.open("http://twitter.com/home?status=" + Encoder.htmlEncode(this.article.title) + " -- " + Encoder.htmlEncode(this.article.url));
+            }
         }
         if (source.shareValue == "facebook") {
-            window.open("http://www.facebook.com/sharer/sharer.php?u=" + Encoder.htmlEncode(this.article.url) + "&t=" + Encoder.htmlEncode(this.article.title));
+            if (Preferences.facebookSharingOption() == "app") {
+                this.$.openAppService.call({
+                    id: "com.palm.app.enyo-facebook",
+                    params: {
+                        statusText: Encoder.htmlEncode(this.article.title) + " -- " + Encoder.htmlEncode(this.article.url)
+                    }
+                });
+            } else {
+                window.open("http://www.facebook.com/sharer/sharer.php?u=" + Encoder.htmlEncode(this.article.url) + "&t=" + Encoder.htmlEncode(this.article.title));
+            }
         }
         if (source.shareValue == "email") {
             this.$.openAppService.call({
@@ -426,6 +446,8 @@ enyo.kind({
                     setTimeout(this.restoreLeft.bind(this, 15), 16);
                 }
                 this.doSelectArticle(this.index - 1);
+            } else {
+                this.app.$.slidingPane.selectViewByName('feeds', true);
             }
         }
         if (+event.dx < -100) {
@@ -436,6 +458,8 @@ enyo.kind({
                     setTimeout(this.restoreRight.bind(this, 15), 8);
                 }
                 this.doSelectArticle(this.index + 1);
+            } else {
+                this.app.$.slidingPane.selectViewByName('feeds', true);
             }
         }
     },
@@ -503,9 +527,9 @@ enyo.kind({
         "<h2>Icon Guide</h2>" +
         "<p>TouchFeeds features many buttons that allow you to quickly interact with your feeds.</p>" +
         "<ul class='iconGuide'> " +
-        "<li class='addFeed'><div class='icon'></div>Add a feed to Google Reader</li>" +
-        "<li class='notification'><div class='icon'></div>Bring up your notification preferences</li>" +
-        "<li class='refresh'><div class='icon'></div>Refresh your list of feeds or articles</li>" +
+        "<li class='addFeed'><div class='icon'></div>Add a feed to Google Reader.</li>" +
+        "<li class='notification'><div class='icon'></div>Bring up your notification preferences.</li>" +
+        "<li class='refresh'><div class='icon'></div>Refresh your list of feeds or articles.</li>" +
         "<li class='star'><div class='icon'></div>The article is starred. Tap this icon to remove the star.</li>" +
         "<li class='noStar'><div class='icon'></div>The article is not starred. Tap this icon to add a star.</li>" +
         "<li class='markRead'><div class='icon'></div>Mark an article read, or all articles in a feed read.</li>" +
@@ -528,13 +552,15 @@ enyo.kind({
         "<li>In the left-most Feeds pane, swipe a feed row to remove that feed from Google Reader.</li>" +
         "</ul>" +
         "<h2>Notifications</h2>" +
-        "<p>You can set up notifications to keep up with the news as it happens. When you tap the notifications icon in the Feeds pane toolbar, the Notifications preferences menu will pop up. You can turn off notifications or set them to check for new articles on your desired schedule. You can Toggle All Subscriptions for notifications. If you already have a few subscriptions set up for notifications, these will be removed, but if you have no subscriptions set up for notifications, all subscriptions will be set up for notifications. You can also toggle notificatoins for individual subscriptions by tapping on them. Any subscription set up for notifications will be <span style='color: #ff4a00 !important;'>orange</span>.</p>" + 
+        "<p>You can set up notifications to keep up with the news as it happens. When you tap the notifications icon in the Feeds pane toolbar, the Notifications preferences menu will pop up. You can turn off notifications or select how often to check for new articles. You can tap the Toggle All Subscriptions buttons to remove or add all subscriptions for notifications. You can also toggle notificatons for individual subscriptions by tapping on them. Any subscription set up for notifications will be <span style='color: #ff4a00 !important;'>orange</span>.</p>" + 
         "<p>When you have new articles to read, a TouchFeeds notification icon will appear in the notifications area. New articles are displayed using grouped notifications. You can swipe away new article notifications until you reach the feed you want to read. You can tap the notification text for the feed you want to read to launch TouchFeeds and read that feed, or you can tap the icon to just launch TounchFeeds.</p>" +
         "<h2>Viewing Folders</h2>" +
         "<p>In the Feeds pane, feeds will have an RSS icon, and folders will have a folder icon. When you view a folder, you can choose to sort articles in the folder by feed. When the articles are sorted by feeds, you can tap the feed divider to show or hide all articles for that feed. You can also tap the folder header to show or hide all articles in every feed.</p>" +
         "<p>This also applies to All Items, Starred, Shared, and Offline Articles.</p>" +
         "<h2>Application Menu</h2>" +
-        "<p>In the App Menu, you can login or logout, and you can toggle Preferences for color scheme, hiding or showing read feeds or articles, marking articles read as you scroll, and sorting and grouping options for articles.</p>" +
+        "<p>In the App Menu, you can login or logout, and you can toggle Preferences for color scheme, article grouping and sorting, sharing options for Twitter and Facebook, hiding or showing read feeds or articles, marking articles read as you scroll, and enabling or disabling animations.</p>" +
+        "<h2>Sharing</h2>" +
+        "<p>TouchFeeds features a variety of sharing options. You can share using your Google Reader account, Twitter, Facebook, Read it Later, Instapaper via Paper Mache, Email, and SMS. You can also configure your Facebook and Twitter sharing options in the Preferences menu.</p>" +
         "<h2>Open Source</h2>" +
         "<p>This app is open source. You can find the full source and license at <a href='https://github.com/rsanchez1/feeder-webos/tree/enyo'>TouchFeeds on Github</a>.</p>" + 
         "<h2>Contact</h2>" +

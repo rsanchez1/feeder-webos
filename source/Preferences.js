@@ -40,6 +40,24 @@ enyo.kind({
                 ]}
             ]}
         ]},
+        {layoutKind: "HFlexLayout", pack: "center", components: [
+            {content: "Share to Twitter using:", flex: 3, style: "padding-top: 15px;"},
+            {kind: "Button", flex: 1, components: [
+                {kind: "ListSelector", name: "twitterToggle", onChange: "twitterToggle", items: [
+                    {caption: "Web", value: "web"},
+                    {caption: "Spaz HD", value: "spaz"}
+                ]}
+            ]}
+        ]},
+        {layoutKind: "HFlexLayout", pack: "center", components: [
+            {content: "Share to Facebook using:", flex: 3, style: "padding-top: 15px;"},
+            {kind: "Button", flex: 1, components: [
+                {kind: "ListSelector", name: "facebookToggle", onChange: "facebookToggle", items: [
+                    {caption: "Web", value: "web"},
+                    {caption: "App", value: "app"}
+                ]}
+            ]}
+        ]},
         {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
             {className: "preferencesLabel", content: "Mark read as you scroll:", flex: 3},
             {className: "preferencesToggle", name: "scrollToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "scrollToggle"}
@@ -81,6 +99,8 @@ enyo.kind({
         this.$.articlesToggle.setState(Preferences.hideReadArticles());
         //this.$.articlesFolderToggle.setState(Preferences.hideReadFolderArticles());
         this.$.groupToggle.setValue(Preferences.groupFoldersByFeed());
+        this.$.twitterToggle.setValue(Preferences.twitterSharingOption());
+        this.$.facebookToggle.setValue(Preferences.facebookSharingOption());
         this.$.sortDateSelector.setValue(Preferences.isOldestFirst());
     },
 
@@ -100,6 +120,14 @@ enyo.kind({
     groupToggle: function(inSender, inValue, inOldValue) {
         Preferences.setGroupFoldersByFeed(inValue);
         this.doGroupChange();
+    },
+
+    twitterToggle: function(inSender, inValue, inOldValue) {
+        Preferences.setTwitterSharingOption(inValue);
+    },
+
+    facebookToggle: function(inSender, inValue, inOldValue) {
+        Preferences.setFacebookSharingOption(inValue);
     },
 
     scrollToggle: function(inSender, inState) {

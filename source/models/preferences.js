@@ -26,6 +26,25 @@ Preferences = {
   COLOR_SCHEME: "color-scheme",
   GROUP_FOLDERS_BY_FEED: "group-folders-by-feed",
   ENABLE_ANIMATIONS: "enable-animations",
+  TWITTER_SHARING_OPTION: "twitter-sharing-option",
+  FACEBOOK_SHARING_OPTION: "facebook-sharing-option",
+
+  facebookSharingOption: function() {
+      return this.getCookie(this.FACEBOOK_SHARING_OPTION, "web");
+  },
+
+  setFacebookSharingOption: function(option) {
+      this.setCookie(this.FACEBOOK_SHARING_OPTION, option);
+  },
+
+  twitterSharingOption: function() {
+      return this.getCookie(this.TWITTER_SHARING_OPTION, "web");
+  },
+
+  setTwitterSharingOption: function(option) {
+      enyo.log("twitter sharing option: " + option);
+      this.setCookie(this.TWITTER_SHARING_OPTION, option);
+  },
 
   enableAnimations: function() {
       return this.getCookie(this.ENABLE_ANIMATIONS, true);

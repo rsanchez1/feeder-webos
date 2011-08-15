@@ -178,7 +178,7 @@ enyo.kind({
         enyo.keyboard.show();
     },
     feedAddFocused: function(source, event) {
-        enyo.keyboard.show();
+        enyo.keyboard.show(enyo.keyboard.typeURL);
     },
     searchBlurred: function() {
         Element.setStyle(this.$.searchQuery.node, {marginLeft: "-8px"});

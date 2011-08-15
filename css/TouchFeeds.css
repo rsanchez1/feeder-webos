@@ -312,8 +312,8 @@ body.light {
     background: #a8a8a8 url(../images/icon_rss_add.png) -1px -1px no-repeat;
 }
 
-.touchFeedsSummary .li.notification .icon {
-    background: #a8a8a8 url(../images/icon_bell.png) 0 0 no-repeat;
+.touchFeedsSummary li.notification .icon {
+    background: #a8a8a8 url(../images/icon_bell.png) -1px -1px no-repeat;
 }
 
 .touchFeedsSummary li.refresh .icon {
@@ -321,31 +321,31 @@ body.light {
 }
 
 .touchFeedsSummary li.star .icon {
-    background: #a8a8a8 url(../images/starred-footer-on.png) 1px 1px no-repeat;
+    background: #a8a8a8 url(../images/starred-footer-on.png) -1px 0 no-repeat;
 }
 
 .touchFeedsSummary li.noStar .icon {
-    background: #a8a8a8 url(../images/starred-footer.png) 1px 1px no-repeat;
+    background: #a8a8a8 url(../images/starred-footer.png) -1px 0 no-repeat;
 }
 
 .touchFeedsSummary li.markRead .icon {
-    background: #a8a8a8 url(../images/read-footer.png) 1px 1px no-repeat;
+    background: #a8a8a8 url(../images/read-footer.png) 1px -1px no-repeat;
 }
 
 .touchFeedsSummary li.markUnread .icon {
-    background: #a8a8a8 url(../images/read-footer-on.png) 2px 1px no-repeat;
+    background: #a8a8a8 url(../images/read-footer-on.png) 1px -1px no-repeat;
 }
 
 .touchFeedsSummary li.share .icon {
-    background: #a8a8a8 url(../images/sendto-footer.png) 1px 0 no-repeat;
+    background: #a8a8a8 url(../images/sendto-footer.png) 0 -1px no-repeat;
 }
 
 .touchFeedsSummary li.download .icon {
-    background: #a8a8a8 url(../images/offline-article.png) -1px -1px no-repeat;
+    background: #a8a8a8 url(../images/offline-article.png) 0 -1px no-repeat;
 }
 
 .touchFeedsSummary li.delete .icon {
-    background: #a8a8a8 url(../images/delete-article.png) 0 0 no-repeat;
+    background: #a8a8a8 url(../images/delete-article.png) -1px -1px no-repeat;
 }
 
 .touchFeedsSummary li.fetch .icon {
