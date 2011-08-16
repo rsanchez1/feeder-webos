@@ -103,7 +103,9 @@ enyo.kind({
             this.$.readButton.setIcon("images/read-footer-on.png");
         }
         this.$.articleTitle.setContent(Encoder.htmlDecode(Encoder.htmlEncode(this.article.title)));
-        this.$.summary.setContent("<div class='summaryWrapper'>" + Encoder.htmlDecode(this.article.summary) + "</div>");
+        this.$.summary.setContent("<div id='myTouchFeedsSummary' class='summaryWrapper'></div>");
+        document.getElementById("myTouchFeedsSummary").innerHTML = Encoder.htmlDecode(this.article.summary);
+        //this.$.summary.setContent("<div class='summaryWrapper'>" + Encoder.htmlDecode(this.article.summary) + "</div>");
         var publishAuthor = "";
         if (!!this.article.displayDateAndTime) {
             publishAuthor = "Published <span style='font-weight: 700'>" + this.article.displayDateAndTime + "</span>";
@@ -513,6 +515,13 @@ enyo.kind({
     articleLinkClicked: function(thing, url, event) {
         enyo.log("clicked link in article");
         window.open(url);
+    },
+    articleStarred: function(article, wasStarred) {
+        if (this.article.isStarred) {
+            this.$.starButton.setIcon("images/starred-footer-on.png");
+        } else {
+            this.$.starButton.setIcon("images/starred-footer.png");
+        }
     },
     showSummary: function() {
         this.$.articleTitle.setContent("Welcome to TouchFeeds");

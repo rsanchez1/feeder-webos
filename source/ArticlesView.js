@@ -14,7 +14,8 @@ enyo.kind({
     events: {
         onArticleClicked: "",
         onArticleRead: "",
-        onAllArticlesRead: ""
+        onAllArticlesRead: "",
+        onArticleStarred: ""
     },
     isRendered: false,
     articleClicked: false,
@@ -568,6 +569,13 @@ enyo.kind({
     finishArticleStarred: function(index, isStarred) {
         enyo.log("finished article star");
         this.$.articlesList.updateRow(index);
+        var article;
+        if (this.offlineArticles.length) {
+            article = this.offlineArticles[index];
+        } else {
+            article = this.articles.items[index];
+        }
+        this.doArticleStarred();
     },
     swipedArticle: function(inSender, inIndex, thing) {
         if (this.articles.items.length) {

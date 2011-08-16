@@ -15,7 +15,7 @@ var Api = Class.create({
   },
 
   getPage: function(url, success, failure) {
-    new Ajax.Request("https://text.readitlaterlist.com/v2/text?apikey=bO4T9t12g998dH78aMd964aLh6pab0VQ&mode=less&url=" + url, {
+    new Ajax.Request("http://text.readitlaterlist.com/v2/text?apikey=bO4T9t12g998dH78aMd964aLh6pab0VQ&mode=less&url=" + url, {
       method: "get",
       parameters: {},
       onFailure: failure,

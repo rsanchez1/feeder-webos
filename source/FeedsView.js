@@ -174,8 +174,12 @@ enyo.kind({
     },
     searchClick: function() {
         var query = this.$.searchQuery.getValue();
+        if (query === "") {
+            return;
+        }
         this.doFeedClicked(new Search(this.app.api, query));
         this.$.searchQuery.setValue("");
+        enyo.keyboard.hide();
     },
     searchFocused: function(source, event) {
         Element.setStyle(this.$.searchQuery.node, {marginLeft: 0});
@@ -193,7 +197,6 @@ enyo.kind({
     searchKey: function(source, event) {
         if (event.keyCode == 13) {
             this.searchClick();
-            enyo.keyboard.hide();
         }
     },
     feedAddKey: function(source, event) {
