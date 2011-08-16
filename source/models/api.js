@@ -19,7 +19,15 @@ var Api = Class.create({
       method: "get",
       parameters: {},
       onFailure: failure,
-      onSuccess: function(response) {success(response.responseText)}
+      onSuccess: function(response) {
+          enyo.log("got page success");
+          enyo.log(response);
+          success(response.responseText);
+      },
+      on403: function(response) {
+          enyo.log("ALERT, HIT RATE LIMIT");
+          enyo.log(response);
+      },
     })
   },
 
@@ -234,6 +242,16 @@ var Api = Class.create({
       success,
       failure
     )
+  },
+
+  getAllFollow: function(continuation, success, failure) {
+      this._getArticles(
+        "user/-/state/com.google/broadcast-friends",
+        null,
+        continuation,
+        success,
+        failure
+      )
   },
 
   getAllArticlesFor: function(id, continuation, success, failure) {

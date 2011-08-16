@@ -23,12 +23,14 @@ enyo.kind({
                 enyo.log(i);
             }
         }
-        if (params.action == "alarmWakeup" && !appWindow) {
-            enyo.log("ALARM WAKEUP");
-            this.$.appDashboard.checkUnreadItems();
-        } else {
-            enyo.log("OPEN MAIN CARD");
-            this.openCard("main", params, false);
+        if (!appWindow) {
+            if (params.action == "alarmWakeup") {
+                enyo.log("ALARM WAKEUP");
+                this.$.appDashboard.checkUnreadItems();
+            } else {
+                enyo.log("OPEN MAIN CARD");
+                this.openCard("main", params, false);
+            }
         }
     },
 

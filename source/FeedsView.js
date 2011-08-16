@@ -27,14 +27,14 @@ enyo.kind({
             {name: "searchQuery", kind: "Input", flex: 1, className: "enyo-input", style: "border-width: 7px 14px 7px 14px !important; margin-left: -8px;", onfocus: "searchFocused", onblur: "searchBlurred", onkeypress: "searchKey", hint: "Tap Here To Search"},
             {kind: "Button", caption: "Search", onclick: "searchClick"}
         ]},
-        {name: "stickySourcesList", kind: "VirtualRepeater", onSetupRow: "setupStickySources", className: "itemLists", components: [
-            {name: "stickyItem", kind: "Item", layoutKind: "VFlexLayout", components: [
-                {name: "stickyTitle", style: "display: inline-block; width: 85%; margin-left: 5px;"},
-                {name: "stickyUnreadCountDisplay", style: "display: inline-block; width: 35px; text-align: left; position: absolute; right: 10px;"}
-            ], onclick: "stickyItemClick"}
-        ]},
-        {name: "sourcesDivider", kind: "Divider", caption: "Subscriptions", className: "itemLists"},
         {kind: "Scroller", flex: 1, className: "itemLists", components: [
+            {name: "stickySourcesList", kind: "VirtualRepeater", onSetupRow: "setupStickySources", className: "itemLists", components: [
+                {name: "stickyItem", kind: "Item", layoutKind: "VFlexLayout", components: [
+                    {name: "stickyTitle", style: "display: inline-block; width: 85%; margin-left: 5px;"},
+                    {name: "stickyUnreadCountDisplay", style: "display: inline-block; width: 35px; text-align: left; position: absolute; right: 10px;"}
+                ], onclick: "stickyItemClick"}
+            ]},
+            {name: "sourcesDivider", kind: "Divider", caption: "Subscriptions", className: "itemLists"},
             {name: "subscriptionSourcesList", kind: "VirtualRepeater", onSetupRow: "setupSubscriptionSources", className: "itemLists", components: [
                 {name: "subscriptionItem", kind: "SwipeableItem", confirmCaption: "Remove Feed", onConfirm: "confirmedDeleteItem", layoutKind: "VFlexLayout", components: [
                     {name: "title", style: "display: inline-block; width: 85%; margin-left: 5px; font-size: 0.7rem; font-weight: normal !important; height: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"},
@@ -97,7 +97,9 @@ enyo.kind({
     setupStickySources: function(inSender, inIndex) {
         enyo.log("sticky sources index: ", inIndex);
         if (!!this.stickySources.items) {
+            enyo.log("sticky sources items");
             if ((inIndex == this.stickySources.items.length && (!this.stickySources.items[this.stickySources.items.length - 1].isOffline)) || (!!this.stickySources.items[inIndex] && this.stickySources.items[inIndex].isOffline)) {
+                enyo.log("setting offline");
                 enyo.log("__________________________________________");
                 enyo.log("last item in sticky sources, adding offline");
                 this.$.stickyTitle.setContent("Offline Articles");
@@ -108,8 +110,10 @@ enyo.kind({
                 }
                 return true;
             } else {
+                enyo.log("not offline");
                 var r = this.stickySources.items[inIndex];
                 if (r) {
+                    enyo.log("setting source");
                     this.$.stickyTitle.setContent(Encoder.htmlDecode(r.title));
                     this.$.stickyUnreadCountDisplay.setContent(r.unreadCountDisplay);
                     if (inIndex + 1 > this.stickySources.items.length) {
@@ -182,6 +186,7 @@ enyo.kind({
     },
     searchBlurred: function() {
         Element.setStyle(this.$.searchQuery.node, {marginLeft: "-8px"});
+        enyo.keyboard.hide();
     },
     feedAddBlurred: function() {
     },

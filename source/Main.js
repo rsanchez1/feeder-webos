@@ -47,22 +47,24 @@ enyo.kind({
            this.$.articles.applyStyle("width", "384px");
        }
         this.$.appMenu.hide();
-		this.$.articlesDB.setSchemaFromURL('schema.json', {
-			onSuccess: function() {
-                enyo.log("successfully set database schema");
-                this.$.articlesDB.query("SELECT * FROM articles", {
-                    onSuccess: function (results) {
-                        enyo.log("got results successfully");
-                        this.offlineArticles = results;
-                        this.$.articlesView.setHeaderContent("Offline Articles");
-                        this.$.articlesView.setOfflineArticles(results);
-                   }.bind(this),
-                    onFailure: function() {
-                        enyo.log("failed to get results");
-                    }
-                });
-            }.bind(this)
-		});
+        (function() {
+            this.$.articlesDB.setSchemaFromURL('schema.json', {
+                onSuccess: function() {
+                    enyo.log("successfully set database schema");
+                    this.$.articlesDB.query("SELECT * FROM articles", {
+                        onSuccess: function (results) {
+                            enyo.log("got results successfully");
+                            this.offlineArticles = results;
+                            this.$.articlesView.setHeaderContent("Offline Articles");
+                            this.$.articlesView.setOfflineArticles(results);
+                            }.bind(this),
+                        onFailure: function() {
+                            enyo.log("failed to get results");
+                        }
+                    });
+                }.bind(this)
+            });
+        }).bind(this).defer();
         if (this.credentials.email && this.credentials.password) {
             enyo.log("Login API");
             this.api.login(this.credentials, this.loginSuccess.bind(this), this.loginFailure.bind(this));
@@ -83,6 +85,7 @@ enyo.kind({
     },
 
     refreshFeeds: function(callback) {
+        enyo.log("refreshing feeds");
         if (!!this.sources) {
             this.$.feedsView.setShowSpinner(true);
             if (!!callback) {
@@ -115,6 +118,7 @@ enyo.kind({
     },
 
     filterAndRefresh: function(success) {
+        enyo.log("AAAAAAAAAAAAAAAAAA");
         enyo.log("Called filter and refresh");
         this.sources.sortAndFilter(
             function() {

@@ -98,6 +98,9 @@ enyo.kind({
             if (this.article.turnReadOn) {
                 this.article.turnReadOn(this.markedArticleRead.bind(this), function() {});
             }
+            this.$.readButton.setIcon("images/read-footer.png");
+        } else {
+            this.$.readButton.setIcon("images/read-footer-on.png");
         }
         this.$.articleTitle.setContent(Encoder.htmlDecode(Encoder.htmlEncode(this.article.title)));
         this.$.summary.setContent("<div class='summaryWrapper'>" + Encoder.htmlDecode(this.article.summary) + "</div>");
@@ -568,6 +571,16 @@ enyo.kind({
         "<p>This app is open source. You can find the full source and license at <a href='https://github.com/rsanchez1/feeder-webos/tree/enyo'>TouchFeeds on Github</a>.</p>" + 
         "<h2>Contact</h2>" +
         "<p>If you have any questions, contact <a href='mailto:support@sanchezapps.com'>support@sanchezapps.com</a>." +
+        "<h2>Changelog</h2>" +
+        "<p>Current Version: 1.1.0. You can view the full changelog history <a href='http://sanchezapps.com/touchfeeds-changelog'>here</a>.</p>" +
+        "<ul class='gestureGuide'>" +
+        "<li>Added notifications for new articles</li>" +
+        "<li>Changed sharing preferences to allow sharing with the Facebook app or with Spaz HD</li>" +
+        "<li>Added People You Follow to sticky sources</li>" +
+        "<li>Added article counts to articles grouped by feed in folder view</li>" +
+        "<li>Added article to sort manually from your Google Reader account</li>" +
+        "<li>Other minor performance improvements and style tweaks</li>" +
+        "</ul>"+
         "<h2>Special Thanks</h2>" +
         "<ul class='gestureGuide'>" +
         "<li>Darrin Holst - Developer of <a href='https://github.com/darrinholst/feeder-webos'>Feeder</a>, the premiere Google Reader app on webOS phones, on which this app is based</li>" +

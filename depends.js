@@ -21,6 +21,7 @@ enyo.depends(
     "source/models/load-more.js",
     "source/models/search.js",
     "source/models/shared.js",
+    "source/models/follow.js",
     "source/models/sort-order.js",
     "source/models/starred.js",
     "source/models/subscription.js",

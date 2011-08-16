@@ -4,7 +4,8 @@ var AllSources = Class.create({
     this.all = new AllArticles(api)
     this.starred = new Starred(api)
     this.shared = new Shared(api)
-    this.stickySources = {items: [this.all, this.starred, this.shared]}
+    this.follow = new Follow(api)
+    this.stickySources = {items: [this.all, this.starred, this.shared, this.follow]}
 
     this.subscriptions = new AllSubscriptions(api)
     this.subscriptionSources = {items: []}
