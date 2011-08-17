@@ -68,11 +68,20 @@ enyo.kind({
         if (this.credentials.email && this.credentials.password) {
             enyo.log("Login API");
             this.api.login(this.credentials, this.loginSuccess.bind(this), this.loginFailure.bind(this));
+            setTimeout(this.checkLoggedIn.bind(this), 5000);
         } else {
             enyo.log("get login information from user");
             setTimeout(function() {this.$.login.openAtCenter();}.bind(this), 0);
         }
         Element.addClassName(document.body, Preferences.getColorScheme());
+    },
+
+    checkLoggedIn: function() {
+        enyo.log("checking if logged in");
+        if (!this.loggedIn) {
+            this.api.login(this.credentials, this.loginSuccess.bind(this), this.loginFailure.bind(this));
+            setTimeout(this.checkLoggedIn.bind(this), 5000);
+        }
     },
 
     loginSuccess: function() {

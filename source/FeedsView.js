@@ -89,10 +89,11 @@ enyo.kind({
         this.$.stickySourcesList.render();
     },
     getStickySourcesLength: function() {
-        if (!this.stickySources && !this.stickySources.items) {
+        if (!!this.stickySources && !!this.stickySources.items && !!this.stickySources.items.length) {
+            return this.stickySources.items.length;
+        } else {
             return 0;
         }
-        return this.stickySources.items.length ? this.stickySources.items.length : 0;
     },
     setupStickySources: function(inSender, inIndex) {
         enyo.log("sticky sources index: ", inIndex);
