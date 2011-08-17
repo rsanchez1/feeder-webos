@@ -6,13 +6,22 @@ var Article = Class.create({
     this.subscriptionId = data.origin ? data.origin.streamId : subscription.id
     this.title = data.title || "No Title"
     this.author = data.author
-    this.origin = this.api.titleFor(this.subscriptionId)
+	var apiOrigin = this.api.titleFor(this.subscriptionId)
     var content = data.content || data.summary || {content: ""}
     this.summary = this.cleanUp(content.content)
     this.readLocked = data.isReadStateLocked
     this.setStates(data.categories)
     this.setDates(parseInt(data.crawlTimeMsec, 10))
     this.setArticleLink(data.alternate)
+	this.setArticleVia(data.via);
+	if (!apiOrigin) {
+		this.origin = data.origin.title;
+	} else {
+		this.origin = apiOrigin;
+	}
+	if (this.via !== "") {
+		this.origin = this.origin + " - via " + this.via;
+	}
   },
 
   cleanUp: function(content) {
@@ -81,6 +90,16 @@ var Article = Class.create({
         return
       }
     }.bind(this))
+  },
+
+  setArticleVia: function(via) {
+	this.via = "";
+	(via || []).each(function(item) {
+		if (!!item.title) {
+			this.via = item.title
+			return
+		}
+	}.bind(this))
   },
 
   leftPad: function(number) {

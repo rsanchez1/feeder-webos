@@ -42,12 +42,11 @@ Preferences = {
   },
 
   setTwitterSharingOption: function(option) {
-      enyo.log("twitter sharing option: " + option);
       this.setCookie(this.TWITTER_SHARING_OPTION, option);
   },
 
   enableAnimations: function() {
-      return this.getCookie(this.ENABLE_ANIMATIONS, true);
+      return this.getCookie(this.ENABLE_ANIMATIONS, false);
   },
 
   setEnableAnimations: function(enableAnimations) {
@@ -63,7 +62,7 @@ Preferences = {
   },
 
   getColorScheme: function() {
-      return this.getCookie(this.COLOR_SCHEME, "")
+      return this.getCookie(this.COLOR_SCHEME, "dark")
   },
 
   setColorScheme: function(colorScheme) {
