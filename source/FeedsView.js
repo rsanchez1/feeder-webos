@@ -160,7 +160,11 @@ enyo.kind({
                 }
                 this.$.subscriptionItem.removeClass("rss");
                 this.$.subscriptionItem.removeClass("folder");
+                this.$.subscriptionItem.removeClass("folderChild");
                 this.$.subscriptionItem.addClass(r.icon);
+                if (!!r.isFolderChild) {
+                    this.$.subscriptionItem.addClass("folderChild");
+                }
                 return true;
             }
         }
@@ -171,7 +175,32 @@ enyo.kind({
     },
     subscriptionItemClick: function(inSender, inEvent) {
         enyo.log("tapped number: ", inEvent.rowIndex);
-        this.doFeedClicked(this.subscriptionSources.items[inEvent.rowIndex]);
+        var tappedSub = this.subscriptionSources.items[inEvent.rowIndex];
+        if (!!tappedSub.subscriptions) {
+            var nextSub = this.subscriptionSources.items[inEvent.rowIndex + 1];
+            enyo.log("CLICKED A FOLDER THINGY");
+            if (!!nextSub && nextSub.id == tappedSub.subscriptions.items[0].id) {
+                enyo.log("folder opened, close it up");
+                for (var i = this.subscriptionSources.items.length; i--;) {
+                    if (!!this.subscriptionSources.items[i].isFolderChild) {
+                        if (!!this.subscriptionSources.items[i].categories) {
+                            if (this.subscriptionSources.items[i].categories.any(function(n) {return n.label == tappedSub.title;})) {
+                                this.subscriptionSources.items.splice(i, 1);
+                            }
+                        }
+                    }
+                }
+            } else {
+                for (var i = tappedSub.subscriptions.items.length; i--;) {
+                    var itemToAdd = Object.clone(tappedSub.subscriptions.items[i]);
+                    itemToAdd.isFolderChild = true;
+                    this.subscriptionSources.items.splice(inEvent.rowIndex + 1, 0, itemToAdd);
+                }
+            }
+            this.subscriptionSourcesChanged();
+        } else {
+            this.doFeedClicked(this.subscriptionSources.items[inEvent.rowIndex]);
+        }
     },
     searchClick: function() {
         var query = this.$.searchQuery.getValue();
