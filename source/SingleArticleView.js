@@ -103,11 +103,9 @@ enyo.kind({
             this.$.readButton.setIcon("images/read-footer-on.png");
         }
         this.$.articleTitle.setContent(Encoder.htmlDecode(Encoder.htmlEncode(this.article.title)));
-        /*
         this.$.summary.setContent("<div id='myTouchFeedsSummary' class='summaryWrapper'></div>");
         document.getElementById("myTouchFeedsSummary").innerHTML = Encoder.htmlDecode(this.article.summary);
-        */
-        this.$.summary.setContent("<div class='summaryWrapper'>" + Encoder.htmlDecode(this.article.summary) + "</div>");
+        //this.$.summary.setContent("<div class='summaryWrapper'>" + Encoder.htmlDecode(this.article.summary) + "</div>");
         var publishAuthor = "";
         if (!!this.article.displayDateAndTime) {
             publishAuthor = "Published <span style='font-weight: 700'>" + this.article.displayDateAndTime + "</span>";
@@ -476,22 +474,29 @@ enyo.kind({
     summaryGestureStart: function(thing1, event) {
         enyo.log("gesture dragging start");
         this.gestureY = +event.centerY;
-        enyo.log(event.centerY);
+        this.gestureX = +event.centerX;
     },
     summaryGestureEnd: function(thing1, event) {
-        enyo.log("gesture dragging end");
-        enyo.log(this.gestureY);
-        enyo.log(event.centerY);
-        var diff = +(event.centerY - this.gestureY);
-        enyo.log(diff);
-        if (diff > 100) {
+        var diffY = +(event.centerY - this.gestureY);
+        var diffX = +(event.centerX - this.gestureX);
+        if (diffY > 100) {
             //dragged up
             this.starClick.bind(this)();
-        }
-        if (diff < -100) {
+        } else if (diffY < -100) {
             //dragged down
             this.offlineClick.bind(this)();
+        } else if (diffX > 100) {
+            //dragged to the left
+            enyo.log("diffx greater than 100");
+            this.app.$.slidingPane.selectViewByName('feeds', true);
+        } else if (diffX < -100) {
+            enyo.log("diffx less than -100");
+            //dragged to the right
+            this.readClick.bind(this)();
         }
+        event.stopPropagation();
+        event.preventDefault();
+        return -1;
     },
     restoreLeft: function(adjust) {
         var position = 120 - (15.5 * (15 - adjust)) + (((15 - adjust) * (15 - adjust)) / 2)
@@ -508,11 +513,8 @@ enyo.kind({
         }
     },
     scrollerDragFinish: function(thing, event) {
-        enyo.log("scroller drag finished");
     },
     articleScrollStop: function(thing, event) {
-        enyo.log("article stopped scrolling");
-        enyo.log("_______________________");
     },
     articleLinkClicked: function(thing, url, event) {
         enyo.log("clicked link in article");
@@ -562,9 +564,11 @@ enyo.kind({
         "<h2>Gesture Guide</h2>" +
         "<p>TouchFeeds features many gestures to enhance your reading experience.</p>" +
         "<ul class='gestureGuide'>" +
-        "<li>When viewing an article, drag the article to the left or right to go to the next or previous article, respectively.</li>" +
+        "<li>When viewing an article, drag the article to the left or right to go to the next or previous article, respectively. If there is no next or previous article, the feeds pane is opened.</li>" +
         "<li>When viewing an article, drag two fingers down on the article to star an article or to remove a star.</li>" +
         "<li>When viewing an article, drag two fingers up on the article to download an article for offline reading or to delete an offline article.</li>" +
+        "<li>When viewing an article, drag two fingers to the right on the article to open the feeds pane.</li>" +
+        "<li>When viewing an article, drag two fingers to the left on the aritcle to mark an article read or unread.</li>" +
         "<li>In the center Articles pane, swipe an article row to star that article or to remove a star.</li>" +
         "<li>In the left-most Feeds pane, swipe a feed row to remove that feed from Google Reader.</li>" +
         "</ul>" +
@@ -589,7 +593,8 @@ enyo.kind({
         "<li>Changed sharing preferences to allow sharing with the Facebook app or with Spaz HD</li>" +
         "<li>Added People You Follow to sticky sources</li>" +
         "<li>Added article counts to articles grouped by feed in folder view</li>" +
-        "<li>Added article to sort manually from your Google Reader account</li>" +
+        "<li>Added ability to sort manually from your Google Reader account</li>" +
+        "<li>Improved gestures</li>" + 
         "<li>Other minor performance improvements and style tweaks</li>" +
         "</ul>"+
         "<h2>Special Thanks</h2>" +
