@@ -26,7 +26,7 @@ enyo.kind({
         {layoutkind: "hflexlayout", pack: "center", components: [
             {kind: "Button", caption: "Toggle All Subscriptions", flex: 1, className: "enyo-button-dark", onclick: "toggleClick"}
         ]},
-        {kind: "Scroller", style: "height: 500px; border: 1px solid #aaa;", flex: 1, components: [
+        {kind: "Scroller", style: "height: 400px; border: 1px solid #aaa;", flex: 1, components: [
             {name: "subscriptionSourcesList", kind: "VirtualList", onSetupRow: "setupSubscriptionSources", components: [
                 {name: "subscriptionItem", kind: "Item", layoutKind: "VFlexLayout", components: [
                     {name: "title", style: "display: inline-block; width: 85%; margin-left: 5px; font-size: 0.7rem; font-weight: normal !important; height: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"},

@@ -193,8 +193,10 @@ enyo.kind({
             } else {
                 for (var i = tappedSub.subscriptions.items.length; i--;) {
                     var itemToAdd = Object.clone(tappedSub.subscriptions.items[i]);
-                    itemToAdd.isFolderChild = true;
-                    this.subscriptionSources.items.splice(inEvent.rowIndex + 1, 0, itemToAdd);
+                    if (!Preferences.hideReadFeeds() || (Preferences.hideReadFeeds() && itemToAdd.unreadCountDisplay)) {
+                        itemToAdd.isFolderChild = true;
+                        this.subscriptionSources.items.splice(inEvent.rowIndex + 1, 0, itemToAdd);
+                    }
                 }
                 var folderToAdd = Object.clone(tappedSub);
                 folderToAdd.subscriptions = undefined;
