@@ -177,7 +177,7 @@ enyo.kind({
         enyo.log("tapped number: ", inEvent.rowIndex);
         var tappedSub = this.subscriptionSources.items[inEvent.rowIndex];
         if (!!tappedSub.subscriptions) {
-            var nextSub = this.subscriptionSources.items[inEvent.rowIndex + 1];
+            var nextSub = this.subscriptionSources.items[inEvent.rowIndex + 2];
             enyo.log("CLICKED A FOLDER THINGY");
             if (!!nextSub && nextSub.id == tappedSub.subscriptions.items[0].id) {
                 enyo.log("folder opened, close it up");
@@ -196,6 +196,13 @@ enyo.kind({
                     itemToAdd.isFolderChild = true;
                     this.subscriptionSources.items.splice(inEvent.rowIndex + 1, 0, itemToAdd);
                 }
+                var folderToAdd = Object.clone(tappedSub);
+                folderToAdd.subscriptions = undefined;
+                folderToAdd.categories = [{label: tappedSub.title}];
+                folderToAdd.title = "All Items - " + tappedSub.title;
+                folderToAdd.isFolderChild = true;
+                this.subscriptionSources.items.splice(inEvent.rowIndex + 1, 0, folderToAdd);
+
             }
             this.subscriptionSourcesChanged();
         } else {
