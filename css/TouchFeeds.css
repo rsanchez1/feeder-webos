@@ -76,6 +76,15 @@ body.light {
 
 .enyo-item.folderChild {
     margin-left: 30px;
+    color: #5573f2;
+}
+
+.dark .enyo-item.folderChild {
+    color: #84ade9;
+}
+
+.light .enyo-item.folderChild {
+    /*color: #ff4a00;*/
 }
 
 .enyo-item.unread-item {

@@ -57,7 +57,6 @@ enyo.kind({
         this.inherited(arguments);
         this.headerContentChanged();
         this.app = enyo.application.app;
-        globalList = this.$.articlesList;
     },
     headerContentChanged: function() {
         //this.$.header.setContent(this.headerContent);
@@ -564,7 +563,8 @@ enyo.kind({
         */
     },
     finishArticleRead: function(index) {
-        this.$.articlesList.updateRow(index);
+        //this.$.articlesList.updateRow(index);
+        this.$.articlesList.refresh();
     },
     finishArticleStarred: function(index, isStarred) {
         enyo.log("finished article star");

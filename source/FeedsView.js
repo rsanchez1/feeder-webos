@@ -15,6 +15,7 @@ enyo.kind({
         onHeaderClicked: "",
         onNotificationClicked: "",
     },
+    openedFolders: [],
     components: [
         //{name: "header", kind: "Header"},
         {name: "header", kind: "PageHeader", components: [
@@ -130,6 +131,37 @@ enyo.kind({
         this.showSpinner = false;
         this.$.spinner.hide();
         this.$.sourcesDivider.show();
+
+        var numberOfItems;
+
+        numberOfItems = 0;
+        for (var i = this.subscriptionSources.items.length; i--;) {
+            var item = this.subscriptionSources.items[i];
+            if (item.icon == "folder" && !!item.subscriptions) {
+                numberOfItems++;
+            }
+        }
+        enyo.log("NUMBER OF ITEMS: " + numberOfItems);
+
+        for (var i = this.subscriptionSources.items.length; i--;) {
+            var item = this.subscriptionSources.items[i];
+            if (this.openedFolders.any(function(n) {return n == item.id;})) {
+                if (!!item.subscriptions) {
+                    this.closeFolder(item);
+                    this.openFolder(item, i);
+                }
+            }
+        }
+
+        numberOfItems = 0;
+        for (var i = this.subscriptionSources.items.length; i--;) {
+            var item = this.subscriptionSources.items[i];
+            if (item.icon == "folder" && !!item.subscriptions) {
+                numberOfItems++;
+            }
+        }
+        enyo.log("NUMBER OF ITEMS: " + numberOfItems);
+
         if (this.changeId !== "") {
             var index = 0;
             for (var i = this.subscriptionSources.items.length; i--;) {
@@ -181,35 +213,70 @@ enyo.kind({
             enyo.log("CLICKED A FOLDER THINGY");
             if (!!nextSub && nextSub.id == tappedSub.subscriptions.items[0].id) {
                 enyo.log("folder opened, close it up");
-                for (var i = this.subscriptionSources.items.length; i--;) {
-                    if (!!this.subscriptionSources.items[i].isFolderChild) {
-                        if (!!this.subscriptionSources.items[i].categories) {
-                            if (this.subscriptionSources.items[i].categories.any(function(n) {return n.label == tappedSub.title;})) {
-                                this.subscriptionSources.items.splice(i, 1);
-                            }
-                        }
+                this.closeFolder(tappedSub);
+                for (var i = this.openedFolders.length; i--;) {
+                    if (this.openedFolders[i] == tappedSub.id) {
+                        this.openedFolders.splice(i, 1);
                     }
                 }
             } else {
-                for (var i = tappedSub.subscriptions.items.length; i--;) {
-                    var itemToAdd = Object.clone(tappedSub.subscriptions.items[i]);
-                    if (!Preferences.hideReadFeeds() || (Preferences.hideReadFeeds() && itemToAdd.unreadCountDisplay)) {
-                        itemToAdd.isFolderChild = true;
-                        this.subscriptionSources.items.splice(inEvent.rowIndex + 1, 0, itemToAdd);
-                    }
-                }
-                var folderToAdd = Object.clone(tappedSub);
-                folderToAdd.subscriptions = undefined;
-                folderToAdd.categories = [{label: tappedSub.title}];
-                folderToAdd.title = "All Items - " + tappedSub.title;
-                folderToAdd.isFolderChild = true;
-                this.subscriptionSources.items.splice(inEvent.rowIndex + 1, 0, folderToAdd);
-
+                this.openedFolders.push(tappedSub.id);
+                //this.openFolder(tappedSub, inEvent.rowIndex);
             }
             this.subscriptionSourcesChanged();
         } else {
             this.doFeedClicked(this.subscriptionSources.items[inEvent.rowIndex]);
         }
+    },
+    openFolder: function(folder, index) {
+        for (var i = folder.subscriptions.items.length; i--;) {
+            var itemToAdd = Object.clone(folder.subscriptions.items[i]);
+            if (!Preferences.hideReadFeeds() || (Preferences.hideReadFeeds() && itemToAdd.unreadCountDisplay)) {
+                itemToAdd.isFolderChild = true;
+                this.subscriptionSources.items.splice(index + 1, 0, itemToAdd);
+            }
+        }
+        var folderToAdd = Object.clone(folder);
+        folderToAdd.subscriptions = undefined;
+        folderToAdd.categories = [{label: folder.title}];
+        folderToAdd.title = "All Items - " + folder.title;
+        folderToAdd.isFolderChild = true;
+        this.subscriptionSources.items.splice(index + 1, 0, folderToAdd);
+    },
+    closeFolder: function(folder) { 
+        var isThisFolder;
+        var checkFolder;
+        var j;
+        var i;
+        for (i = this.subscriptionSources.items.length; i--;) {
+            if (!!this.subscriptionSources.items[i].isFolderChild) {
+                if (!!this.subscriptionSources.items[i].categories) {
+                    if (this.subscriptionSources.items[i].categories.any(function(n) {return n.label == folder.title;})) {
+                        // item would be in current folder, check to see if it would not also be in another folder
+                        for (j = i; j--;) {
+                            if (!!this.subscriptionSources.items[j].subscriptions) {
+                                checkFolder = this.subscriptionSources.items[j];
+                                if (checkFolder.title == folder.title) {
+                                    isThisFolder = true;
+                                    break;
+                                } else {
+                                    isThisFolder = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (isThisFolder) {
+                            this.subscriptionSources.items.splice(i, 1);
+                        }
+                    }
+                }
+            }
+        }
+    },
+    refreshLists: function() {
+        enyo.log("REFRESHING LISTS");
+        this.$.stickySourcesList.refresh();
+        this.$.subscriptionSourcesList.refresh();
     },
     searchClick: function() {
         var query = this.$.searchQuery.getValue();

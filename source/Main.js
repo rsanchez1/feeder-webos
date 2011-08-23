@@ -283,6 +283,7 @@ enyo.kind({
             this.sources.articleNotRead(article.subscriptionId);
         }
         this.$.articlesView.finishArticleRead(index);
+        //this.$.feedsView.refreshLists();
         this.sources.sortAndFilter(function() {
             this.$.feedsView.setStickySources(this.sources.stickySources);
             this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
