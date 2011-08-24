@@ -119,8 +119,12 @@ enyo.kind({
         //set author/feed, everything else in article-assistant.js
         var aboutHeight = (this.$.articleTitle.node.scrollHeight) + (this.$.postDate.node.scrollHeight) + (this.$.source.node.scrollHeight);
         this.$.summary.applyStyle("min-height", (this.$.articleScroller.node.clientHeight - aboutHeight - 50) + "px !important");
+        this.processArticle();
+    },
+
+    processArticle: function() {
         $A(this.$.summary.node.getElementsByTagName("a")).each(function(anchor) {
-            if ((anchor.href.indexOf("ads") >= 0 && (anchor.href.indexOf("ads") - anchor.href.indexOf("uploads") !== 4)) || anchor.href.indexOf("auslieferung") >= 0) {
+            if ((anchor.href.indexOf("ads") >= 0 && (anchor.href.indexOf("ads") - anchor.href.indexOf("uploads") !== 4)) || anchor.href.indexOf("auslieferung") >= 0 || anchor.href.indexOf("da.feedsportal.com") >= 0) {
                 enyo.log(anchor.href);
                 enyo.log("found advertisement link, remove");
                 Element.remove(anchor);
@@ -197,26 +201,37 @@ enyo.kind({
         window.open(this.article.url);
     },
     fetchClick: function() {
-        if (!!this.article.url) {
-            if (!this.fetchedOffline) {
-                this.$.spinner.show();
-                this.fetchedOffline = true;
-                var scrollTo = 0;
-                /*
-                if (this.$.articleScroller.getScrollTop() > 200) {
-                    scrollTo = -200;
+        if (!!this.article.altSummary) { 
+            var temp = this.article.summary;
+            this.article.summary = this.article.altSummary;
+            this.article.altSummary = temp;
+            this.$.summary.setContent("<div id='myTouchFeedsSummary' class='summaryWrapper'></div>");
+            document.getElementById("myTouchFeedsSummary").innerHTML = Encoder.htmlDecode(this.article.summary);
+            this.processArticle();
+        } else {
+            if (!!this.article.url) {
+                if (!this.fetchedOffline) {
+                    this.$.spinner.show();
+                    this.fetchedOffline = true;
+                    var scrollTo = 0;
+                    /*
+                    if (this.$.articleScroller.getScrollTop() > 200) {
+                        scrollTo = -200;
+                    }
+                    */
+                    this.$.articleScroller.setScrollTop(scrollTo);
+                    this.app.api.getPage(this.article.url, this.gotPage.bind(this), function() {Feeder.notify("Could not fetch article fulltext"); this.$.spinner.hide();}.bind(this));
                 }
-                */
-                this.$.articleScroller.setScrollTop(scrollTo);
-                this.app.api.getPage(this.article.url, this.gotPage.bind(this), function() {Feeder.notify("Could not fetch article fulltext"); this.$.spinner.hide();}.bind(this));
             }
         }
     },
     gotPage: function(page) {
         enyo.log("got page");
         var summary = page;
+        this.article.altSummary = this.article.summary;
         this.article.summary = summary;
-        this.$.summary.setContent("<div class='summaryWrapper'>" + Encoder.htmlDecode(summary) + "</div>");
+        this.$.summary.setContent("<div id='myTouchFeedsSummary' class='summaryWrapper'></div>");
+        document.getElementById("myTouchFeedsSummary").innerHTML = Encoder.htmlDecode(this.article.summary);
         this.$.spinner.hide();
         enyo.log("is article offline: ", this.isOffline);
         if (this.isOffline) {

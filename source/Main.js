@@ -29,7 +29,6 @@ enyo.kind({
     constructor: function() {
         this.inherited(arguments);
         this.api = new Api();
-        //this.prefs = new TouchFeeds.Preferences();
         this.credentials = new Credentials();
         enyo.application.app = this;
     },
@@ -127,7 +126,6 @@ enyo.kind({
     },
 
     filterAndRefresh: function(success) {
-        enyo.log("AAAAAAAAAAAAAAAAAA");
         enyo.log("Called filter and refresh");
         this.sources.sortAndFilter(
             function() {

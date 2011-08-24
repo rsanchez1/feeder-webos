@@ -209,9 +209,8 @@ enyo.kind({
         enyo.log("tapped number: ", inEvent.rowIndex);
         var tappedSub = this.subscriptionSources.items[inEvent.rowIndex];
         if (!!tappedSub.subscriptions) {
-            var nextSub = this.subscriptionSources.items[inEvent.rowIndex + 2];
             enyo.log("CLICKED A FOLDER THINGY");
-            if (!!nextSub && nextSub.id == tappedSub.subscriptions.items[0].id) {
+            if (this.openedFolders.any(function(n) {return n == tappedSub.id;})) {
                 enyo.log("folder opened, close it up");
                 this.closeFolder(tappedSub);
                 for (var i = this.openedFolders.length; i--;) {

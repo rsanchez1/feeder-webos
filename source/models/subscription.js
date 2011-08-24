@@ -19,6 +19,7 @@ var Subscription = Class.create(ArticleContainer, {
   },
 
   articleRead: function(subscriptionId) {
+      //TODO: CHECK HERE TO IMPROVE FOLDER MARK READ/UNREAD
     if(this.id == subscriptionId) {this.decrementUnreadCountBy(1)}
   },
 
