@@ -223,7 +223,10 @@ enyo.kind({
                     this.$.divider.canGenerate = true;
                 } else {
                     this.$.articleItem.show();
-                    this.$.title.setContent(Encoder.htmlDecode(r.title));
+                    if (!r.altTitle) {
+                        r.altTitle = r.title;
+                    }
+                    this.$.title.setContent(Encoder.htmlDecode(r.altTitle));
                     if (!r.isRead && !this.offlineArticles.length) {
                         this.$.articleItem.addClass("unread-item");
                     } else {
@@ -259,8 +262,8 @@ enyo.kind({
                             for (var i = this.maxTop; i < scroller.top; i++) {
                                 if (!articles[i].isRead) {
                                     this.addToMarkReadQueue(articles[i], i);
-                                    this.$.articleItem.removeClass("unread-item");
-                                    articles[i].isRead = true;
+                                    //this.$.articleItem.removeClass("unread-item");
+                                    //articles[i].isRead = true;
                                 }
                             }
                             this.maxTop = scroller.top;
@@ -270,8 +273,8 @@ enyo.kind({
                             for (var i = this.maxTop; i < articles.length; i++) {
                                 if (!articles[i].isRead && !articles[i].keepUnread) {
                                     this.addToMarkReadQueue(articles[i], i);
-                                    this.$.articleItem.removeClass("unread-item");
-                                    articles[i].isRead = true;
+                                    //this.$.articleItem.removeClass("unread-item");
+                                    //articles[i].isRead = true;
                                 }
                             }
                         }
@@ -280,15 +283,16 @@ enyo.kind({
                         this.$.articleItem.addClass("firstRow");
                         this.$.articleItem.addClass("lastRow");
                     }
-                    setTimeout(function(index) {
+                    setTimeout(function(index, article) {
                         this.$.articlesList.prepareRow(index);
                         if (!!this.$.title.node) {
                             var title = this.$.title.node;
                             while (title.scrollHeight > (+title.offsetHeight * 1.20)) { //give it some errork
-                                title.innerHTML = title.innerHTML.replace(/\W*\s(\S)*$/, "...");
+                                article.altTitle = article.altTitle.replace(/\W*\s(\S)*$/, "...");
+                                title.innerHTML = Encoder.htmlDecode(article.altTitle);
                             }
                         }
-                    }.bind(this, inIndex), 10);
+                    }.bind(this, inIndex, r), 10);
                     /*
                     var parentHeight = this.$.articleItem.node.parentNode;
                     var myHeight = this.$.articleItem.node.scrollHeight;
@@ -557,18 +561,17 @@ enyo.kind({
         }
         this.doArticleClicked(article, index, length - 1);
         this.$.articlesList.refresh();
-        /*
         this.$.articlesList.updateRow(index);
         this.$.articlesList.updateRow(previousIndex);
-        */
     },
     finishArticleRead: function(index) {
-        //this.$.articlesList.updateRow(index);
+        this.$.articlesList.updateRow(index);
         this.$.articlesList.refresh();
     },
     finishArticleStarred: function(index, isStarred) {
         enyo.log("finished article star");
         this.$.articlesList.updateRow(index);
+        this.$.articlesList.refresh();
         var article;
         if (this.offlineArticles.length) {
             article = this.offlineArticles[index];
