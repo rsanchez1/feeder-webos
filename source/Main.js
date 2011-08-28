@@ -8,7 +8,7 @@ enyo.kind({
                 {name: "feedsView", kind: "TouchFeeds.FeedsView", headerContent: "TouchFeeds", flex: 1, components: [], onFeedClicked: "feedClicked", onRefreshFeeds: "refreshFeeds", onHeaderClicked: "feedsHeaderClicked", onNotificationClicked: "notificationClicked"}
             ]},
             {name: "articles", width: "320px", fixedWidth: true, components: [
-                {name: "articlesView", kind: "TouchFeeds.ArticlesView", headerContent: "All Items", flex: 1, components: [], onArticleClicked: "articleClicked", onArticleRead: "articleRead", onAllArticlesRead: "markedAllRead", onArticleStarred: "articleStarred"}
+                {name: "articlesView", kind: "TouchFeeds.ArticlesView", headerContent: "All Items", flex: 1, components: [], onArticleClicked: "articleClicked", onArticleRead: "articleRead", onAllArticlesRead: "markedAllRead", onArticleStarred: "articleStarred", onChangedOffline: "changeOffline"}
             ]},
             {name: "singleArticle", flex: 1, dragAnywhere: false, dismissible: false, onHide: "hideArticle", onShow: "showArticle", onResize: "slidingResize", components: [
                 {name: "singleArticleView", dragAnywhere: false, kind: "TouchFeeds.SingleArticleView", flex: 1, components: [], onSelectArticle: "selectArticle", onRead: "readArticle", onChangedOffline: "changeOffline", onStarred: "starredArticle"},
@@ -310,10 +310,12 @@ enyo.kind({
         }.bind(this), function() {enyo.log("error sorting and filtering");});
     },
 	changeOffline: function() {
+            this.$.articlesView.checkAllArticlesOffline();
 		this.$.articlesDB.query("SELECT * FROM articles", {
 			onSuccess: function (results) {
 				enyo.log("got results successfully");
-                this.offlineArticles = results;
+                                this.offlineArticles = results;
+                                this.$.feedsView.setStickySources(this.sources.stickySources);
 				if (this.$.articlesView.offlineArticles.length) {
 					this.$.articlesView.setOfflineArticles(results);
 				}

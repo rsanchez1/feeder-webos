@@ -2,7 +2,6 @@ enyo.kind({
     name: "TouchFeeds.SingleArticleView",
 	kind: "VFlexBox",
     dragAnywhere: false,
-	isOffline: false,
         gestureY: 0,
     fetchedOffline: false,
     className: "enyo-bg",
@@ -233,8 +232,7 @@ enyo.kind({
         this.$.summary.setContent("<div id='myTouchFeedsSummary' class='summaryWrapper'></div>");
         document.getElementById("myTouchFeedsSummary").innerHTML = Encoder.htmlDecode(this.article.summary);
         this.$.spinner.hide();
-        enyo.log("is article offline: ", this.isOffline);
-        if (this.isOffline) {
+        if (this.article.isOffline) {
 			enyo.log("preparing to save fulltext to offline database");
             this.app.$.articlesDB.query(this.app.$.articlesDB.getUpdate('articles', {summary: summary}, {articleID: this.article.articleID}), {
                 onSuccess: function() {enyo.log("updated article summary");},
@@ -403,7 +401,7 @@ enyo.kind({
     offlineClick: function() {
         if (!!this.article.title) {
             this.$.spinner.show();
-            if (this.isOffline) {
+            if (this.article.isOffline) {
                 enyo.log("will delete article offline");
                 this.app.$.articlesDB.query("DELETE FROM articles WHERE articleID="+this.article.articleID, {onSuccess: function() {
                         enyo.windows.addBannerMessage("Deleted article offline", "{}");
@@ -437,11 +435,11 @@ enyo.kind({
     },
     checkIfOffline: function(results) {
         if (results.length) {
-            this.isOffline = true;
+            this.article.isOffline = true;
             this.article.articleID = results[0].articleID;
             this.$.offlineButton.setIcon("images/delete-article.png");
         } else {
-            this.isOffline = false;
+            this.article.isOffline = false;
             this.$.offlineButton.setIcon("images/offline-article.png");
         }
     },

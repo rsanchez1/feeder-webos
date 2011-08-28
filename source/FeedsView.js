@@ -51,20 +51,20 @@ enyo.kind({
             {name: "refreshButton", kind: "IconButton", icon: "images/refresh.png", onclick: "refreshClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 120px; top: 11px;"},
             {name: "notificationButton", kind: "IconButton", icon: "images/icon_bell.png", onclick: "notificationClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 180px; top: 11px;"},
         ]},
-		{name: "addFeedPopup", kind: "ModalDialog", components: [
-			{kind: "RowGroup", caption: "Enter Feed URL", components: [
-				{kind: "Input", name: "feedInput", hint: "", value: "", flex: 3, onfocus: "feedAddFocused", onblur: "feedAddBlurred", onkeypress: "feedAddKey"},
-			]},
-			{layoutKind: "HFlexLayout", pack: "center", components: [
-				{kind: "Button", caption: "", flex: 1, style: "height: 2.0em !important; margin-bottom: 20px !important;", className: "enyo-button-dark", onclick: "confirmClick", components: [
-					{name: "feedLabel", content: "OK", style: "float: left; left: 35%; position: relative; width: auto; font-size: 1.15em !important; padding-top: 0.3em !important;"},
-					{name: "feedSpinner", kind: "Spinner", showing: false}
-				]},
-                {kind: "Button", caption: "Cancel", flex: 1, style: "height: 2.0em !important;", className: "enyo-button", onclick: "cancelClick", components: [
+        {name: "addFeedPopup", kind: "ModalDialog", components: [
+            {kind: "RowGroup", caption: "Enter Feed URL", components: [
+                {kind: "Input", name: "feedInput", hint: "", value: "", flex: 3, onfocus: "feedAddFocused", onblur: "feedAddBlurred", onkeypress: "feedAddKey"},
+            ]},
+            {layoutKind: "HFlexLayout", pack: "center", components: [
+                {kind: "Button", caption: "", flex: 1, style: "height: 2.0em !important; margin-bottom: 20px !important;", className: "enyo-button-dark", onclick: "confirmClick", components: [
+                    {name: "feedLabel", content: "OK", style: "float: left; left: 35%; position: relative; width: auto; font-size: 1.15em !important; padding-top: 0.3em !important;"},
+                    {name: "feedSpinner", kind: "Spinner", showing: false}
+                ]},
+                {kinr: "Button", caption: "Cancel", flex: 1, style: "height: 2.0em !important;", className: "enyo-button", onclick: "cancelClick", components: [
                     {name: "cancelLabel", content: "Cancel", style: "float: left; left: 5%; position: relative; width: auto; font-size: 1.15em !important; padding-top: 0.3em !important;"},
                 ]},
-			]}
-		]},
+            ]}
+        ]},
     ],
     create: function() {
         this.inherited(arguments);

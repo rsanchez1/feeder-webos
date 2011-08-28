@@ -15,7 +15,8 @@ enyo.kind({
         onArticleClicked: "",
         onArticleRead: "",
         onAllArticlesRead: "",
-        onArticleStarred: ""
+        onArticleStarred: "",
+        onChangedOffline: ""
     },
     isRendered: false,
     articleClicked: false,
@@ -46,12 +47,24 @@ enyo.kind({
            {name: "readAllButton", kind: "IconButton", icon: "images/read-footer.png", onclick: "readAllClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 60px; top: 11px;"},
             {name: "refreshButton", kind: "IconButton", icon: "images/refresh.png", onclick: "refreshClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 120px; top: 11px;"},
             {name: "fontButton", kind: "IconButton", icon: "images/icon_fonts.png", onclick: "fontClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 180px; top: 11px;"},
+            {name: "offlineButton", kind: "IconButton", icon: "images/offline-article.png", onclick: "offlineClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 240px; top: 11px;"},
         ]},
         {name: "fontsPopup", kind: "Menu", modal: false, dismissWithClick: true, components: [
             {caption: "Small", onclick: "chooseFont"},
             {caption: "Medium", onclick: "chooseFont"},
             {caption: "Large", onclick: "chooseFont"},
         ]},
+        {name: "offlineChoicePopup", kind: "ModalDialog", caption: "Are you sure you want to remove all articles from offline?", components: [
+            {layoutKind: "HFlexLayout", pack: "center", components: [
+                {kind: "Button", caption: "Yes", flex: 1, style: "height: 2.0em !important;", className: "enyo-button-dark", onclick: "confirmClick", components: [
+                    {name: "confirmLabel", content: "Yes", style: "float: left; left: 40%; position: relative; width: auto; font-size: 1.15em !important; padding-top: 0.3em !important;"},
+                ]},
+                {kind: "Button", caption: "No", flex: 1, style: "height: 2.0em !important;", className: "enyo-button", onclick: "cancelClick", components: [
+                    {name: "cancelLabel", content: "No", style: "float: left; left: 40%; position: relative; width: auto; font-size: 1.15em !important; padding-top: 0.3em !important;"},
+                ]},
+            ]}
+        ]},
+        
     ],
     create: function() {
         this.inherited(arguments);
@@ -145,6 +158,7 @@ enyo.kind({
         this.$.articlesList.addClass(Preferences.getArticleListFontSize());
         this.itemsToHide = {};
         this.originCount = {};
+        this.checkAllArticlesOffline();
     },
     foundArticles: function() {
         enyo.log("Found articles");
@@ -193,7 +207,112 @@ enyo.kind({
         if (this.articles.items.length) {
             this.selectArticle(0);
         }
+        this.checkIfArticlesOffline();
     },
+    checkIfArticlesOffline: function() {
+        var articles = this.articles.items;
+        var numArticles = articles.length;
+        for (var i = 0; i < numArticles; i++) {
+            this.app.$.articlesDB.query('SELECT articleID FROM articles WHERE title="' + Encoder.htmlEncode(articles[i].title) + '"', {onSuccess: this.offlineCallback.bind(this, articles[i]), onFailure: function() {enyo.log("failed to check if article offline");}});
+        }
+    },
+    offlineCallback: function(article, results) {
+        enyo.log("offline callback");
+        if (results.length) {
+            article.isOffline = true;
+            article.articleID = results[0].articleID
+        } else {
+            article.isOffline = false;
+            article.articleID = undefined;
+        }
+        this.checkAllArticlesOffline();
+    },
+    checkAllArticlesOffline: function() {
+        enyo.log("checking if all articles offline");
+        setTimeout(function() {
+            if (!!this.articles.items) {
+                var articles = this.articles.items;
+                if (articles.any(function(n) {return !n.isOffline;})) {
+                    enyo.log("some articles were not offline");
+                    this.$.offlineButton.setIcon("images/offline-article.png");
+                } else {
+                    enyo.log("all articles were offline");
+                    this.$.offlineButton.setIcon("images/delete-article.png");
+                }
+            } else if (!!this.offlineArticles) {
+                enyo.log("all articles were offline");
+                this.$.offlineButton.setIcon("images/delete-article.png");
+            }
+        }.bind(this), 500);
+    },
+    offlineClick: function() {
+        if (!!this.articles.items) {
+            var articles = this.articles.items;
+            if (articles.any(function(n) {return !n.isOffline;})) {
+                // offline any articles that are not offline
+                var dataToInsert = [];
+                for (var i = articles.length; i--;) {
+                    if (!articles[i].isOffline) {
+                        dataToInsert[dataToInsert.length] = {
+                            author: Encoder.htmlEncode(articles[i].author),
+                            title: Encoder.htmlEncode(articles[i].title),
+                            displayDate: articles[i].displayDate,
+                            origin: Encoder.htmlEncode(articles[i].origin),
+                            summary: Encoder.htmlEncode(articles[i].summary),
+                            url: Encoder.htmlEncode(articles[i].url)
+                        }
+                    }
+                }
+                enyo.log("clicked the offline button");
+                this.app.$.articlesDB.insertData({
+                    table: "articles",
+                    data: dataToInsert
+                }, {
+                    onSuccess: function(results) {
+                        enyo.windows.addBannerMessage("Saved all articles offline", "{}"); 
+                        this.$.spinner.hide(); 
+                        this.checkIfArticlesOffline(); 
+                        this.doChangedOffline();
+                    }.bind(this),
+                    onFailure: function() {Feeder.notify("Failed to save articles offline"); this.$.spinner.hide();}.bind(this)
+                });
+            } else {
+                // delete all articles that are offline
+                this.$.offlineChoicePopup.openAtCenter();
+            }
+        } else if (!!this.offlineArticles) {
+            this.$.offlineChoicePopup.openAtCenter();
+        }
+    },
+
+    confirmClick: function() {
+        var articles;
+        if (!!this.articles.items) {
+            articles = this.articles.items;
+        } else if (!!this.offlineArticles) {
+            articles = this.offlineArticles;
+        } else {
+            return;
+        }
+        var queries = [];
+        for (var i = articles.length; i--;) {
+            if (!!articles[i].isOffline) {
+                queries[queries.length] = "DELETE FROM articles WHERE articleID="+articles[i].articleID;
+            }
+        }
+        this.app.$.articlesDB.queries(queries, {onSuccess: function() {
+                enyo.windows.addBannerMessage("Deleted all articles offline", "{}"); 
+                this.$.spinner.hide(); 
+                this.checkIfArticlesOffline(); 
+                this.doChangedOffline();
+        }.bind(this), onFailure: function() {Feeder.notify("Failed to delete articles offline"); this.$.spinner.hide();}.bind(this)});
+        this.$.offlineChoicePopup.close();
+    },
+
+    cancelClick: function() {
+        this.$.offlineChoicePopup.close();
+    },
+    
     getListArticles: function(inSender, inIndex) {
         var articles = [];
         if (this.offlineArticles.length) {
