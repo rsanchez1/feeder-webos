@@ -32,6 +32,7 @@ enyo.kind({
             ]},
             {kind: "Spinner", showing: true, className: "tfSpinner",}
         ]},
+		{name: "emptyNotice", content: "There are no articles available.", className: "articleTitle itemLists", style: "font-weight: bold; padding-top: 20px; padding-left: 20px; font-size: 0.9rem;", flex: 1},
         {kind: "Scroller", flex: 1, components: [
             {name: "articlesList", kind: "VirtualList", onSetupRow: "getListArticles", className: "itemLists", components: [
                 {kind: "Divider", onclick: "articleDividerClick"},
@@ -84,12 +85,15 @@ enyo.kind({
             this.offlineArticles[i].sortOrigin = this.offlineArticles[i].origin.replace(/[^a-zA-Z 0-9 ]+/g,'');
         }
         this.$.spinner.hide();
+		/*
         if (!!this.articles.reset) {
             this.articles.reset();
         }
-        if (!!this.articles.items) {
+        if (!!this.articles) {
             this.articles.items = [];
         }
+		*/
+		this.articles = [];
         if (Preferences.groupFoldersByFeed()) {
             this.offlineArticles.sort(this.originSortingFunction);
             this.offlineArticles = this.sortSortedArticlesByDate(this.offlineArticles);
@@ -112,6 +116,11 @@ enyo.kind({
             this.wasOfflineSet = true;
         }
 		//setTimeout(function() {enyo.log("REFRESHING LIST"); this.$.articlesList.refresh();}.bind(this), 3000);
+		if (!!this.offlineArticles.length) {
+			this.$.emptyNotice.hide();
+		} else {
+			this.$.emptyNotice.show();
+		}
 	},
     articlesChanged: function() {
         this.articlesChangedHandler();
@@ -207,14 +216,23 @@ enyo.kind({
         if (this.articles.items.length) {
             this.selectArticle(0);
         }
+		if (!!this.articles.items.length) {
+			this.$.emptyNotice.hide();
+		} else {
+			this.$.emptyNotice.show();
+		}
         this.checkIfArticlesOffline();
     },
     checkIfArticlesOffline: function() {
-        var articles = this.articles.items;
-        var numArticles = articles.length;
-        for (var i = 0; i < numArticles; i++) {
-            this.app.$.articlesDB.query('SELECT articleID FROM articles WHERE title="' + Encoder.htmlEncode(articles[i].title) + '"', {onSuccess: this.offlineCallback.bind(this, articles[i]), onFailure: function() {enyo.log("failed to check if article offline");}});
-        }
+		if (!!this.articles.items) {
+			var articles = this.articles.items;
+			var numArticles = articles.length;
+			for (var i = 0; i < numArticles; i++) {
+				this.app.$.articlesDB.query('SELECT articleID FROM articles WHERE title="' + Encoder.htmlEncode(articles[i].title) + '"', {onSuccess: this.offlineCallback.bind(this, articles[i]), onFailure: function() {enyo.log("failed to check if article offline");}});
+			}
+		} else {
+			this.checkAllArticlesOffline();
+		}
     },
     offlineCallback: function(article, results) {
         enyo.log("offline callback");
@@ -229,24 +247,22 @@ enyo.kind({
     },
     checkAllArticlesOffline: function() {
         enyo.log("checking if all articles offline");
-        setTimeout(function() {
-            if (!!this.articles.items) {
-                var articles = this.articles.items;
-                if (articles.any(function(n) {return !n.isOffline;})) {
-                    enyo.log("some articles were not offline");
-                    this.$.offlineButton.setIcon("images/offline-article.png");
-                } else {
-                    enyo.log("all articles were offline");
-                    this.$.offlineButton.setIcon("images/delete-article.png");
-                }
-            } else if (!!this.offlineArticles) {
-                enyo.log("all articles were offline");
-                this.$.offlineButton.setIcon("images/delete-article.png");
-            }
-        }.bind(this), 500);
+		if (!!this.articles.items) {
+			var articles = this.articles.items;
+			if (articles.any(function(n) {return !n.isOffline;})) {
+				enyo.log("some articles were not offline");
+				this.$.offlineButton.setIcon("images/offline-article.png");
+			} else {
+				enyo.log("all articles were offline");
+				this.$.offlineButton.setIcon("images/delete-article.png");
+			}
+		} else if (!!this.offlineArticles) {
+			enyo.log("all articles were offline");
+			this.$.offlineButton.setIcon("images/delete-article.png");
+		}
     },
     offlineClick: function() {
-        if (!!this.articles.items) {
+        if (!!this.articles.items && !!this.articles.items.length) {
             var articles = this.articles.items;
             if (articles.any(function(n) {return !n.isOffline;})) {
                 // offline any articles that are not offline
@@ -280,23 +296,27 @@ enyo.kind({
                 // delete all articles that are offline
                 this.$.offlineChoicePopup.openAtCenter();
             }
-        } else if (!!this.offlineArticles) {
+        } else if (!!this.offlineArticles && !!this.offlineArticles.length) {
             this.$.offlineChoicePopup.openAtCenter();
         }
     },
 
     confirmClick: function() {
         var articles;
-        if (!!this.articles.items) {
+        if (!!this.articles.items && !!this.articles.items.length) {
             articles = this.articles.items;
-        } else if (!!this.offlineArticles) {
+			enyo.log("using articles");
+        } else if (!!this.offlineArticles && !!this.offlineArticles.length) {
             articles = this.offlineArticles;
+			enyo.log("using offline articles");
         } else {
+			this.$.offlineChoicePopup.close();
+			enyo.log("nothing");
             return;
         }
         var queries = [];
         for (var i = articles.length; i--;) {
-            if (!!articles[i].isOffline) {
+            if (!!articles[i].isOffline || !!this.offlineArticles) {
                 queries[queries.length] = "DELETE FROM articles WHERE articleID="+articles[i].articleID;
             }
         }
@@ -653,14 +673,16 @@ enyo.kind({
                 scrollTop = 0;
             }
             var scrollBottom = scrollTop + this.numberRendered;
-            if (this.offlineArticles.length) {
+            if (!!this.offlineArticles && !!this.offlineArticles.length) {
                 if (scrollBottom >= this.offlineArticles.length) {
                     scrollBottom = this.offlineArticles.length - 1;
                 }
             } else {
-                if (scrollBottom >= this.articles.items.length) {
-                    scrollBottom = this.articles.items.length - 1;
-                }
+				if (!!this.articles.items && !!this.articles.items.length) {
+					if (scrollBottom >= this.articles.items.length) {
+						scrollBottom = this.articles.items.length - 1;
+					}
+				}
             }
             var scroller = this.$.articlesList.$.scroller;
             scroller.adjustTop(scrollTop);
@@ -671,13 +693,16 @@ enyo.kind({
         this.articleClicked = false;
         var article;
         var length = 0;
-        if (this.offlineArticles.length) {
+        if (!!this.offlineArticles && !!this.offlineArticles.length) {
             article = this.offlineArticles[index];
             length = this.offlineArticles.length;
-        } else {
+        } else if (!!this.articles.items && !!this.articles.items.length) {
             article = this.articles.items[index];
             length = this.articles.items.length;
-        }
+        } else {
+			this.$.articlesList.refresh();
+			return;
+		}
         this.doArticleClicked(article, index, length - 1);
         this.$.articlesList.refresh();
         this.$.articlesList.updateRow(index);
