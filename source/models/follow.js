@@ -9,6 +9,8 @@ var Follow = Class.create(ArticleContainer, {
         this.hideDivider = "hide-divider"
         this.showOrigin = false
         this.canMarkAllRead = false
+        //this.getUnreadCounts();
+        this.setUnreadCount(0);
     },
 
     makeApiCall: function(continuation, success, failure) {
@@ -16,8 +18,32 @@ var Follow = Class.create(ArticleContainer, {
     },
 
     articleRead: function(subscriptionId) {
+        enyo.log("MARKING ARTICLE READ FOLLOW");
+        //this.incrementUnreadCountBy(-1);
     },
 
     articleNotRead: function(subscriptionId) {
+        enyo.log("MARKING ARTICLE NOT READ FOLLOW");
+        //this.incrementUnreadCountBy(1);
+    },
+
+    getUnreadCounts: function(success) {
+        var self = this;
+        this.api.getUnreadCounts(
+            function(counts) {
+                var unreadWasSet = false;
+                counts.each(function(count)  {
+                    if (count.id.startsWith("user") && count.id.endsWith("friends")) {
+                        unreadWasSet = true;
+                        self.setUnreadCount(count.count);
+                    }
+                })
+                if (!unreadWasSet) {
+                    self.setUnreadCount(0);
+                }
+                success()
+            },
+            function() {}
+        )
     }
 })

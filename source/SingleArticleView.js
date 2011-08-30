@@ -267,7 +267,7 @@ enyo.kind({
                 }
             } else {
                 if (this.article.turnReadOn) {
-                    this.article.turnReadOn(this.markedArticleRead.bind(this), function() {});
+                    this.article.turnReadOn(this.markedArticleRead.bind(this), function() {enyo.log("FAILED TO TURN READ ON")});
                 }
             }
         }

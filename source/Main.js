@@ -234,7 +234,7 @@ enyo.kind({
         this.loginSuccess();
     },
 
-    feedClicked: function(thing, item) {
+    feedClicked: function(thing, item, wasFolderChild) {
         enyo.log("received feed clicked event");
         this.$.articlesView.setHeaderContent(item.title);
         if (item.isOffline) {
@@ -251,6 +251,7 @@ enyo.kind({
             });
         } else {
             this.$.articlesView.setArticles(item); //pushing all articles to articles view
+            this.$.articlesView.setWasFolderChild(wasFolderChild);
         }
         this.$.slidingPane.selectViewByName('articles', true);
         //this.$.slidingPane.selectViewByName('ariclesView', true);
@@ -288,7 +289,9 @@ enyo.kind({
         }.bind(this), function() {enyo.log("error sorting and filtering");});
     },
     articleRead: function(thing, article, index) {
+        enyo.log("MARKING ARTICLE READ");
         this.sources.articleRead(article.subscriptionId);
+        this.$.articlesView.finishArticleRead(index);
         this.sources.sortAndFilter(function() {
             this.$.feedsView.setChangeId(article.subscriptionId);
             this.$.feedsView.setStickySources(this.sources.stickySources);
@@ -308,6 +311,7 @@ enyo.kind({
             this.$.feedsView.setStickySources(this.sources.stickySources);
             this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
         }.bind(this), function() {enyo.log("error sorting and filtering");});
+        //this.refreshFeeds();
     },
 	changeOffline: function() {
             this.$.articlesView.checkAllArticlesOffline();

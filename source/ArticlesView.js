@@ -9,7 +9,8 @@ enyo.kind({
     published: {
         headerContent: "",
         articles: [],
-		offlineArticles: []
+		offlineArticles: [],
+                wasFolderChild: false,
     },
     events: {
         onArticleClicked: "",
@@ -24,6 +25,7 @@ enyo.kind({
     itemsToMarkRead: [],
     itemsToHide: {},
     originCount: {},
+    numberToMarkRead: 0,
     components: [
         //{name: "header", kind: "Header"},
         {name: "header", kind: "PageHeader", components: [
@@ -121,8 +123,10 @@ enyo.kind({
 		} else {
 			this.$.emptyNotice.show();
 		}
+                this.wasFolderChild = false;
 	},
     articlesChanged: function() {
+        this.wasFolderChild = false;
         this.articlesChangedHandler();
         var scroller = this.$.articlesList.$.scroller;
         this.maxTop = 0;
@@ -519,7 +523,19 @@ enyo.kind({
 
     markedArticleRead: function(article, index) {
         this.finishArticleRead(index);
+        this.numberToMarkRead--;
+        enyo.log("NUMBER TO MARK READ: " + this.numberToMarkRead);
         this.doArticleRead(article, index);
+        if (this.numberToMarkRead < 0) {
+        } else {
+            if (this.numberToMarkRead === 0) {
+                this.$.spinner.hide();
+                enyo.log("selecting feeds view");
+                this.app.$.slidingPane.selectViewByName('feeds', true);
+                this.$.articlesList.punt();
+                this.doAllArticlesRead(count, this.articles.id);
+            }
+        }
     },
     articleItemClick: function(inSender, inEvent) {
         this.articleClicked = true;
@@ -738,9 +754,29 @@ enyo.kind({
     readAllClick: function() {
 		if (!this.offlineArticles.length) {
 			if (this.articles.canMarkAllRead) {
-				this.$.spinner.show();
-                var count = this.articles.getUnreadCount();
-				this.articles.markAllRead(this.markedAllArticlesRead.bind(this, count), function() {enyo.log("error marking all read");});
+                            this.$.spinner.show();
+                            var count = this.articles.getUnreadCount();
+                            if (!this.wasFolderChild) {
+                                this.articles.markAllRead(this.markedAllArticlesRead.bind(this, count), function() {enyo.log("error marking all read");});
+                            } else {
+                                var items = this.articles.items;
+                                this.numberToMarkRead = items.length;
+                                this.$.spinner.show();
+                                for (var i = items.length; i--;) {
+                                    items[i].turnReadOn(this.markedArticleRead.bind(this, items[i], i), function() {
+                                        enyo.log("COULD NOT MARK ARTICLE READ");
+                                        enyo.log("NUMBER TO MARK READ: " + this.numberToMarkRead);
+                                        this.numberToMarkRead--;
+                                        if (this.numberToMarkRead === 0) {
+                                            this.$.spinner.hide();
+                                            enyo.log("selecting feeds view");
+                                            this.app.$.slidingPane.selectViewByName('feeds', true);
+                                            this.$.articlesList.punt();
+                                            this.doAllArticlesRead(count, this.articles.id);
+                                        }
+                                    }.bind(this));
+                                }
+                            }
 			}
 		}
     },
@@ -780,12 +816,10 @@ enyo.kind({
     markedAllArticlesRead: function(count, wasScrolling) {
         enyo.log("marked all articles read: ", count);
         this.$.spinner.hide();
-        if (!this.articles.getUnreadCount()) {
-            enyo.log("selecting feeds view");
-            if (!wasScrolling) {
-                this.app.$.slidingPane.selectViewByName('feeds', true);
-                this.$.articlesList.punt();
-            }
+        enyo.log("selecting feeds view");
+        if (!wasScrolling) {
+            this.app.$.slidingPane.selectViewByName('feeds', true);
+            this.$.articlesList.punt();
         }
         this.doAllArticlesRead(count, this.articles.id);
     },

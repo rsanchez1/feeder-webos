@@ -19,21 +19,43 @@ var Folder = Class.create(ArticleContainer, {
 
   markAllRead: function(success) {
     var self = this
+    if (!self.subscriptions) {
+        self = self.folderParent;
+    }
+    enyo.log("marking all read in folder");
 
     self.api.markAllRead(self.id, function() {
-      self.subscriptions.items.each(function(subscription) {
+        enyo.log("marked all ready for folder");
+        var subscriptionItems;
+        if (!self.subscriptions) {
+            subscriptionItems = self.folderParent.subscriptions.items;
+        } else {
+            subscriptionItems = self.subscriptions.items;
+        }
+      subscriptionItems.each(function(subscription) {
         subscription.clearUnreadCount()
       })
+      enyo.log("A");
 
       self.clearUnreadCount()
+      enyo.log("B");
       self.items.each(function(item) {item.isRead = true})
+      enyo.log("C");
       self.recalculateUnreadCounts()
+      enyo.log("D");
       success()
+      enyo.log("E");
     })
   },
 
   addUnreadCount: function(count) {
-    this.subscriptions.items.each(function(subscription) {
+    var subscriptionItems;
+    if (!this.subscriptions) {
+        subscriptionItems = this.folderParent.subscriptions.items;
+    } else {
+        subscriptionItems = this.subscriptions.items;
+    }
+    subscriptionItems.each(function(subscription) {
       if(subscription.id == count.id) {
         subscription.setUnreadCount(count.count)
       }
@@ -43,7 +65,19 @@ var Folder = Class.create(ArticleContainer, {
   },
 
   articleRead: function(subscriptionId) {
-    this.subscriptions.items.each(function(subscription){
+      enyo.log("------------------------------");
+      enyo.log("------------------------------");
+      enyo.log("------------------------------");
+      enyo.log("MARKING ARTICLES READ FOR FOLDER");
+    var subscriptionItems;
+    if (!this.subscriptions) {
+        enyo.log("DOES NOT HAVE SUBSCRIPTIONS, USE PARENT");
+        subscriptionItems = this.folderParent.subscriptions.items;
+    } else {
+        enyo.log("HAS SUBSCRIPTIONS");
+        subscriptionItems = this.subscriptions.items;
+    }
+    subscriptionItems.each(function(subscription){
       subscription.articleRead(subscriptionId)
     })
 
@@ -51,7 +85,13 @@ var Folder = Class.create(ArticleContainer, {
   },
 
   articleNotRead: function(subscriptionId) {
-    this.subscriptions.items.each(function(subscription){
+    var subscriptionItems;
+    if (!this.subscriptions) {
+        subscriptionItems = this.folderParent.subscriptions.items;
+    } else {
+        subscriptionItems = this.subscriptions.items;
+    }
+    subscriptionItems.each(function(subscription){
       subscription.articleNotRead(subscriptionId)
     })
 
@@ -61,7 +101,13 @@ var Folder = Class.create(ArticleContainer, {
   recalculateUnreadCounts: function() {
     this.setUnreadCount(0)
 
-    this.subscriptions.items.each(function(subscription) {
+    var subscriptionItems;
+    if (!this.subscriptions) {
+        subscriptionItems = this.folderParent.subscriptions.items;
+    } else {
+        subscriptionItems = this.subscriptions.items;
+    }
+    subscriptionItems.each(function(subscription) {
       this.incrementUnreadCountBy(subscription.getUnreadCount())
     }.bind(this))
   },
@@ -75,7 +121,13 @@ var Folder = Class.create(ArticleContainer, {
   sortManually: function(sortOrder, error) {
     if(!sortOrder) {return}
 
-    this.subscriptions.items.each(function(subscription, index) {
+    var subscriptionItems;
+    if (!this.subscriptions) {
+        subscriptionItems = this.folderParent.subscriptions.items;
+    } else {
+        subscriptionItems = this.subscriptions.items;
+    }
+    subscriptionItems.each(function(subscription, index) {
       subscription.sortNumber = sortOrder.getSortNumberFor(subscription.sortId)
     }.bind(this))
 
@@ -83,8 +135,14 @@ var Folder = Class.create(ArticleContainer, {
   },
 
   sortBy: function(f) {
-    var sortedItems = this.subscriptions.items.sortBy(f)
-    this.subscriptions.items.clear()
-    this.subscriptions.items.push.apply(this.subscriptions.items, sortedItems)
+    var subscriptionItems;
+    if (!this.subscriptions) {
+        subscriptionItems = this.folderParent.subscriptions.items;
+    } else {
+        subscriptionItems = this.subscriptions.items;
+    }
+    var sortedItems = subscriptionItems.sortBy(f)
+    subscriptionItems.clear()
+    subscriptionItems.push.apply(subscriptionItems, sortedItems)
   }
 })

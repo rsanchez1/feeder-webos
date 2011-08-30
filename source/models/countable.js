@@ -19,7 +19,7 @@ var Countable = Class.create({
   },
 
   incrementUnreadCountBy: function(count) {
-    this.setUnreadCount((this.getUnreadCount() || 0) + count)
+    this.setUnreadCount(this.getUnreadCount() + count)
   },
 
   decrementUnreadCountBy: function(count) {
@@ -27,6 +27,10 @@ var Countable = Class.create({
   },
 
   getUnreadCount: function() {
-    return this.unreadCount
+      if (!!this.unreadCount) {
+        return this.unreadCount
+      } else {
+          return 0;
+      }
   }
 })

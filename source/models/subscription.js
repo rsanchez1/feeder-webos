@@ -28,8 +28,10 @@ var Subscription = Class.create(ArticleContainer, {
   },
 
   markAllRead: function(success, error) {
+      enyo.log("getting ready to mark all articles for subscription");
     this.api.markAllRead(this.id,
       function() {
+          enyo.log("marked all articles for subscription");
         this.clearUnreadCount()
         this.items.each(function(item) {item.isRead = true})
         success()

@@ -15,6 +15,7 @@ enyo.kind({
         onHeaderClicked: "",
         onNotificationClicked: "",
     },
+    gotFriendsUnread: false,
     openedFolders: [],
     components: [
         //{name: "header", kind: "Header"},
@@ -88,6 +89,7 @@ enyo.kind({
     stickySourcesChanged: function() {
         enyo.log("changed sticky sources");
         this.$.stickySourcesList.render();
+        this.gotFriendsUnread = false;
     },
     getStickySourcesLength: function() {
         if (!!this.stickySources && !!this.stickySources.items && !!this.stickySources.items.length) {
@@ -115,11 +117,19 @@ enyo.kind({
                 enyo.log("not offline");
                 var r = this.stickySources.items[inIndex];
                 if (r) {
-                    enyo.log("setting source");
                     this.$.stickyTitle.setContent(Encoder.htmlDecode(r.title));
                     this.$.stickyUnreadCountDisplay.setContent(r.unreadCountDisplay);
                     if (inIndex + 1 > this.stickySources.items.length) {
                         this.$.stickyItem.applyStyle("border-bottom", "none");
+                    }
+                    if (r.title == "People You Follow" && !this.gotFriendsUnread) {
+                        r.getUnreadCounts(function(index) {
+                            this.gotFriendsUnread = true;
+                            this.$.stickySourcesList.renderRow(index);
+                        }.bind(this, inIndex));
+                    }
+                    if (this.gotFriendsUnread) {
+                        this.gotFriendsUnread = false;
                     }
                     return true;
                 }
@@ -134,15 +144,6 @@ enyo.kind({
 
         var numberOfItems;
 
-        numberOfItems = 0;
-        for (var i = this.subscriptionSources.items.length; i--;) {
-            var item = this.subscriptionSources.items[i];
-            if (item.icon == "folder" && !!item.subscriptions) {
-                numberOfItems++;
-            }
-        }
-        enyo.log("NUMBER OF ITEMS: " + numberOfItems);
-
         for (var i = this.subscriptionSources.items.length; i--;) {
             var item = this.subscriptionSources.items[i];
             if (this.openedFolders.any(function(n) {return n == item.id;})) {
@@ -153,15 +154,7 @@ enyo.kind({
             }
         }
 
-        numberOfItems = 0;
-        for (var i = this.subscriptionSources.items.length; i--;) {
-            var item = this.subscriptionSources.items[i];
-            if (item.icon == "folder" && !!item.subscriptions) {
-                numberOfItems++;
-            }
-        }
-        enyo.log("NUMBER OF ITEMS: " + numberOfItems);
-
+/*
         if (this.changeId !== "") {
             var index = 0;
             for (var i = this.subscriptionSources.items.length; i--;) {
@@ -172,8 +165,9 @@ enyo.kind({
             this.$.subscriptionSourcesList.renderRow(index);
             this.changeId = "";
         } else {
+            */
             this.$.subscriptionSourcesList.render();
-        }
+        //}
     },
     setupSubscriptionSources: function(inSender, inIndex) {
         if (!!this.subscriptionSources.items) {
@@ -224,7 +218,7 @@ enyo.kind({
             }
             this.subscriptionSourcesChanged();
         } else {
-            this.doFeedClicked(this.subscriptionSources.items[inEvent.rowIndex]);
+            this.doFeedClicked(this.subscriptionSources.items[inEvent.rowIndex], !!this.subscriptionSources.items[inEvent.rowIndex].isFolderChild && this.subscriptionSources.items[inEvent.rowIndex].icon !== 'folder');
         }
     },
     openFolder: function(folder, index) {
@@ -240,6 +234,7 @@ enyo.kind({
         folderToAdd.categories = [{label: folder.title}];
         folderToAdd.title = "All Items - " + folder.title;
         folderToAdd.isFolderChild = true;
+        folderToAdd.folderParent = folder;
         this.subscriptionSources.items.splice(index + 1, 0, folderToAdd);
     },
     closeFolder: function(folder) { 
