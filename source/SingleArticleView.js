@@ -600,15 +600,14 @@ enyo.kind({
         "<h2>Contact</h2>" +
         "<p>If you have any questions, contact <a href='mailto:support@sanchezapps.com'>support@sanchezapps.com</a>." +
         "<h2>Changelog</h2>" +
-        "<p>Current Version: 1.1.0. You can view the full changelog history <a href='http://sanchezapps.com/touchfeeds-changelog'>here</a>.</p>" +
+        "<p>Current Version: 1.2.0. You can view the full changelog history <a href='http://sanchezapps.com/touchfeeds-changelog'>here</a>.</p>" +
         "<ul class='gestureGuide'>" +
-        "<li>Added notifications for new articles</li>" +
-        "<li>Changed sharing preferences to allow sharing with the Facebook app or with Spaz HD</li>" +
-        "<li>Added People You Follow to sticky sources</li>" +
-        "<li>Added article counts to articles grouped by feed in folder view</li>" +
-        "<li>Added ability to sort manually from your Google Reader account</li>" +
-        "<li>Improved gestures</li>" + 
-        "<li>Other minor performance improvements and style tweaks</li>" +
+        "<li>Improved Folder View - You can now select individual feeds in an article from the feeds view, or view all articles in a folder as before</li>" +
+        "<li>Added ability to download all articles in a feed for offline reading at once, and ability to delete all offline articles in a list that only has offline articles</li>" +
+        "<li>Tapping the fetch article fulltext button after the article fulltext is retrieved now returns the article to the default content</li>" +
+        "<li>Added unread article counts for People You Follow</li>" +
+        "<li>Added Help link to app menu which leads to app guide</li>" +
+        "<li>Reduced height for notifications popup</li>" +
         "</ul>"+
         "<h2>Special Thanks</h2>" +
         "<ul class='gestureGuide'>" +

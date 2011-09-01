@@ -20,7 +20,8 @@ enyo.kind({
         {kind: "AppMenu", lazy: false, components: [
             {kind: "EditMenu"},
             {name: "loginLabel", caption: "Login", onclick: "showLogin"},
-            {name: "preferenesLabel", caption: "Preferences", onclick: "showPreferences"}
+            {name: "preferenesLabel", caption: "Preferences", onclick: "showPreferences"},
+            {name: "helpLabel", caption: "Help", onclick: "feedsHeaderClicked"}
         ]},
         {kind: "onecrayon.Database", name: "articlesDB", database: "ext:TouchFeedsArticles", version: 1, debug: false},
         {kind: "ApplicationEvents", onWindowRotated: "windowRotated", onApplicationRelaunch: "applicationRelaunch", onUnload: "cleanup"},
