@@ -87,7 +87,6 @@ enyo.kind({
         this.$.headerContent.setContent(Encoder.htmlDecode(this.headerContent));
     },
     stickySourcesChanged: function() {
-        enyo.log("changed sticky sources");
         this.$.stickySourcesList.render();
         this.gotFriendsUnread = false;
     },
@@ -99,13 +98,8 @@ enyo.kind({
         }
     },
     setupStickySources: function(inSender, inIndex) {
-        enyo.log("sticky sources index: ", inIndex);
         if (!!this.stickySources.items) {
-            enyo.log("sticky sources items");
             if ((inIndex == this.stickySources.items.length && (!this.stickySources.items[this.stickySources.items.length - 1].isOffline)) || (!!this.stickySources.items[inIndex] && this.stickySources.items[inIndex].isOffline)) {
-                enyo.log("setting offline");
-                enyo.log("__________________________________________");
-                enyo.log("last item in sticky sources, adding offline");
                 this.$.stickyTitle.setContent("Offline Articles");
                 this.$.stickyUnreadCountDisplay.setContent(this.app.offlineArticles.length);
                 this.$.stickyItem.applyStyle("border-bottom", "none");
@@ -114,7 +108,6 @@ enyo.kind({
                 }
                 return true;
             } else {
-                enyo.log("not offline");
                 var r = this.stickySources.items[inIndex];
                 if (r) {
                     this.$.stickyTitle.setContent(Encoder.htmlDecode(r.title));
@@ -137,7 +130,6 @@ enyo.kind({
         }
     },
     subscriptionSourcesChanged: function() {
-        enyo.log("changed subscription sources");
         this.showSpinner = false;
         this.$.spinner.hide();
         this.$.sourcesDivider.show();
@@ -196,16 +188,12 @@ enyo.kind({
         }
     },
     stickyItemClick: function(inSender, inEvent) {
-        enyo.log("tapped number: ", inEvent.rowIndex);
         this.doFeedClicked(this.stickySources.items[inEvent.rowIndex]);
     },
     subscriptionItemClick: function(inSender, inEvent) {
-        enyo.log("tapped number: ", inEvent.rowIndex);
         var tappedSub = this.subscriptionSources.items[inEvent.rowIndex];
         if (!!tappedSub.subscriptions) {
-            enyo.log("CLICKED A FOLDER THINGY");
             if (this.openedFolders.any(function(n) {return n == tappedSub.id;})) {
-                enyo.log("folder opened, close it up");
                 this.closeFolder(tappedSub);
                 for (var i = this.openedFolders.length; i--;) {
                     if (this.openedFolders[i] == tappedSub.id) {
@@ -268,7 +256,6 @@ enyo.kind({
         }
     },
     refreshLists: function() {
-        enyo.log("REFRESHING LISTS");
         this.$.stickySourcesList.refresh();
         this.$.subscriptionSourcesList.refresh();
     },
@@ -305,7 +292,6 @@ enyo.kind({
         }
     },
     reloadFeeds: function() {
-        enyo.log("reloading feeds");
         this.$.subscriptionSourcesList.render();
         this.$.stickySourcesList.render();
     },
@@ -313,7 +299,6 @@ enyo.kind({
         this.$.addFeedPopup.openAtEvent(inEvent);
     },
     confirmClick: function() {
-        enyo.log("confirming feed...");
         this.$.feedSpinner.show();
         this.app.api.addSubscription(this.$.feedInput.getValue(), this.addFeedSuccess.bind(this), function() {Feeder.notify("Could not add feed"); this.$.feedSpinner.hide(); this.$.addFeedPopup.close();}.bind(this));
         enyo.keyboard.hide();
@@ -337,7 +322,6 @@ enyo.kind({
         this.doNotificationClicked();
     },
     confirmedDeleteItem: function(inSender, inIndex) {
-        enyo.log("wanted to delete item: ", inIndex);
         this.app.api.unsubscribe(this.subscriptionSources.items[inIndex], this.unsubscribedFeed.bind(this));
     },
     unsubscribedFeed: function() {

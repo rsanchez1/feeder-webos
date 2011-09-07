@@ -71,13 +71,10 @@ var AllSubscriptions = Class.create(SubscriptionContainer, {
   },
 
   sort: function(success, failure) {
-    //enyo.log("sorting subscriptions");
     if(Preferences.isManualFeedSort()) {
-      //enyo.log("manual sort");
       this.sortManually(success, failure)
     }
     else {
-      //enyo.log("alphabetical sort");
       this.sortAlphabetically(success, failure)
     }
   },
@@ -86,7 +83,6 @@ var AllSubscriptions = Class.create(SubscriptionContainer, {
     var self = this
 
     if(self.sorted == "alphabetic") {
-      //enyo.log("was sorted alphabetically");
       success()
     }
     else {
@@ -99,7 +95,6 @@ var AllSubscriptions = Class.create(SubscriptionContainer, {
       })
 
       self.sorted = "alphabetic"
-      //enyo.log("finished sorting, call success");
       success()
     }
   },
@@ -143,8 +138,22 @@ var AllSubscriptions = Class.create(SubscriptionContainer, {
     this.items.each(function(subscription) {subscription.articleRead(subscriptionId)})
   },
 
+  articleMultipleRead: function(subscriptionId) {
+    this.items.each(function(subscription) {subscription.articleMultipleRead(subscriptionId)})
+  },
+
   articleNotRead: function(subscriptionId) {
     this.items.each(function(subscription) {subscription.articleNotRead(subscriptionId)})
+  },
+
+  getUnreadCountForSubscription: function(subscriptionId) {
+      var sub = this.items.find(function(subscription) {return subscription.id == subscriptionId;});
+      if (typeof sub !== "undefined") {
+          var count = sub.getUnreadCount();
+          return sub.getUnreadCount();
+      } else {
+          return 0;
+      }
   },
 
   recalculateFolderCounts: function() {

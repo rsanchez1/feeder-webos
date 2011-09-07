@@ -1,6 +1,5 @@
 var AllSources = Class.create({
   initialize: function(api) {
-    //enyo.log("Initializing all sources");
     this.all = new AllArticles(api)
     this.starred = new Starred(api)
     this.shared = new Shared(api)
@@ -12,12 +11,10 @@ var AllSources = Class.create({
   },
 
   findAll: function(success, failure) {
-    //enyo.log("Finding all");
     var self = this
 
     self.subscriptions.findAll(
       function() {
-        //enyo.log("Successfully found all");
         self.all.setUnreadCount(self.subscriptions.getUnreadCount())
         success()
       },
@@ -27,22 +24,18 @@ var AllSources = Class.create({
   },
 
   sortAndFilter: function(success, failure) {
-    //enyo.log("Sorting and filtering");
     var self = this
     self.subscriptionSources.items.clear()
 
     self.subscriptions.sort(
       function() {
-        //enyo.log("called success from all sorts");
         var hideReadFeeds = Preferences.hideReadFeeds()
-        //enyo.log("should hide read feeds? ", hideReadFeeds);
 
         self.subscriptions.items.each(function(subscription) {
           if(!hideReadFeeds || (hideReadFeeds && subscription.unreadCount)) {
             self.subscriptionSources.items.push(subscription)
           }
         })
-        //enyo.log("calling success callback for sortAndFilter");
 
         success()
       },
@@ -54,6 +47,15 @@ var AllSources = Class.create({
   articleRead: function(subscriptionId) {
     this.all.decrementUnreadCountBy(1)
     this.subscriptions.articleRead(subscriptionId)
+  },
+
+  getUnreadCountForSubscription: function(subscriptionId) {
+      return this.subscriptions.getUnreadCountForSubscription(subscriptionId);
+  },
+
+  articleMultipleRead: function(subscriptionId) {
+      this.all.decrementUnreadCountBy(1)
+      this.subscriptions.articleMultipleRead(subscriptionId)
   },
 
   articleNotRead: function(subscriptionId) {
@@ -69,10 +71,8 @@ var AllSources = Class.create({
   nukedEmAll: function() {
     this.all.clearUnreadCount()
 
-    //enyo.log("Marked EVERYTHING read")
 
     this.subscriptions.items.each(function(item) {
-      //enyo.log("Marking " + item.id + " read")
 
       if(item.isFolder) {
         item.subscriptions.items.each(function(subscription) {

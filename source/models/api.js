@@ -462,6 +462,32 @@ var Api = Class.create({
     )
   },
 
+  markMultipleArticlesRead: function(articles, success, failure) {
+      this._getEditToken(
+        function(token) {
+            var params = ["T="+escape(token)];
+            for (var i = articles.length; i--;) {
+                params.push("i=" + escape(articles[i].id));
+                params.push("s=" + escape(articles[i].subscriptionId));
+                params.push("a=user/-/state/com.google/read");
+                params.push("r=user/-/state/com.google/kept-unread");
+            }
+
+            var postParams = params.join("&");
+
+            new Ajax.Request(Api.BASE_URL + "edit-tag", {
+                method: "post",
+                parameters: postParams,
+                requestHeaders: this._requestHeaders(),
+                onSuccess: success,
+                onFailure: failure
+            })
+        }.bind(this),
+
+        failure
+    )
+  },
+
   _requestHeaders: function() {
     return {Authorization:"GoogleLogin auth=" + this.auth}
   },

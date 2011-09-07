@@ -8,7 +8,7 @@ enyo.kind({
                 {name: "feedsView", kind: "TouchFeeds.FeedsView", headerContent: "TouchFeeds", flex: 1, components: [], onFeedClicked: "feedClicked", onRefreshFeeds: "refreshFeeds", onHeaderClicked: "feedsHeaderClicked", onNotificationClicked: "notificationClicked"}
             ]},
             {name: "articles", width: "320px", fixedWidth: true, components: [
-                {name: "articlesView", kind: "TouchFeeds.ArticlesView", headerContent: "All Items", flex: 1, components: [], onArticleClicked: "articleClicked", onArticleRead: "articleRead", onAllArticlesRead: "markedAllRead", onArticleStarred: "articleStarred", onChangedOffline: "changeOffline"}
+                {name: "articlesView", kind: "TouchFeeds.ArticlesView", headerContent: "All Items", flex: 1, components: [], onArticleClicked: "articleClicked", onArticleRead: "articleRead", onArticleMultipleRead: "articleMultipleRead", onAllArticlesRead: "markedAllRead", onArticleStarred: "articleStarred", onChangedOffline: "changeOffline"}
             ]},
             {name: "singleArticle", flex: 1, dragAnywhere: false, dismissible: false, onHide: "hideArticle", onShow: "showArticle", onResize: "slidingResize", components: [
                 {name: "singleArticleView", dragAnywhere: false, kind: "TouchFeeds.SingleArticleView", flex: 1, components: [], onSelectArticle: "selectArticle", onRead: "readArticle", onChangedOffline: "changeOffline", onStarred: "starredArticle"},
@@ -160,6 +160,15 @@ enyo.kind({
         );
     },
 
+    sortAndFilter: function() {
+        enyo.log("sortin and filterin");
+        this.sources.sortAndFilter(function() {
+            enyo.log("finished sorting");
+            this.$.feedsView.setStickySources(this.sources.stickySources);
+            this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
+        }.bind(this), function() {enyo.log("error sorting and filtering");});
+    },
+
     getSubscriptionSources: function() {
         return this.allSubscriptions;
     },
@@ -277,6 +286,7 @@ enyo.kind({
         enyo.log("received read event");
         if (isRead) {
             enyo.log("mark article read");
+            enyo.log(article.subscriptionId);
             this.sources.articleRead(article.subscriptionId);
         } else {
             enyo.log("mark article not read");
@@ -290,7 +300,6 @@ enyo.kind({
         }.bind(this), function() {enyo.log("error sorting and filtering");});
     },
     articleRead: function(thing, article, index) {
-        enyo.log("MARKING ARTICLE READ");
         this.sources.articleRead(article.subscriptionId);
         this.$.articlesView.finishArticleRead(index);
         this.sources.sortAndFilter(function() {
@@ -298,6 +307,21 @@ enyo.kind({
             this.$.feedsView.setStickySources(this.sources.stickySources);
             this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
         }.bind(this), function() {enyo.log("error sorting and filtering");});
+    },
+    articleMultipleRead: function(thing, article, index) {
+        enyo.log("article mulitiple read");
+        //this.sources.articleMultipleRead(article.subscriptionId);
+        this.sources.articleRead(article.subscriptionId);
+        this.$.articlesView.finishArticleRead(index);
+        this.sources.sortAndFilter(function() {
+            this.$.feedsView.setChangeId(article.subscriptionId);
+            this.$.feedsView.setStickySources(this.sources.stickySources);
+            this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
+        }.bind(this), function() {enyo.log("error sorting and filtering");});
+    },
+    getUnreadCountForSubscription: function(subscriptionId) {
+        enyo.log("getting unread count for subscription from main");
+        return this.sources.getUnreadCountForSubscription(subscriptionId);
     },
     articleStarred: function() {
         this.$.singleArticleView.articleStarred();

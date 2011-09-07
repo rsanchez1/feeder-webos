@@ -22,10 +22,8 @@ var Folder = Class.create(ArticleContainer, {
     if (!self.subscriptions) {
         self = self.folderParent;
     }
-    enyo.log("marking all read in folder");
 
     self.api.markAllRead(self.id, function() {
-        enyo.log("marked all ready for folder");
         var subscriptionItems;
         if (!self.subscriptions) {
             subscriptionItems = self.folderParent.subscriptions.items;
@@ -35,16 +33,11 @@ var Folder = Class.create(ArticleContainer, {
       subscriptionItems.each(function(subscription) {
         subscription.clearUnreadCount()
       })
-      enyo.log("A");
 
       self.clearUnreadCount()
-      enyo.log("B");
       self.items.each(function(item) {item.isRead = true})
-      enyo.log("C");
       self.recalculateUnreadCounts()
-      enyo.log("D");
       success()
-      enyo.log("E");
     })
   },
 
@@ -65,20 +58,30 @@ var Folder = Class.create(ArticleContainer, {
   },
 
   articleRead: function(subscriptionId) {
-      enyo.log("------------------------------");
-      enyo.log("------------------------------");
-      enyo.log("------------------------------");
-      enyo.log("MARKING ARTICLES READ FOR FOLDER");
     var subscriptionItems;
     if (!this.subscriptions) {
-        enyo.log("DOES NOT HAVE SUBSCRIPTIONS, USE PARENT");
         subscriptionItems = this.folderParent.subscriptions.items;
     } else {
-        enyo.log("HAS SUBSCRIPTIONS");
         subscriptionItems = this.subscriptions.items;
     }
     subscriptionItems.each(function(subscription){
+        if (subscriptionId == subscription.id) {
+        }
       subscription.articleRead(subscriptionId)
+    })
+
+    this.recalculateUnreadCounts()
+  },
+
+  articleMultipleRead: function(subscriptionId) {
+    var subscriptionItems;
+    if (!this.subscriptions) {
+        subscriptionItems = this.folderParent.subscriptions.items;
+    } else {
+        kubscriptionItems = this.subscriptions.items;
+    }
+    subscriptionItems.each(function(subscription){
+      subscription.articleMultipleRead(subscriptionId)
     })
 
     this.recalculateUnreadCounts()

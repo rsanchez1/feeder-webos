@@ -18,12 +18,10 @@ var Follow = Class.create(ArticleContainer, {
     },
 
     articleRead: function(subscriptionId) {
-        enyo.log("MARKING ARTICLE READ FOLLOW");
         //this.incrementUnreadCountBy(-1);
     },
 
     articleNotRead: function(subscriptionId) {
-        enyo.log("MARKING ARTICLE NOT READ FOLLOW");
         //this.incrementUnreadCountBy(1);
     },
 

@@ -151,7 +151,6 @@ var Article = Class.create({
   },
 
   _setState: function(apiState, localProperty, localValue, success, failure, sticky) {
-    enyo.log("setting article state - " + apiState)
 
     if(apiState.match(/Read/) && this.readLocked) {
       Feeder.notify("Read state has been locked by Google")
@@ -167,6 +166,10 @@ var Article = Class.create({
 
       this.api["setArticle" + apiState](this.id, this.subscriptionId, onComplete, failure, sticky)
     }
+  },
+
+  forceReadOn: function() {
+      this.isRead = true;
   },
 
   getPrevious: function(callback) {

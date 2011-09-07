@@ -20,7 +20,11 @@ var Subscription = Class.create(ArticleContainer, {
 
   articleRead: function(subscriptionId) {
       //TODO: CHECK HERE TO IMPROVE FOLDER MARK READ/UNREAD
-    if(this.id == subscriptionId) {this.decrementUnreadCountBy(1)}
+    if(this.id == subscriptionId) {this.decrementUnreadCountBy(1);}
+  },
+
+  articleMultipleRead: function(subscriptionId) {
+    if(this.id == subscriptionId) {/*this.decrementUnreadCountBy(1)*/}
   },
 
   articleNotRead: function(subscriptionId) {
@@ -28,10 +32,8 @@ var Subscription = Class.create(ArticleContainer, {
   },
 
   markAllRead: function(success, error) {
-      enyo.log("getting ready to mark all articles for subscription");
     this.api.markAllRead(this.id,
       function() {
-          enyo.log("marked all articles for subscription");
         this.clearUnreadCount()
         this.items.each(function(item) {item.isRead = true})
         success()
@@ -39,5 +41,12 @@ var Subscription = Class.create(ArticleContainer, {
 
       error
     )
-  }
+  },
+
+  markMultipleArticlesRead: function(articles, success, error) {
+      this.api.markMultipleArticlesRead(articles, function() {
+          articles.each(function(item) {item.isRead = true});
+          success()
+      }.bind(this), error);
+  },
 })

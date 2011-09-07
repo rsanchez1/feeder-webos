@@ -15,6 +15,7 @@ enyo.kind({
     events: {
         onArticleClicked: "",
         onArticleRead: "",
+        onArticleMultipleRead: "",
         onAllArticlesRead: "",
         onArticleStarred: "",
         onChangedOffline: ""
@@ -26,6 +27,7 @@ enyo.kind({
     itemsToHide: {},
     originCount: {},
     numberToMarkRead: 0,
+    wasMarkingAllRead: false,
     components: [
         //{name: "header", kind: "Header"},
         {name: "header", kind: "PageHeader", components: [
@@ -81,7 +83,6 @@ enyo.kind({
     offlineArticlesChanged: function() {
         this.articlesChangedHandler();
         this.maxTop = 0;
-		enyo.log("changed offline articles");
         for (var i = this.offlineArticles.length; i--;) {
             this.offlineArticles[i].sortDate = +(new Date(this.offlineArticles[i].displayDate));
             this.offlineArticles[i].sortOrigin = this.offlineArticles[i].origin.replace(/[^a-zA-Z 0-9 ]+/g,'');
@@ -137,7 +138,6 @@ enyo.kind({
         scroller.bottom = 10;
 		this.offlineArticles = [];
         this.articles.reset();
-        enyo.log("got articles");
         this.articles.items = [];
         this.$.articlesList.punt();
         /*
@@ -174,11 +174,8 @@ enyo.kind({
         this.checkAllArticlesOffline();
     },
     foundArticles: function() {
-        enyo.log("Found articles");
         if (Preferences.hideReadArticles()) {
-            enyo.log("hide read articles");
             for (var i = this.articles.items.length; i--;) {
-                enyo.log("is article read? ", this.articles.items[i].isRead);
                 if (this.articles.items[i].isRead) {
                     this.articles.items.splice(i, 1);
                 }
@@ -192,7 +189,6 @@ enyo.kind({
         this.$.spinner.hide();
         //this.articles.items.sort(function(a, b) {return b.sortDate - a.sortDate;});
         if (Preferences.groupFoldersByFeed()) {
-            enyo.log('preparing to sort articles');
             for (var i = this.articles.items.length; i--;) {
                 if (!!this.articles.items[i].displayDateAndTime) {
                     this.articles.items[i].sortDateTime = +(new Date(this.articles.items[i].displayDateAndTime));
@@ -207,13 +203,10 @@ enyo.kind({
                 this.articles.items.sort(this.originSortingFunction);
                 this.articles.items = this.sortSortedArticlesByDate(this.articles.items);
             }
-            enyo.log('finished sorting articles');
         }
         if (this.isRendered) {
-            enyo.log("refresh list");
             this.$.articlesList.refresh();
         } else {
-            enyo.log("render list");
             this.isRendered = true;
             this.$.articlesList.render();
         }
@@ -239,7 +232,6 @@ enyo.kind({
 		}
     },
     offlineCallback: function(article, results) {
-        enyo.log("offline callback");
         if (results.length) {
             article.isOffline = true;
             article.articleID = results[0].articleID
@@ -250,18 +242,14 @@ enyo.kind({
         this.checkAllArticlesOffline();
     },
     checkAllArticlesOffline: function() {
-        enyo.log("checking if all articles offline");
 		if (!!this.articles.items) {
 			var articles = this.articles.items;
 			if (articles.any(function(n) {return !n.isOffline;})) {
-				enyo.log("some articles were not offline");
 				this.$.offlineButton.setIcon("images/offline-article.png");
 			} else {
-				enyo.log("all articles were offline");
 				this.$.offlineButton.setIcon("images/delete-article.png");
 			}
 		} else if (!!this.offlineArticles) {
-			enyo.log("all articles were offline");
 			this.$.offlineButton.setIcon("images/delete-article.png");
 		}
     },
@@ -283,7 +271,6 @@ enyo.kind({
                         }
                     }
                 }
-                enyo.log("clicked the offline button");
                 this.app.$.articlesDB.insertData({
                     table: "articles",
                     data: dataToInsert
@@ -309,13 +296,10 @@ enyo.kind({
         var articles;
         if (!!this.articles.items && !!this.articles.items.length) {
             articles = this.articles.items;
-			enyo.log("using articles");
         } else if (!!this.offlineArticles && !!this.offlineArticles.length) {
             articles = this.offlineArticles;
-			enyo.log("using offline articles");
         } else {
 			this.$.offlineChoicePopup.close();
-			enyo.log("nothing");
             return;
         }
         var queries = [];
@@ -502,18 +486,28 @@ enyo.kind({
     },
     addToMarkReadQueue: function(article, index) {
         clearTimeout(this.markReadTimeout);
-        this.itemsToMarkRead.push({article: article, index: index});
+        if (!article.isRead) {
+            this.itemsToMarkRead.push({article: article, index: index});
+        }
         this.markReadTimeout = setTimeout(function() {
             enyo.log("TRIGGERED MARK ARTICLE READ TIMEOUT");
             if (this.itemsToMarkRead.length == this.articles.items.length) {
                 var count = this.articles.getUnreadCount();
                 this.articles.markAllRead(this.markedAllArticlesRead.bind(this, count, true), function() {enyo.log("error marking all read");});
             } else {
+                var articles = [];
                 for (var i = this.itemsToMarkRead.length; i--;) {
                     var article = this.itemsToMarkRead[i].article;
+                    if (!article.isRead) {
+                        article.index = this.itemsToMarkRead[i].index;
+                        articles.push(article);
+                    }
+                    /*
                     var index = this.itemsToMarkRead[i].index;
                     article.turnReadOn(this.markedArticleRead.bind(this, article, index), function() {enyo.log("could not mark article read");});
+                    */
                 }
+                this.articles.markMultipleArticlesRead(articles, this.markedMultipleArticlesRead.bind(this, articles), function() {enyo.log("error marking multiple articles read");});
             }
             this.itemsToMarkRead = [];
             this.markReadTimeout = 0;
@@ -524,19 +518,60 @@ enyo.kind({
     markedArticleRead: function(article, index) {
         this.finishArticleRead(index);
         this.numberToMarkRead--;
-        enyo.log("NUMBER TO MARK READ: " + this.numberToMarkRead);
         this.doArticleRead(article, index);
-        if (this.numberToMarkRead < 0) {
-        } else {
-            if (this.numberToMarkRead === 0) {
-                this.$.spinner.hide();
-                enyo.log("selecting feeds view");
-                this.app.$.slidingPane.selectViewByName('feeds', true);
-                this.$.articlesList.punt();
-                this.doAllArticlesRead(count, this.articles.id);
-            }
+        var count = this.articles.getUnreadCount();
+        if (count === 0) {
+            this.$.spinner.hide();
+            this.app.$.slidingPane.selectViewByName('feeds', true);
+            this.$.articlesList.punt();
         }
     },
+
+    markedMultipleArticlesRead: function(articles) {
+        if (!this.articles) {
+            return;
+        }
+        var apiArticles = this.articles.items;
+        var unreadCountObj = {};
+        var count = 0;
+        for (var i = articles.length; i--;) {
+            var index = articles[i].index;
+            var article = apiArticles[index];
+            this.doArticleMultipleRead(article, index);
+            enyo.log("GETTING UNREAD COUNT FOR SUBSCRIPTION FOR ARTICLE");
+            if (!unreadCountObj[article.subscriptionId]) {
+                unreadCountObj[article.subscriptionId] = 0;
+            }
+            unreadCountObj[article.subscriptionId] = this.app.getUnreadCountForSubscription(article.subscriptionId);
+            enyo.log("GOT UNREAD COUNT FOR SUBSCRIPTION IN ARTICLE");
+        }
+        for (var i in unreadCountObj) {
+            if (unreadCountObj.hasOwnProperty(i)) {
+                count += unreadCountObj[i];
+            }
+        }
+        //var count = this.articles.getUnreadCount();
+        enyo.log("COUNT FOR MARKED MULTIPLE: " + count);
+        if (count === 0) {
+            this.$.spinner.hide()
+            if (this.wasMarkingAllRead) {
+                this.wasMarkingAllRead = false;
+                this.app.$.slidingPane.selectViewByName('feeds', true);
+                this.$.articlesList.punt();
+            }
+        } else {
+        }
+    },
+
+    markedAllArticlesRead: function(count, wasScrolling) {
+        this.$.spinner.hide();
+        if (!wasScrolling) {
+            this.app.$.slidingPane.selectViewByName('feeds', true);
+            this.$.articlesList.punt();
+        }
+        this.doAllArticlesRead(count, this.articles.id);
+    },
+
     articleItemClick: function(inSender, inEvent) {
         this.articleClicked = true;
         this.selectArticle(inEvent.rowIndex);
@@ -558,8 +593,6 @@ enyo.kind({
                 }
             }
             if (isEmpty) {
-                enyo.log("hide all articles");
-                enyo.log("set articles");
                 for (var l = articles.length; l--;) {
                     if (!this.itemsToHide[articles[l].origin]) {
                         var article = articles[l];
@@ -585,7 +618,6 @@ enyo.kind({
                 }
                 articles.sort(this.originSortingFunction);
                 articles = this.sortSortedArticlesByDate(articles);
-                enyo.log("marked articles to be hidden");
                 var scrollTop = 0;
                 var scrollBottom = scrollTop + this.numberRendered;
                 if (this.offlineArticles.length) {
@@ -603,7 +635,6 @@ enyo.kind({
                 scroller.top = scrollTop;
                 scroller.bottom = scrollBottom;
             } else {
-                enyo.log("show all articles");
                 for (var origin in this.itemsToHide) {
                     if (this.itemsToHide.hasOwnProperty(origin)) {
                         for (var i = articles.length; i--;) {
@@ -619,14 +650,11 @@ enyo.kind({
                 }
                 articles.sort(this.originSortingFunction);
                 articles = this.sortSortedArticlesByDate(articles);
-                enyo.log("marked all articles to be shown");
             }
-            enyo.log("refresh articles list");
             this.$.articlesList.refresh();
         }
     },
     articleDividerClick: function(inSender, inEvent) {
-        enyo.log("clicked article divider: ", inEvent.rowIndex);
         var articles = [];
         if (this.offlineArticles.length) {
             articles = this.offlineArticles;
@@ -635,7 +663,6 @@ enyo.kind({
                 articles = this.articles.items;
             }
         }
-        enyo.log("set articles");
         var article = articles[inEvent.rowIndex];
         if ((this.offlineArticles.length || this.articles.showOrigin) && (Preferences.groupFoldersByFeed())) {
             if (!!this.itemsToHide[article.origin]) {
@@ -650,7 +677,6 @@ enyo.kind({
                 articles.sort(this.originSortingFunction);
                 articles = this.sortSortedArticlesByDate(articles);
                 delete this.itemsToHide[article.origin];
-                enyo.log("show articles");
             } else {
                 this.itemsToHide[article.origin] = {items: []};
                 var firstIndex = -1;
@@ -673,7 +699,6 @@ enyo.kind({
                 articles.sort(this.originSortingFunction);
                 articles = this.sortSortedArticlesByDate(articles);
             }
-            enyo.log("refresh list");
             this.$.articlesList.refresh();
         }
     },
@@ -729,7 +754,6 @@ enyo.kind({
         this.$.articlesList.refresh();
     },
     finishArticleStarred: function(index, isStarred) {
-        enyo.log("finished article star");
         this.$.articlesList.updateRow(index);
         this.$.articlesList.refresh();
         var article;
@@ -757,25 +781,24 @@ enyo.kind({
                             this.$.spinner.show();
                             var count = this.articles.getUnreadCount();
                             if (!this.wasFolderChild) {
+                                enyo.log("marking normal articles read");
                                 this.articles.markAllRead(this.markedAllArticlesRead.bind(this, count), function() {enyo.log("error marking all read");});
                             } else {
+                                enyo.log("marking all folder articles read");
+
+                                var articles = [];
                                 var items = this.articles.items;
-                                this.numberToMarkRead = items.length;
                                 this.$.spinner.show();
                                 for (var i = items.length; i--;) {
-                                    items[i].turnReadOn(this.markedArticleRead.bind(this, items[i], i), function() {
-                                        enyo.log("COULD NOT MARK ARTICLE READ");
-                                        enyo.log("NUMBER TO MARK READ: " + this.numberToMarkRead);
-                                        this.numberToMarkRead--;
-                                        if (this.numberToMarkRead === 0) {
-                                            this.$.spinner.hide();
-                                            enyo.log("selecting feeds view");
-                                            this.app.$.slidingPane.selectViewByName('feeds', true);
-                                            this.$.articlesList.punt();
-                                            this.doAllArticlesRead(count, this.articles.id);
-                                        }
-                                    }.bind(this));
+                                    var article = items[i];
+                                    if (!article.isRead) {
+                                        articles.push(article);
+                                        articles[articles.length - 1].index = i;
+                                    }
                                 }
+                                globalArticles = articles;
+                                this.wasMarkingAllRead = true;
+                                this.articles.markMultipleArticlesRead(articles, this.markedMultipleArticlesRead.bind(this, articles), function() {enyo.log("error marking multiple articles read");});
                             }
 			}
 		}
@@ -789,7 +812,6 @@ enyo.kind({
             scroller.top = 0;
             scroller.bottom = 10;
             this.articles.reset();
-            enyo.log("got articles");
             this.articles.items = [];
             this.$.articlesList.punt();
             this.$.spinner.show();
@@ -812,16 +834,6 @@ enyo.kind({
             this.isRendered = true;
             this.$.articlesList.render();
         }
-    },
-    markedAllArticlesRead: function(count, wasScrolling) {
-        enyo.log("marked all articles read: ", count);
-        this.$.spinner.hide();
-        enyo.log("selecting feeds view");
-        if (!wasScrolling) {
-            this.app.$.slidingPane.selectViewByName('feeds', true);
-            this.$.articlesList.punt();
-        }
-        this.doAllArticlesRead(count, this.articles.id);
     },
     originSortingFunction: function(a, b) {
         var originA = a.sortOrigin.toLowerCase();
