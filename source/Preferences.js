@@ -12,76 +12,78 @@ enyo.kind({
         onSortChange: "",
     },
     components: [
-        {layoutKind: "HFlexLayout", pack: "center", components: [
-            {content: "Color Scheme:", flex: 1, style: "padding-top: 15px;"},
-            {kind: "Button", flex: 1, components: [
-                {kind: "ListSelector", name: "colorSchemeSelector", onChange: "colorChanged", items: [
-                    {caption: "Standard", value: ""},
-                    {caption: "Light", value: "light"},
-                    {caption: "Dark", value: "dark"}
+        {kind: "Scroller", name: "preferencesScroller", style: "height: 300px; border: 1px solid #aaa;", flex: 1, components: [
+            {layoutKind: "HFlexLayout", pack: "center", components: [
+                {content: "Color Scheme:", flex: 1, style: "padding-top: 15px;"},
+                {kind: "Button", flex: 1, components: [
+                    {kind: "ListSelector", name: "colorSchemeSelector", onChange: "colorChanged", items: [
+                        {caption: "Standard", value: ""},
+                        {caption: "Light", value: "light"},
+                        {caption: "Dark", value: "dark"}
+                    ]}
                 ]}
-            ]}
-        ]},
-        {layoutKind: "HFlexLayout", pack: "center", components: [
-            {content: "Sort Feeds:", flex: 1, style: "padding-top: 15px;"},
-            {kind: "Button", flex: 1, components: [
-                {kind: "ListSelector", name: "sortFeedsSelector", onChange: "sortChanged", items: [
-                    {caption: "Alphabetically", value: false},
-                    {caption: "Manually", value: true},
+            ]},
+            {layoutKind: "HFlexLayout", pack: "center", components: [
+                {content: "Sort Feeds:", flex: 1, style: "padding-top: 15px;"},
+                {kind: "Button", flex: 1, components: [
+                    {kind: "ListSelector", name: "sortFeedsSelector", onChange: "sortChanged", items: [
+                        {caption: "Alphabetically", value: false},
+                        {caption: "Manually", value: true},
+                    ]}
                 ]}
-            ]}
-        ]},
-        {layoutKind: "HFlexLayout", pack: "center", components: [
-            {content: "Sort articles by date:", flex: 2, style: "padding-top: 15px;"},
-            {kind: "Button", flex: 1, components: [
-                {kind: "ListSelector", name: "sortDateSelector", onChange: "dateChanged", items: [
-                    {caption: "Newest First", value: false},
-                    {caption: "Oldest First", value: true}
+            ]},
+            {layoutKind: "HFlexLayout", pack: "center", components: [
+                {content: "Sort articles by date:", flex: 2, style: "padding-top: 15px;"},
+                {kind: "Button", flex: 1, components: [
+                    {kind: "ListSelector", name: "sortDateSelector", onChange: "dateChanged", items: [
+                        {caption: "Newest First", value: false},
+                        {caption: "Oldest First", value: true}
+                    ]}
                 ]}
-            ]}
-        ]},
-        {layoutKind: "HFlexLayout", pack: "center", components: [
-            {content: "Group folder articles by:", flex: 3, style: "padding-top: 15px;"},
-            {kind: "Button", flex: 1, components: [
-                {kind: "ListSelector", name: "groupToggle", onChange: "groupToggle", items: [
-                    {caption: "Feed", value: true},
-                    {caption: "Date", value: false}
+            ]},
+            {layoutKind: "HFlexLayout", pack: "center", components: [
+                {content: "Group folder articles by:", flex: 3, style: "padding-top: 15px;"},
+                {kind: "Button", flex: 1, components: [
+                    {kind: "ListSelector", name: "groupToggle", onChange: "groupToggle", items: [
+                        {caption: "Feed", value: true},
+                        {caption: "Date", value: false}
+                    ]}
                 ]}
-            ]}
-        ]},
-        {layoutKind: "HFlexLayout", pack: "center", components: [
-            {content: "Share to Twitter using:", flex: 3, style: "padding-top: 15px;"},
-            {kind: "Button", flex: 1, components: [
-                {kind: "ListSelector", name: "twitterToggle", onChange: "twitterToggle", items: [
-                    {caption: "Web", value: "web"},
-                    {caption: "Spaz HD", value: "spaz"}
+            ]},
+            {layoutKind: "HFlexLayout", pack: "center", components: [
+                {content: "Share to Twitter using:", flex: 3, style: "padding-top: 15px;"},
+                {kind: "Button", flex: 1, components: [
+                    {kind: "ListSelector", name: "twitterToggle", onChange: "twitterToggle", items: [
+                        {caption: "Web", value: "web"},
+                        {caption: "Spaz HD", value: "spaz"}
+                    ]}
                 ]}
-            ]}
-        ]},
-        {layoutKind: "HFlexLayout", pack: "center", components: [
-            {content: "Share to Facebook using:", flex: 3, style: "padding-top: 15px;"},
-            {kind: "Button", flex: 1, components: [
-                {kind: "ListSelector", name: "facebookToggle", onChange: "facebookToggle", items: [
-                    {caption: "Web", value: "web"},
-                    {caption: "App", value: "app"}
+            ]},
+            {layoutKind: "HFlexLayout", pack: "center", components: [
+                {content: "Share to Facebook using:", flex: 3, style: "padding-top: 15px;"},
+                {kind: "Button", flex: 1, components: [
+                    {kind: "ListSelector", name: "facebookToggle", onChange: "facebookToggle", items: [
+                        {caption: "Web", value: "web"},
+                        {caption: "App", value: "app"}
+                    ]}
                 ]}
-            ]}
-        ]},
-        {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
-            {className: "preferencesLabel", content: "Mark read as you scroll:", flex: 3},
-            {className: "preferencesToggle", name: "scrollToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "scrollToggle"}
-        ]},
-        {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
-            {className: "preferencesLabel", content: "Hide read feeds:", flex: 3},
-            {className: "preferencesToggle", name: "feedsToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "feedsToggle"}
-        ]},
-        {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
-            {className: "preferencesLabel", content: "Hide read articles:", flex: 3},
-            {className: "preferencesToggle", name: "articlesToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "articlesToggle"}
-        ]},
-        {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
-            {className: "preferencesLabel", content: "Enable Animations:", flex: 3},
-            {className: "preferencesToggle", name: "animationsToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "animationsToggle", className: "groupToggle"}
+            ]},
+            {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
+                {className: "preferencesLabel", content: "Mark read as you scroll:", flex: 3},
+                {className: "preferencesToggle", name: "scrollToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "scrollToggle"}
+            ]},
+            {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
+                {className: "preferencesLabel", content: "Hide read feeds:", flex: 3},
+                {className: "preferencesToggle", name: "feedsToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "feedsToggle"}
+            ]},
+            {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
+                {className: "preferencesLabel", content: "Hide read articles:", flex: 3},
+                {className: "preferencesToggle", name: "articlesToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "articlesToggle"}
+            ]},
+            {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
+                {className: "preferencesLabel", content: "Enable Animations:", flex: 3},
+                {className: "preferencesToggle", name: "animationsToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "animationsToggle", className: "groupToggle"}
+            ]},
         ]},
         {layoutKind: "HFlexLayout", pack: "center", components: [
             {kind: "Button", caption: "OK", flex: 1, className: "enyo-button-dark", onclick: "okClick"}
@@ -112,6 +114,11 @@ enyo.kind({
         this.$.twitterToggle.setValue(Preferences.twitterSharingOption());
         this.$.facebookToggle.setValue(Preferences.facebookSharingOption());
         this.$.sortDateSelector.setValue(Preferences.isOldestFirst());
+        var info = enyo.fetchDeviceInfo();
+        var height = info.screenHeight;
+        if (height == 320 || height == 400 || height == 480 || height == 800) {
+            this.$.preferencesScroller.applyStyle("height", "200px");
+        }
     },
 
     colorChanged: function(inSender, inValue, inOldValue) {

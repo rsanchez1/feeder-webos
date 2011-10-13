@@ -36,7 +36,7 @@ enyo.kind({
         ]},
         {name: "articleScroller", horizontal: false, autoHorizontal: false, kind: "Scroller", flex: 1, ondragfinish: "scrollerDragFinish", onScrollStop: "articleScrollStop", components: [
             {name: "aboutContainer", className: "articleContainer", components: [
-                {name: "articleTitle", kind: "HtmlContent", style: "font-size: 1.6rem; font-weight: 700; color: #555; padding-bottom: 10px; word-spacing: 0.1rem; line-height: 2rem;", onclick: "sourceClick"},
+                {name: "articleTitle", kind: "HtmlContent", style: "font-size: 1.6rem; font-weight: 700; color: #555; padding-bottom: 10px; word-spacing: 0.1rem; line-height: 2rem;", onclick: "sourceClick", className: "singleArticleTitle"},
                 {name: "postDate", kind: "HtmlContent"},
                 {name: "source", kind: "HtmlContent"}
             ]},
@@ -86,6 +86,18 @@ enyo.kind({
         this.$.summary.removeClass("medium");
         this.$.summary.removeClass("large");
         this.$.summary.addClass(Preferences.getArticleFontSize());
+        this.$.articleTitle.removeClass("small");
+        this.$.articleTitle.removeClass("medium");
+        this.$.articleTitle.removeClass("large");
+        this.$.articleTitle.addClass(Preferences.getArticleFontSize());
+        this.$.articleTitle.removeClass("phone");
+        this.$.aboutContainer.removeClass("phone");
+        var info = enyo.fetchDeviceInfo();
+        var height = info.screenHeight;
+        if (height == 320 || height == 400 || height == 480 || height == 800) {
+            this.$.articleTitle.addClass("phone");
+            this.$.aboutContainer.addClass("phone");
+        }
         this.fetchedOffline = false;
         if (this.article.isStarred) {
             this.$.starButton.setIcon("images/starred-footer-on.png");

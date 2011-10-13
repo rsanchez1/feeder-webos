@@ -26,7 +26,7 @@ enyo.kind({
         {layoutkind: "hflexlayout", pack: "center", components: [
             {kind: "Button", caption: "Toggle All Subscriptions", flex: 1, className: "enyo-button-dark", onclick: "toggleClick"}
         ]},
-        {kind: "Scroller", style: "height: 300px; border: 1px solid #aaa;", flex: 1, components: [
+        {kind: "Scroller", name: "notificationsScroller", style: "height: 300px; border: 1px solid #aaa;", flex: 1, components: [
             {name: "subscriptionSourcesList", kind: "VirtualList", onSetupRow: "setupSubscriptionSources", components: [
                 {name: "subscriptionItem", kind: "Item", layoutKind: "VFlexLayout", components: [
                     {name: "title", style: "display: inline-block; width: 85%; margin-left: 5px; font-size: 0.7rem; font-weight: normal !important; height: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"},
@@ -64,6 +64,11 @@ enyo.kind({
         } else {
             this.$.subscriptionSourcesList.render();
             this.isRendered = true;
+        }
+        var info = enyo.fetchDeviceInfo();
+        var height = info.screenHeight;
+        if (height == 320 || height == 400 || height == 480 || height == 800) {
+            this.$.notificationsScroller.applyStyle("height", "200px");
         }
     },
 

@@ -121,6 +121,10 @@ body.light {
     font-weight: lighter;
 }
 
+.articleContainer.phone {
+    font-size: 0.6rem;
+}
+
 .articleSummary {
     margin: 0 10px 10px 10px;
     padding: 0 5px 5px 5px;
@@ -149,6 +153,16 @@ body.light {
 .articleSummary.large, .articleSummary.large p {
     font-size: 1.3rem !important;
     line-height: 1.6rem !important;
+}
+
+.singleArticleTitle {
+    font-size: 1.6rem !important;
+    line-height: 2rem !important;
+}
+
+.singleArticleTitle.small.phone {
+    font-size: 1rem !important;
+    line-height: 1.3rem !important;
 }
 
 .articleSummary p {
