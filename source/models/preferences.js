@@ -70,7 +70,15 @@ Preferences = {
   }, 
 
   getArticleFontSize: function() {
-      return this.getCookie(this.ARTICLE_FONT_SIZE, "medium")
+      var defaultFontSize = "medium";
+      var info = enyo.fetchDeviceInfo();
+      if (!!info) {
+        var height = info.screenHeight;
+        if (height == 320 || height == 400 || height == 480 || height == 800) {
+            defaultFontSize = "small";
+        }
+      }
+      return this.getCookie(this.ARTICLE_FONT_SIZE, defaultFontSize)
   },
 
   setArticleFontSize: function(fontSize) {

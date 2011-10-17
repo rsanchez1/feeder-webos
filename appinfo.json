@@ -1,6 +1,6 @@
 {
 	"id": "com.sanchezapps.touchfeeds",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"vendor": "SanchezApps",
 	"type": "web",
 	"main": "launcher.html",

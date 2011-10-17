@@ -14,7 +14,7 @@ enyo.kind({
                 {name: "singleArticleView", dragAnywhere: false, kind: "TouchFeeds.SingleArticleView", flex: 1, components: [], onSelectArticle: "selectArticle", onRead: "readArticle", onChangedOffline: "changeOffline", onStarred: "starredArticle"},
             ]},
             {name: "login", className: "enyo-bg", kind: "TouchFeeds.Login", onCancel: "closeDialog", onLogin: "handleLogin", onOpen: "openDialog"},
-            {name: "preferences", className: "enyo-bg", kind: "TouchFeeds.Preferences", onCancel: "closePreferences", onGroupChange: "groupChange", onSortChange: "sortChange", onShowHideFeedsChange: "showHideFeedsChange", onShowHideArticlesChange: "showHideArticlesChange", onEnableAnimations: "animationsChanged", onTimerChange: "timerChanged"},
+            {name: "preferences", className: "enyo-bg", kind: "TouchFeeds.Preferences", onCancel: "closePreferences", onGroupChange: "groupChange", onSortChange: "sortChange", onShowHideFeedsChange: "showHideFeedsChange", onShowHideArticlesChange: "showHideArticlesChange", onEnableAnimations: "animationsChanged", onTimerChange: "timerChanged", onCombineChange: "combineChanged"},
             {name: "notifications", className: "enyo-bg", kind: "TouchFeeds.Notifications", onCancel: "closeNotifications", onTimerChange: "timerChanged"}
         ]},
         {kind: "AppMenu", lazy: false, components: [
@@ -274,9 +274,11 @@ enyo.kind({
         this.$.singleArticleView.setIndex(index);
         this.$.singleArticleView.setMaxIndex(maxIndex);
         var info = enyo.fetchDeviceInfo();
-        var height = info.screenHeight;
-        if (height == 320 || height == 400 || height == 480 || height == 800) {
-            this.$.slidingPane.selectViewByName('singleArticle', true);
+        if (!!info) {
+            var height = info.screenHeight;
+            if (height == 320 || height == 400 || height == 480 || height == 800) {
+                this.$.slidingPane.selectViewByName('singleArticle', true);
+            }
         }
     },
 
@@ -430,6 +432,10 @@ enyo.kind({
 
    timerChanged: function() {
         enyo.application.launcher.$.appDashboard.setAlarm();
+   },
+
+   combineChanged: function() {
+       this.$.feedsView.refreshFeeds();
    },
 
    cleanup: function() {

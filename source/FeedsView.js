@@ -136,12 +136,14 @@ enyo.kind({
 
         var numberOfItems;
 
-        for (var i = this.subscriptionSources.items.length; i--;) {
-            var item = this.subscriptionSources.items[i];
-            if (this.openedFolders.any(function(n) {return n == item.id;})) {
-                if (!!item.subscriptions) {
-                    this.closeFolder(item);
-                    this.openFolder(item, i);
+        if (!Preferences.combineFolders()) {
+            for (var i = this.subscriptionSources.items.length; i--;) {
+                var item = this.subscriptionSources.items[i];
+                if (this.openedFolders.any(function(n) {return n == item.id;})) {
+                    if (!!item.subscriptions) {
+                        this.closeFolder(item);
+                        this.openFolder(item, i);
+                    }
                 }
             }
         }
@@ -192,7 +194,7 @@ enyo.kind({
     },
     subscriptionItemClick: function(inSender, inEvent) {
         var tappedSub = this.subscriptionSources.items[inEvent.rowIndex];
-        if (!!tappedSub.subscriptions) {
+        if (!!tappedSub.subscriptions && !Preferences.combineFolders()) {
             if (this.openedFolders.any(function(n) {return n == tappedSub.id;})) {
                 this.closeFolder(tappedSub);
                 for (var i = this.openedFolders.length; i--;) {

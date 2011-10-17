@@ -1,8 +1,8 @@
 enyo.kind({
     name: "TouchFeeds.SingleArticleView",
-	kind: "VFlexBox",
+    kind: "VFlexBox",
     dragAnywhere: false,
-        gestureY: 0,
+    gestureY: 0,
     fetchedOffline: false,
     className: "enyo-bg",
     published: {
@@ -93,10 +93,12 @@ enyo.kind({
         this.$.articleTitle.removeClass("phone");
         this.$.aboutContainer.removeClass("phone");
         var info = enyo.fetchDeviceInfo();
-        var height = info.screenHeight;
-        if (height == 320 || height == 400 || height == 480 || height == 800) {
-            this.$.articleTitle.addClass("phone");
-            this.$.aboutContainer.addClass("phone");
+        if (!!info) {
+            var height = info.screenHeight;
+            if (height == 320 || height == 400 || height == 480 || height == 800) {
+                this.$.articleTitle.addClass("phone");
+                this.$.aboutContainer.addClass("phone");
+            }
         }
         this.fetchedOffline = false;
         if (this.article.isStarred) {
@@ -147,6 +149,14 @@ enyo.kind({
             enyo.log("attaching click end event to image");
             image.onclick = imageClickEvent;
             image.onload = imageOnload;
+            //image.setStyle({border: "0 none"});
+            if (image.title !== "") {
+                var insertAfter = image;
+                if (Element.match(Element.up(image), "a")) {
+                    insertAfter = Element.up(image);
+                }
+                Element.insert(insertAfter, {after: "<span class='imageCaption' style='width: " + Element.measure(image, "width") + "px; max-width: 100% !important;'>" + image.title + "</span>"});
+            }
         });
     },
 
@@ -166,13 +176,6 @@ enyo.kind({
             enyo.log("found tracking pixel, remove");
             Element.remove(image);
         } else {
-            if (image.title !== "") {
-                var insertAfter = image;
-                if (Element.match(Element.up(image), "a")) {
-                    insertAfter = Element.up(image);
-                }
-                Element.insert(insertAfter, {after: "<span class='imageCaption' style='width: " + Element.measure(image, "width") + "px; max-width: 100% !important;'>" + image.title + "</span>"});
-            }
         }
     },
 

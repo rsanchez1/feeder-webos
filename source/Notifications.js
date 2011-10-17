@@ -66,9 +66,11 @@ enyo.kind({
             this.isRendered = true;
         }
         var info = enyo.fetchDeviceInfo();
-        var height = info.screenHeight;
-        if (height == 320 || height == 400 || height == 480 || height == 800) {
-            this.$.notificationsScroller.applyStyle("height", "200px");
+        if (!!info) {
+            var height = info.screenHeight;
+            if (height == 320 || height == 400 || height == 480 || height == 800) {
+                this.$.notificationsScroller.applyStyle("height", "200px");
+            }
         }
     },
 

@@ -10,10 +10,11 @@ enyo.kind({
         onShowHideArticlesChange: "",
         onEnableAnimations: "",
         onSortChange: "",
+        onCombineChange: "",
     },
     components: [
-        {kind: "Scroller", name: "preferencesScroller", style: "height: 300px; border: 1px solid #aaa;", flex: 1, components: [
-            {layoutKind: "HFlexLayout", pack: "center", components: [
+        {kind: "Scroller", name: "preferencesScroller", style: "height: 300px; border: 2px solid #aaa; margin-bottom: 5px;", horizontal: false, autoHorizontal: false, flex: 1, components: [
+            {style: "padding: 5px;", layoutKind: "HFlexLayout", pack: "center", components: [
                 {content: "Color Scheme:", flex: 1, style: "padding-top: 15px;"},
                 {kind: "Button", flex: 1, components: [
                     {kind: "ListSelector", name: "colorSchemeSelector", onChange: "colorChanged", items: [
@@ -23,7 +24,7 @@ enyo.kind({
                     ]}
                 ]}
             ]},
-            {layoutKind: "HFlexLayout", pack: "center", components: [
+            {style: "padding: 5px;", layoutKind: "HFlexLayout", pack: "center", components: [
                 {content: "Sort Feeds:", flex: 1, style: "padding-top: 15px;"},
                 {kind: "Button", flex: 1, components: [
                     {kind: "ListSelector", name: "sortFeedsSelector", onChange: "sortChanged", items: [
@@ -32,7 +33,7 @@ enyo.kind({
                     ]}
                 ]}
             ]},
-            {layoutKind: "HFlexLayout", pack: "center", components: [
+            {style: "padding: 5px;", layoutKind: "HFlexLayout", pack: "center", components: [
                 {content: "Sort articles by date:", flex: 2, style: "padding-top: 15px;"},
                 {kind: "Button", flex: 1, components: [
                     {kind: "ListSelector", name: "sortDateSelector", onChange: "dateChanged", items: [
@@ -41,7 +42,7 @@ enyo.kind({
                     ]}
                 ]}
             ]},
-            {layoutKind: "HFlexLayout", pack: "center", components: [
+            {style: "padding: 5px;", layoutKind: "HFlexLayout", pack: "center", components: [
                 {content: "Group folder articles by:", flex: 3, style: "padding-top: 15px;"},
                 {kind: "Button", flex: 1, components: [
                     {kind: "ListSelector", name: "groupToggle", onChange: "groupToggle", items: [
@@ -50,7 +51,7 @@ enyo.kind({
                     ]}
                 ]}
             ]},
-            {layoutKind: "HFlexLayout", pack: "center", components: [
+            {style: "padding: 5px;", layoutKind: "HFlexLayout", pack: "center", components: [
                 {content: "Share to Twitter using:", flex: 3, style: "padding-top: 15px;"},
                 {kind: "Button", flex: 1, components: [
                     {kind: "ListSelector", name: "twitterToggle", onChange: "twitterToggle", items: [
@@ -59,7 +60,7 @@ enyo.kind({
                     ]}
                 ]}
             ]},
-            {layoutKind: "HFlexLayout", pack: "center", components: [
+            {style: "padding: 5px;", layoutKind: "HFlexLayout", pack: "center", components: [
                 {content: "Share to Facebook using:", flex: 3, style: "padding-top: 15px;"},
                 {kind: "Button", flex: 1, components: [
                     {kind: "ListSelector", name: "facebookToggle", onChange: "facebookToggle", items: [
@@ -68,21 +69,25 @@ enyo.kind({
                     ]}
                 ]}
             ]},
-            {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
+            {style: "padding: 15px 5px 0px 5px;", layoutKind: "HFlexLayout", pack: "center", components: [
                 {className: "preferencesLabel", content: "Mark read as you scroll:", flex: 3},
                 {className: "preferencesToggle", name: "scrollToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "scrollToggle"}
             ]},
-            {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
+            {style: "padding: 15px 5px 0px 5px;", layoutKind: "HFlexLayout", pack: "center", components: [
                 {className: "preferencesLabel", content: "Hide read feeds:", flex: 3},
                 {className: "preferencesToggle", name: "feedsToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "feedsToggle"}
             ]},
-            {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
+            {style: "padding: 15px 5px 0px 5px;", layoutKind: "HFlexLayout", pack: "center", components: [
                 {className: "preferencesLabel", content: "Hide read articles:", flex: 3},
                 {className: "preferencesToggle", name: "articlesToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "articlesToggle"}
             ]},
-            {style: "padding-top: 15px;", layoutKind: "HFlexLayout", pack: "center", components: [
+            {style: "padding: 15px 5px 0px 5px;", layoutKind: "HFlexLayout", pack: "center", components: [
                 {className: "preferencesLabel", content: "Enable Animations:", flex: 3},
                 {className: "preferencesToggle", name: "animationsToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "animationsToggle", className: "groupToggle"}
+            ]},
+            {style: "padding: 15px 5px 0px 5px;", layoutKind: "HFlexLayout", pack: "center", components: [
+                {className: "combineLabel", content: "Combine Folders:", flex: 3},
+                {className: "combineToggle", name: "combineToggle", kind: "ToggleButton", flex: 1, onLabel: "Yes", offLabel: "No", onChange: "combineToggle", className: "groupToggle"}
             ]},
         ]},
         {layoutKind: "HFlexLayout", pack: "center", components: [
@@ -109,15 +114,18 @@ enyo.kind({
         this.$.scrollToggle.setState(Preferences.markReadAsScroll());
         this.$.feedsToggle.setState(Preferences.hideReadFeeds());
         this.$.articlesToggle.setState(Preferences.hideReadArticles());
+        this.$.combineToggle.setState(Preferences.combineFolders());
         //this.$.articlesFolderToggle.setState(Preferences.hideReadFolderArticles());
         this.$.groupToggle.setValue(Preferences.groupFoldersByFeed());
         this.$.twitterToggle.setValue(Preferences.twitterSharingOption());
         this.$.facebookToggle.setValue(Preferences.facebookSharingOption());
         this.$.sortDateSelector.setValue(Preferences.isOldestFirst());
         var info = enyo.fetchDeviceInfo();
-        var height = info.screenHeight;
-        if (height == 320 || height == 400 || height == 480 || height == 800) {
-            this.$.preferencesScroller.applyStyle("height", "200px");
+        if (!!info) {
+            var height = info.screenHeight;
+            if (height == 320 || height == 400 || height == 480 || height == 800) {
+                this.$.preferencesScroller.applyStyle("height", "200px");
+            }
         }
     },
 
@@ -142,6 +150,11 @@ enyo.kind({
     groupToggle: function(inSender, inValue, inOldValue) {
         Preferences.setGroupFoldersByFeed(inValue);
         this.doGroupChange();
+    },
+
+    combineToggle: function(inSender, inValue, inOldValue) {
+        Preferences.setCombineFolders(inValue);
+        this.doCombineChange();
     },
 
     twitterToggle: function(inSender, inValue, inOldValue) {
