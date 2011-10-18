@@ -24,7 +24,7 @@ enyo.kind({
             {name: "helpLabel", caption: "Help", onclick: "feedsHeaderClicked"}
         ]},
         {kind: "onecrayon.Database", name: "articlesDB", database: "ext:TouchFeedsArticles", version: 1, debug: false},
-        {kind: "ApplicationEvents", onWindowRotated: "windowRotated", onApplicationRelaunch: "applicationRelaunch", onUnload: "cleanup"},
+        {kind: "ApplicationEvents", onWindowRotated: "windowRotated", onApplicationRelaunch: "applicationRelaunch", onUnload: "cleanup", onBack: "backSwipe", onForward: "forwardSwipe"}
     ],
 
     constructor: function() {
@@ -32,6 +32,7 @@ enyo.kind({
         this.api = new Api();
         this.credentials = new Credentials();
         enyo.application.app = this;
+        enyo.dispatcher.rootHandler.addListener(this);
     },
 
     ready: function() {
@@ -436,6 +437,47 @@ enyo.kind({
 
    combineChanged: function() {
        this.$.feedsView.refreshFeeds();
+   },
+
+   forwardSwipe: function(inSender, inEvent) {
+       var current = this.$.slidingPane.getViewName();
+       switch (current) {
+           case "feeds":
+                this.$.slidingPane.selectViewByName('articles', true);
+                break;
+            case "articles":
+                this.$.slidingPane.selectViewByName('singleArticle', true);
+                break;
+            default:
+                break;
+       }
+       inEvent.stopPropagation();
+       inEvent.preventDefault();
+       return -1;
+   },
+
+   backSwipe: function(inSender, inEvent) {
+       var current = this.$.slidingPane.getViewName();
+       switch (current) {
+           case "articles":
+                this.$.slidingPane.selectViewByName('feeds', true);
+                break;
+            case "singleArticle":
+                this.$.slidingPane.selectViewByName('articles', true);
+                break;
+            default:
+                break;
+       }
+       inEvent.stopPropagation();
+       inEvent.preventDefault();
+       return -1;
+   },
+
+   dispatchDomEvent: function(e) {
+        //this.log('on' + enyo.cap(e.type));
+        if (e.type == "forward") {
+            this.forwardSwipe(null, e);
+        }
    },
 
    cleanup: function() {
