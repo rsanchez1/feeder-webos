@@ -730,6 +730,14 @@ enyo.kind({
             scroller.adjustBottom(scrollBottom);
             scroller.top = scrollTop;
             scroller.bottom = scrollBottom;
+        } else {
+            var info = enyo.fetchDeviceInfo();
+            if (!!info) {
+                var height = info.screenHeight;
+                if (height == 320 || height == 400 || height == 480 || height == 800) {
+                    enyo.application.app.$.slidingPane.selectViewByName('singleArticle', true);
+                }
+            }
         }
         this.articleClicked = false;
         var article;

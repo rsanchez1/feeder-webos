@@ -274,13 +274,6 @@ enyo.kind({
         this.$.singleArticleView.setArticle(article);
         this.$.singleArticleView.setIndex(index);
         this.$.singleArticleView.setMaxIndex(maxIndex);
-        var info = enyo.fetchDeviceInfo();
-        if (!!info) {
-            var height = info.screenHeight;
-            if (height == 320 || height == 400 || height == 480 || height == 800) {
-                this.$.slidingPane.selectViewByName('singleArticle', true);
-            }
-        }
     },
 
     selectArticle: function(thing, index) {
