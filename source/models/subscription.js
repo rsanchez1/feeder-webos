@@ -24,7 +24,7 @@ var Subscription = Class.create(ArticleContainer, {
   },
 
   articleMultipleRead: function(subscriptionId) {
-    if(this.id == subscriptionId) {/*this.decrementUnreadCountBy(1)*/}
+    if(this.id == subscriptionId) {this.decrementUnreadCountBy(1)}
   },
 
   articleNotRead: function(subscriptionId) {

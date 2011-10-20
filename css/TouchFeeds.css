@@ -408,3 +408,45 @@ body.light {
 
 .preferencesToggle {
 }
+
+.leftmostButton {
+    left: 20%;
+}
+
+.phone .leftmostButton {
+    left: 60px;
+}
+
+.leftmiddleButton {
+    left: 43.33%;
+}
+
+.phone .leftmiddleButton {
+    left: 120px;
+}
+
+.rightmiddleButton {
+    left: 66.66%;
+}
+
+.phone .rightmiddleButton {
+    left: 180px;
+}
+
+.rightmostButton {
+    left: 90%;
+}
+
+.phone .rightmostButton {
+    left: 240px;
+}
+
+.articleSpinner {
+    left: 94%
+    top: 70px;
+}
+
+.articleSpinner.phone {
+    top: 11px;
+    left: 280px;
+}

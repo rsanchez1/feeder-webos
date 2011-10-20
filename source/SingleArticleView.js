@@ -19,20 +19,12 @@ enyo.kind({
     },
     onSlideComplete: "resizedPane",
     components: [
-        //{name: "header", kind: "Header"},
-        {name: "header", kind: "Toolbar", components: [
-            /*
-            {name: "headerScroller", kind: "Scroller", flex: 1, style: "height: 1.2rem;", vertical: false, autoVertical: false, components: [
-                {name: "headerWrapper", style: "width: 5000px;", components: [
-                    {name: "headerContent", kind: "HtmlContent", content: "Welcome to TouchFeeds", style: "display:inline-block; height: 1.2rem; line-height: 1.1rem;"}
-                ]}
-            ]}
-            */
-            {name: "readButton", kind: "IconButton", icon: "images/read-footer.png", onclick: "readClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 20%; top: 11px;"},
-            {name: "fontButton", kind: "IconButton", icon: "images/icon_fonts.png", onclick: "fontClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 43.33%; top: 9px;"},
-            {name: "offlineButton", kind: "IconButton", icon: "images/offline-article.png", onclick: "offlineClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 66.66%; top: 9px;"},
-            {name: "fetchButton", kind: "IconButton", icon: "images/fetch-text.png", onclick: "fetchClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 90%; top: 11px;"},
-            {kind: "Spinner", showing: false, style: "position: absolute; top: 70px; left: 94%;"},
+        {name: "headerButtons", kind: "Toolbar", className: "headerButtons", components: [
+            {name: "readButton", kind: "IconButton", className: "leftmostButton", icon: "images/read-footer.png", onclick: "readClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; top: 11px;"},
+            {name: "fontButton", kind: "IconButton", className: "leftmiddleButton", icon: "images/icon_fonts.png", onclick: "fontClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; top: 9px;"},
+            {name: "offlineButton", kind: "IconButton", className: "rightmiddleButton", icon: "images/offline-article.png", onclick: "offlineClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; top: 9px;"},
+            {name: "fetchButton", kind: "IconButton", className: "rightmostButton", icon: "images/fetch-text.png", onclick: "fetchClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; top: 11px;"},
+            {kind: "Spinner", showing: false, className: "articleSpinner", style: "position: absolute;"},
         ]},
         {name: "articleScroller", horizontal: false, autoHorizontal: false, kind: "Scroller", flex: 1, ondragfinish: "scrollerDragFinish", onScrollStop: "articleScrollStop", components: [
             {name: "aboutContainer", className: "articleContainer", components: [
@@ -42,12 +34,12 @@ enyo.kind({
             ]},
             {name: "summary", className: "articleSummary", kind: "HtmlContent", onLinkClick: "articleLinkClicked", ondragstart: "summaryDragStart", ondrag: "summaryDrag", ondragfinish: "summaryDragFinish", ongesturestart: "summaryGestureStart", ongestureend: "summaryGestureEnd"},
         ]},
-        {kind: "Toolbar", components: [
+        {kind: "Toolbar", name: "footerButtons", className: "footerButtons", components: [
             {kind: "GrabButton", slidingHandler: true},
-            {name: "shareButton", kind: "IconButton", icon: "images/sendto-footer.png", onclick: "shareClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 20%; top: 11px;"},
-            {name: "starButton", kind: "IconButton", icon: "images/starred-footer.png", onclick: "starClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 43.33%; top: 11px;"},
-            {name: "previousButton", kind: "IconButton", icon: "images/previous-article.png", onclick: "previousClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 66.66%; top: 11px;"},
-            {name: "nextButton", kind: "IconButton", icon: "images/next-article.png", onclick: "nextClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 90%; top: 11px;"}
+            {name: "shareButton", kind: "IconButton", className: "leftmostButton", icon: "images/sendto-footer.png", onclick: "shareClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; top: 11px;"},
+            {name: "starButton", kind: "IconButton", className: "leftmiddleButton", icon: "images/starred-footer.png", onclick: "starClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; top: 11px;"},
+            {name: "previousButton", kind: "IconButton", className: "rightmiddleButton", icon: "images/previous-article.png", onclick: "previousClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; top: 11px;"},
+            {name: "nextButton", kind: "IconButton", className: "rightmostButton", icon: "images/next-article.png", onclick: "nextClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; top: 11px;"}
         ]},
         {name: "fontsPopup", kind: "Menu", modal: false, dismissWithClick: true, components: [
             {caption: "Small", onclick: "chooseFont"},
@@ -91,13 +83,19 @@ enyo.kind({
         this.$.articleTitle.removeClass("large");
         this.$.articleTitle.addClass(Preferences.getArticleFontSize());
         this.$.articleTitle.removeClass("phone");
+        this.$.headerButtons.removeClass("phone");
+        this.$.footerButtons.removeClass("phone");
         this.$.aboutContainer.removeClass("phone");
+        this.$.spinner.removeClass("phone");
         var info = enyo.fetchDeviceInfo();
         if (!!info) {
             var height = info.screenHeight;
             if (height == 320 || height == 400 || height == 480 || height == 800) {
                 this.$.articleTitle.addClass("phone");
                 this.$.aboutContainer.addClass("phone");
+                this.$.headerButtons.addClass("phone");
+                this.$.footerButtons.addClass("phone");
+                this.$.spinner.addClass("phone");
             }
         }
         this.fetchedOffline = false;
