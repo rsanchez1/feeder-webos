@@ -153,7 +153,7 @@ enyo.kind({
                 if (Element.match(Element.up(image), "a")) {
                     insertAfter = Element.up(image);
                 }
-                Element.insert(insertAfter, {after: "<span class='imageCaption' style='width: " + Element.measure(image, "width") + "px; max-width: 100% !important;'>" + image.title + "</span>"});
+                Element.insert(insertAfter, {after: "<span class='imageCaption' style='width: " + Element.measure(image, "width") + "px; max-width: 100% !important; min-width: 320px !important;'>" + image.title + "</span>"});
             }
         });
     },
@@ -174,6 +174,17 @@ enyo.kind({
             enyo.log("found tracking pixel, remove");
             Element.remove(image);
         } else {
+            var caption = Element.next(image);
+            if (caption.hasClassName("imageCaption")) {
+                caption.setStyle({"width": Element.measure(image, "width") + "px", "min-width": "0"});
+            } else {
+                if (Element.match(Element.up(image), "a")) {
+                    caption = Element.next(Element.up(image));
+                    if (caption.hasClassName("imageCaption")) {
+                        caption.setStyle({width: Element.measure(image, "width") + "px", minWidth: "0px !important"});
+                    }
+                }
+            }
         }
     },
 
