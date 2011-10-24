@@ -177,6 +177,7 @@ body.light {
     max-width: 100% !important;
     padding: 0 15px 10px 15px !important;
     border: 0 none !important;
+    height: auto !important;
 }
 
 .articleSummary a > img {

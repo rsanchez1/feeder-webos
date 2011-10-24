@@ -135,10 +135,13 @@ enyo.kind({
 
     processArticle: function() {
         $A(this.$.summary.node.getElementsByTagName("a")).each(function(anchor) {
+            var linkClickEvent = this.linkClickEvent;
             if ((anchor.href.indexOf("ads") >= 0 && (anchor.href.indexOf("ads") - anchor.href.indexOf("uploads") !== 4)) || anchor.href.indexOf("auslieferung") >= 0 || anchor.href.indexOf("da.feedsportal.com") >= 0) {
                 enyo.log(anchor.href);
                 enyo.log("found advertisement link, remove");
                 Element.remove(anchor);
+            } else {
+                anchor.onclick = linkClickEvent;
             }
         });
         var imageClickEvent = this.imageClickEvent;
@@ -156,6 +159,13 @@ enyo.kind({
                 Element.insert(insertAfter, {after: "<span class='imageCaption' style='width: " + Element.measure(image, "width") + "px; max-width: 100% !important; min-width: 320px !important;'>" + image.title + "</span>"});
             }
         });
+    },
+
+    linkClickEvent: function(event) {
+        enyo.log("CALLED CLICK EVENT FOR AN ANCHOR TAG");
+        event.stopPropagation();
+        event.preventDefault();
+        return -1;
     },
 
     imageClickEvent: function(event) {
