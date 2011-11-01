@@ -134,35 +134,58 @@ enyo.kind({
     },
 
     processArticle: function() {
+        var linkClickEvent = this.linkClickEvent;
         $A(this.$.summary.node.getElementsByTagName("a")).each(function(anchor) {
-            var linkClickEvent = this.linkClickEvent;
+            enyo.log("found anchor");
             if ((anchor.href.indexOf("ads") >= 0 && (anchor.href.indexOf("ads") - anchor.href.indexOf("uploads") !== 4)) || anchor.href.indexOf("auslieferung") >= 0 || anchor.href.indexOf("da.feedsportal.com") >= 0) {
                 enyo.log(anchor.href);
                 enyo.log("found advertisement link, remove");
                 Element.remove(anchor);
             } else {
-                anchor.onclick = linkClickEvent;
+                var info = enyo.fetchDeviceInfo();
+                if (!!info) {
+                    var height = info.screenHeight;
+                    if (height == 320 || height == 400 || height == 480 || height == 800) {
+
+                        var anchorChild = anchor.innerHTML;
+                        var anchorHref = anchor.href;
+
+                        var randInt = "" + Math.floor(Math.random() * 999999); // just make a random id for convenience
+
+                        anchor.replace("<span class='articleAnchorSpan' id='" + randInt + "'>" + anchorChild + "</span>");
+                        var newElement = document.getElementById(randInt);
+                        newElement.onclick = linkClickEvent.bind(this, anchorHref);
+                        if (newElement.childElements()[0].match("img")) {
+                            newElement.childElements()[0].store("href", anchorHref);
+                        }
+                    }
+                }
             }
         });
         var imageClickEvent = this.imageClickEvent;
         var imageOnload = this.imageOnload;
         $A(this.$.summary.node.getElementsByTagName("img")).each(function(image) {
             enyo.log("attaching click end event to image");
-            image.onclick = imageClickEvent;
-            image.onload = imageOnload;
+            image.onclick = imageClickEvent.bind(image);
+            image.onload = imageOnload.bind(image);
             //image.setStyle({border: "0 none"});
             if (image.title !== "") {
                 var insertAfter = image;
                 if (Element.match(Element.up(image), "a")) {
                     insertAfter = Element.up(image);
                 }
-                Element.insert(insertAfter, {after: "<span class='imageCaption' style='width: " + Element.measure(image, "width") + "px; max-width: 100% !important; min-width: 320px !important;'>" + image.title + "</span>"});
+                var minWidth = 0;
+                if (Element.measure(image, "width") <= 0) {
+                    minWidth = 320;
+                }
+                Element.insert(insertAfter, {after: "<span class='imageCaption' style='width: " + Element.measure(image, "width") + "px; max-width: 100% !important; min-width: " + minWidth + "px !important;'>" + image.title + "</span>"});
             }
         });
     },
 
-    linkClickEvent: function(event) {
+    linkClickEvent: function(url) {
         enyo.log("CALLED CLICK EVENT FOR AN ANCHOR TAG");
+        window.open(url);
         event.stopPropagation();
         event.preventDefault();
         return -1;
@@ -170,6 +193,11 @@ enyo.kind({
 
     imageClickEvent: function(event) {
         enyo.log("CALLED CLICK EVENT FOR IMAGE");
+        var image = event.target;
+        var storage = image.getStorage();
+        if (!!storage.get("href")) {
+            window.open(storage.get("href"));
+        }
         event.stopPropagation();
         event.preventDefault();
         return -1;
@@ -185,13 +213,15 @@ enyo.kind({
             Element.remove(image);
         } else {
             var caption = Element.next(image);
-            if (caption.hasClassName("imageCaption")) {
-                caption.setStyle({"width": Element.measure(image, "width") + "px", "min-width": "0"});
+            if (!!caption && caption.hasClassName("imageCaption")) {
+                enyo.log("CAPTION THIS");
+                caption.setStyle({width: Element.measure(image, "width") + "px", minWidth: "0px"});
             } else {
                 if (Element.match(Element.up(image), "a")) {
                     caption = Element.next(Element.up(image));
-                    if (caption.hasClassName("imageCaption")) {
-                        caption.setStyle({width: Element.measure(image, "width") + "px", minWidth: "0px !important"});
+                    if (!!caption && caption.hasClassName("imageCaption")) {
+                        enyo.log("CAPTION OTHER");
+                        caption.setStyle({width: Element.measure(image, "width") + "px", minWidth: "0px"});
                     }
                 }
             }
@@ -484,7 +514,24 @@ enyo.kind({
     resizedPane: function() {
         enyo.log("resizing article");
         //this.$.headerScroller.setScrollLeft(0);
+        var maxWidth = Element.measure(document.getElementById("myTouchFeedsSummary"), "width");
+        this.resizeAll(document.getElementById("myTouchFeedsSummary"), maxWidth);
     },
+
+    resizeAll: function(myElement, maxWidth) {
+        /*
+        var children = Element.childElements(myElement);
+        while (children.length) {
+            current = children.pop();
+            this.resizeAll(current, maxWidth);
+        }
+        if (Element.measure(myElement, "width") > maxWidth) {
+            enyo.log("resizing");
+            Element.setStyle(myElement, {width: maxWidth});
+        }
+        */
+    },
+
     summaryDragStart: function(thing1, event) {
         enyo.log("summary drag start");
     },

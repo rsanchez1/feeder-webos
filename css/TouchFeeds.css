@@ -451,3 +451,8 @@ body.light {
     top: 11px;
     left: 280px;
 }
+
+.articleAnchorSpan {
+    color: blue;
+    text-decoration: underline;
+}

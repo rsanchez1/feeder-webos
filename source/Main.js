@@ -471,6 +471,21 @@ enyo.kind({
         if (e.type == "forward") {
             this.forwardSwipe(null, e);
         }
+        if (e.type == "orientationchange") {
+            this.log("ORIENTATION CHANGED");
+        }
+        if (e.type == "shakestart") {
+            this.log("started shaking");
+        }
+        if (e.type == "shaking") {
+            this.log("IS SHAKING");
+        }
+        if (e.type == "shakeend") {
+            this.log("STOPPED SHAKING");
+        }
+        if (e.type == "acceleration") {
+            this.log("ACCELERATION");
+        }
    },
 
    cleanup: function() {
