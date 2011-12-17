@@ -48,6 +48,7 @@ enyo.kind({
            this.$.articles.applyStyle("width", "384px");
        }
         this.$.appMenu.hide();
+        setTimeout(function() {
         (function() {
             this.$.articlesDB.setSchemaFromURL('schema.json', {
                 onSuccess: function() {
@@ -73,7 +74,7 @@ enyo.kind({
         } else {
             enyo.log("get login information from user");
             setTimeout(function() {this.$.login.openAtCenter();}.bind(this), 0);
-        }
+        }}.bind(this), 100);
         Element.addClassName(document.body, Preferences.getColorScheme());
     },
 
@@ -88,8 +89,10 @@ enyo.kind({
     loginSuccess: function() {
         enyo.log("logged in successfully");
         this.loggedIn = true;
+        setTimeout(function() {
         this.sources = new AllSources(this.api);
         this.refreshFeeds();
+        }.bind(this), 100);
         this.$.loginLabel.setCaption("Logout");
         enyo.application.launcher.$.appDashboard.setAlarm();
     },
