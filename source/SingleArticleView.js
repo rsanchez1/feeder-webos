@@ -145,6 +145,7 @@ enyo.kind({
                 var info = enyo.fetchDeviceInfo();
                 if (!!info) {
                     var height = info.screenHeight;
+                    /*
                     if (height == 320 || height == 400 || height == 480 || height == 800) {
 
                         var anchorChild = anchor.innerHTML;
@@ -159,6 +160,7 @@ enyo.kind({
                             newElement.childElements()[0].store("href", anchorHref);
                         }
                     }
+                    */
                 }
             }
         });
