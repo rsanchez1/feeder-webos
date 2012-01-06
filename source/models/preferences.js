@@ -299,25 +299,66 @@ Preferences = {
   },
 
   getCookie: function(name, defaultValue) {
-    var cookie = enyo.getCookie(name)
+    //var cookie = enyo.getCookie(name)
+	var matches = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
+	var cookie = matches ? decodeURIComponent(matches[1]) : undefined;
+    
 
     if (!cookie) {
-      enyo.setCookie(name, enyo.json.stringify(defaultValue));
+      //enyo.setCookie(name, enyo.json.stringify(defaultValue));
+      this.setCookie(name, defaultValue);
       return defaultValue;
     }
     else {
-      return enyo.json.parse(cookie); 
+      //return enyo.json.parse(cookie); 
+      var cookieReturn;
+      //if (name === this.COUNTRY) {
+          //cookieReturn = cookie.evalJSON();
+      //} else {
+      if (typeof defaultValue !== "string") {
+          cookieReturn = cookie.evalJSON();
+      } else {
+          cookieReturn = cookie;
+      }
+      return cookieReturn;
+      //return JSON.parse(cookie);
     }
   },
 
-  setCookie: function(name, value) {
+  setCookie: function(inName, inValue) {
     //enyo.log("setting " + name + " to " + value)
     //this.cookieFor(name).put(value)
-    enyo.setCookie(name, enyo.json.stringify(value));
+    //enyo.setCookie(name, enyo.json.stringify(value));
+
+
+    var cookie = inName + "=" + encodeURIComponent(inValue);
+    var p = {};
+    var exp = new Date(new Date().valueOf() + 2419200000);
+    if (typeof exp == "number") {
+        var d = new Date();
+        d.setTime(d.getTime() + exp*24*60*60*1000);
+        exp = d;
+    }
+    if (exp && exp.toUTCString) {
+        p.expires = exp.toUTCString();
+    }
+    var name, value;
+    for (name in p){
+        cookie += "; " + name;
+        value = p[name];
+        if (value !== true) {
+            cookie += "=" + value;
+        }
+    }
+    //
+    //console.log(cookie);
+    document.cookie = cookie;
+    
   },
 
   cookieFor: function(name) {
     //return new Mojo.Model.Cookie(name)
   }
+
 }
 

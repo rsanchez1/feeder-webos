@@ -142,24 +142,6 @@ enyo.kind({
                 enyo.log("found advertisement link, remove");
                 Element.remove(anchor);
             } else {
-                var info = enyo.fetchDeviceInfo();
-                if (!!info) {
-                    var height = info.screenHeight;
-                    if (height == 320 || height == 400 || height == 480 || height == 800) {
-
-                        var anchorChild = anchor.innerHTML;
-                        var anchorHref = anchor.href;
-
-                        var randInt = "" + Math.floor(Math.random() * 999999); // just make a random id for convenience
-
-                        anchor.replace("<span class='articleAnchorSpan' id='" + randInt + "'>" + anchorChild + "</span>");
-                        var newElement = document.getElementById(randInt);
-                        newElement.onclick = linkClickEvent.bind(this, anchorHref);
-                        if (newElement.childElements()[0].match("img")) {
-                            newElement.childElements()[0].store("href", anchorHref);
-                        }
-                    }
-                }
             }
         });
         var imageClickEvent = this.imageClickEvent;

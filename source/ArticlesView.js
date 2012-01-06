@@ -37,15 +37,13 @@ enyo.kind({
             {kind: "Spinner", showing: true, className: "tfSpinner",}
         ]},
 		{name: "emptyNotice", content: "There are no articles available.", className: "articleTitle itemLists", style: "font-weight: bold; padding-top: 20px; padding-left: 20px; font-size: 0.9rem;", flex: 1},
-        {kind: "Scroller", flex: 1, components: [
-            {name: "articlesList", kind: "VirtualList", onSetupRow: "getListArticles", className: "itemLists", components: [
-                {kind: "Divider", onclick: "articleDividerClick"},
-                {name: "articleItem", kind: "SwipeableItem", layoutKind: "VFlexLayout", onConfirm: "swipedArticle", confirmRequired: false, allowLeft: true, components: [
-                    {name: "title", className: "articleTitle", kind: "HtmlContent"},
-                    {name: "origin", className: "articleOrigin"},
-                    {name: "starred"}
-                ], onclick: "articleItemClick"}
-            ]}
+        {name: "articlesList", kind: "ScrollingList", flex: 1, onSetupRow: "getListArticles", rowsPerScrollerPage: 50, className: "itemLists", components: [
+            {kind: "Divider", onclick: "articleDividerClick"},
+            {name: "articleItem", kind: "SwipeableItem", layoutKind: "VFlexLayout", onConfirm: "swipedArticle", confirmRequired: false, allowLeft: true, components: [
+                {name: "title", className: "articleTitle", kind: "HtmlContent"},
+                {name: "origin", className: "articleOrigin"},
+                {name: "starred"}
+            ], onclick: "articleItemClick"}
         ]},
         {kind: "Toolbar", components: [
             {kind: "GrabButton"},
@@ -97,6 +95,10 @@ enyo.kind({
         }
 		*/
 		this.articles = [];
+        /*
+        enyo.log("CALLED RESET OFFLINE ARTICLES CHANGED");
+        this.$.articlesList.reset();
+        */
         if (Preferences.groupFoldersByFeed()) {
             this.offlineArticles.sort(this.originSortingFunction);
             this.offlineArticles = this.sortSortedArticlesByDate(this.offlineArticles);
@@ -108,9 +110,12 @@ enyo.kind({
             }
         }
         if (this.isRendered) {
-            this.$.articlesList.refresh();
+            enyo.log("CALLED REFRESH OFFLINE ARTICLES CHANGED");
+            //this.$.articlesList.refresh();
+            this.refresh();
         } else {
             this.isRendered = true;
+            enyo.log("CALLED RENDER OFFLINE ARTICLES CHANGED");
             this.$.articlesList.render();
         }
         if (this.wasOfflineSet) {
@@ -120,9 +125,9 @@ enyo.kind({
         }
 		//setTimeout(function() {enyo.log("REFRESHING LIST"); this.$.articlesList.refresh();}.bind(this), 3000);
 		if (!!this.offlineArticles.length) {
-			this.$.emptyNotice.hide();
+			//this.$.emptyNotice.hide();
 		} else {
-			this.$.emptyNotice.show();
+			//this.$.emptyNotice.show();
 		}
                 this.wasFolderChild = false;
 	},
@@ -132,14 +137,17 @@ enyo.kind({
         var scroller = this.$.articlesList.$.scroller;
         this.maxTop = 0;
         this.numberRendered = 0;
+        /*
         scroller.adjustTop(0);
         scroller.adjustBottom(10);
+        */
         scroller.top = 0;
         scroller.bottom = 10;
 		this.offlineArticles = [];
-        this.articles.reset();
         this.articles.items = [];
-        this.$.articlesList.punt();
+        //this.$.articlesList.punt();
+        enyo.log("CALLED RESET ARTICLES CHANGED");
+        this.$.articlesList.reset();
         /*
         if (this.isRendered) {
             this.$.articlesList.refresh();
@@ -174,6 +182,7 @@ enyo.kind({
         this.checkAllArticlesOffline();
     },
     foundArticles: function() {
+        enyo.log("FOUND ARTICLES");
         if (Preferences.hideReadArticles()) {
             for (var i = this.articles.items.length; i--;) {
                 if (this.articles.items[i].isRead) {
@@ -205,9 +214,12 @@ enyo.kind({
             }
         }
         if (this.isRendered) {
-            this.$.articlesList.refresh();
+            enyo.log("CALLED REFRESH FOUND ARTICLES");
+            //this.$.articlesList.refresh();
+            this.refresh();
         } else {
             this.isRendered = true;
+            enyo.log("CALLED RENDER FOUND ARTICLES");
             this.$.articlesList.render();
         }
         if (this.articles.items.length) {
@@ -523,7 +535,9 @@ enyo.kind({
         if (count === 0) {
             this.$.spinner.hide();
             this.app.$.slidingPane.selectViewByName('feeds', true);
-            this.$.articlesList.punt();
+            //this.$.articlesList.punt();
+            enyo.log("CALLED RESET MARKED ARTICLE READ");
+            this.$.articlesList.reset();
         }
     },
 
@@ -557,7 +571,9 @@ enyo.kind({
             if (this.wasMarkingAllRead) {
                 this.wasMarkingAllRead = false;
                 this.app.$.slidingPane.selectViewByName('feeds', true);
-                this.$.articlesList.punt();
+                //this.$.articlesList.punt();
+                enyo.log("CALLED RESET MARKED MULTIPLE ITEMS READ");
+                this.$.articlesList.reset();
             }
         } else {
         }
@@ -567,7 +583,9 @@ enyo.kind({
         this.$.spinner.hide();
         if (!wasScrolling) {
             this.app.$.slidingPane.selectViewByName('feeds', true);
-            this.$.articlesList.punt();
+            //this.$.articlesList.punt();
+            enyo.log("CALLED RESET MARKED ALL ARTICLES READ");
+            this.$.articlesList.reset();
         }
         this.doAllArticlesRead(count, this.articles.id);
     },
@@ -630,8 +648,10 @@ enyo.kind({
                     }
                 }
                 var scroller = this.$.articlesList.$.scroller;
+                /*
                 scroller.adjustTop(scrollTop);
                 scroller.adjustBottom(scrollBottom);
+                */
                 scroller.top = scrollTop;
                 scroller.bottom = scrollBottom;
             } else {
@@ -651,7 +671,9 @@ enyo.kind({
                 articles.sort(this.originSortingFunction);
                 articles = this.sortSortedArticlesByDate(articles);
             }
-            this.$.articlesList.refresh();
+            enyo.log("CALLED REFRESH HEADER CLICKED");
+            //this.$.articlesList.refresh();
+            this.refresh();
         }
     },
     articleDividerClick: function(inSender, inEvent) {
@@ -699,7 +721,9 @@ enyo.kind({
                 articles.sort(this.originSortingFunction);
                 articles = this.sortSortedArticlesByDate(articles);
             }
-            this.$.articlesList.refresh();
+            enyo.log("CALLED REFRESH ARTICLE DIVIDER CLICK");
+            //this.$.articlesList.refresh();
+            this.refresh();
         }
     },
     selectArticle: function(index) {
@@ -726,8 +750,10 @@ enyo.kind({
 				}
             }
             var scroller = this.$.articlesList.$.scroller;
+            /*
             scroller.adjustTop(scrollTop);
             scroller.adjustBottom(scrollBottom);
+            */
             scroller.top = scrollTop;
             scroller.bottom = scrollBottom;
         } else {
@@ -749,21 +775,29 @@ enyo.kind({
             article = this.articles.items[index];
             length = this.articles.items.length;
         } else {
-			this.$.articlesList.refresh();
+            enyo.log("CALLED REFRESH SELECT ARTICLE RETURN");
+			//this.$.articlesList.refresh();
+            this.refresh();
 			return;
 		}
         this.doArticleClicked(article, index, length - 1);
-        this.$.articlesList.refresh();
+        enyo.log("CALLED REFRESH SELECT ARTICLE");
+        //this.$.articlesList.refresh();
         this.$.articlesList.updateRow(index);
         this.$.articlesList.updateRow(previousIndex);
+        //this.refresh();
     },
     finishArticleRead: function(index) {
         this.$.articlesList.updateRow(index);
-        this.$.articlesList.refresh();
+        enyo.log("CALLED REFERESH FINISH ARTICLE READ");
+        //this.$.articlesList.refresh();
+        this.refresh();
     },
     finishArticleStarred: function(index, isStarred) {
         this.$.articlesList.updateRow(index);
-        this.$.articlesList.refresh();
+        enyo.log("CALLED REFRESH FINISH ARTICLE STARRED");
+        //this.$.articlesList.refresh();
+        this.refresh();
         var article;
         if (this.offlineArticles.length) {
             article = this.offlineArticles[index];
@@ -815,13 +849,16 @@ enyo.kind({
         if (!this.offlineArticles.length) {
             var scroller = this.$.articlesList.$.scroller;
             this.maxTop = 0;
+            /*
             scroller.adjustTop(0);
             scroller.adjustBottom(10);
+            */
             scroller.top = 0;
             scroller.bottom = 10;
-            this.articles.reset();
             this.articles.items = [];
-            this.$.articlesList.punt();
+            //this.$.articlesList.punt();
+            enyo.log("CALLED RESET REFRESH CLICK");
+            this.$.articlesList.reset();
             this.$.spinner.show();
             this.$.spinner.applyStyle("display", "inline-block");
             this.articles.findArticles(this.foundArticles.bind(this), function() {enyo.log("failed to find articles");});
@@ -837,9 +874,12 @@ enyo.kind({
         this.$.articlesList.removeClass("large");
         this.$.articlesList.addClass(Preferences.getArticleListFontSize());
         if (this.isRendered) {
-            this.$.articlesList.refresh();
+            enyo.log("CALLED REFRESH CHOOSE FONT");
+            //this.$.articlesList.refresh();
+            this.refresh();
         } else {
             this.isRendered = true;
+            enyo.log("CALLED RENDER CHOOSE FONT");
             this.$.articlesList.render();
         }
     },
@@ -918,5 +958,18 @@ enyo.kind({
 
     refreshArticles: function() {
         this.articlesChanged();
-    }
+    },
+
+    refreshList: function() {
+        (function() {
+            enyo.log("REFRESHING LIST");
+            //this.$.articlesList.refresh();
+        }.bind(this)).defer();
+    },
+
+    refresh: function() {
+        //this.$.articlesList.refresh();
+        enyo.log("CALLED UPDATED REFRESH");
+        this.$.articlesList.$.scroller.updatePages();
+    },
 });
