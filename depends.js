@@ -27,6 +27,8 @@ enyo.depends(
     "source/models/subscription.js",
     //START VIEWS
     "source/libraries/Metrix/metrix.js",
+    "source/ScrollingList.js",
+    "source/RowServer.js",
     "source/Dashboard.js",
     "source/Launcher.js",
     "source/Main.js",
