@@ -37,7 +37,7 @@ enyo.kind({
             {kind: "Spinner", showing: true, className: "tfSpinner",}
         ]},
 		{name: "emptyNotice", content: "There are no articles available.", className: "articleTitle itemLists", style: "font-weight: bold; padding-top: 20px; padding-left: 20px; font-size: 0.9rem;", flex: 1},
-        {name: "articlesList", kind: "VirtualList", flex: 1, onSetupRow: "getListArticles", /*rowsPerScrollerPage: 50,*/ pageSize: 1, lookAhead: 50, onAcquirePage: "refreshList", className: "itemLists", components: [
+        {name: "articlesList", kind: "VirtualList", flex: 1, onSetupRow: "getListArticles", onAcquirePage: "refreshList", className: "itemLists", components: [
             {kind: "Divider", onclick: "articleDividerClick"},
             {name: "articleItem", kind: "SwipeableItem", layoutKind: "VFlexLayout", onConfirm: "swipedArticle", confirmRequired: false, allowLeft: true, components: [
                 {name: "title", className: "articleTitle", kind: "HtmlContent"},
