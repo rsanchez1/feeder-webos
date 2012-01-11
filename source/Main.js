@@ -32,6 +32,15 @@ enyo.kind({
         this.api = new Api();
         this.credentials = new Credentials();
         enyo.application.app = this;
+        this.isPhone = false;
+        var info = enyo.fetchDeviceInfo();
+        if (!!info) {
+            var height = info.screenHeight;
+            var width = info.screenWidth;
+            if ((height == 320 && width == 480) || (height == 480 && width == 320) || (height == 800 && width == 480) || (height == 480 && width == 800) || (height == 400 && width == 320) || (height == 320 && width == 400)) {
+                this.isPhone = true;
+            }
+        }
         enyo.dispatcher.rootHandler.addListener(this);
     },
 

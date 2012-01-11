@@ -306,21 +306,28 @@ Preferences = {
 
     if (!cookie) {
       //enyo.setCookie(name, enyo.json.stringify(defaultValue));
+      if (!(typeof defaultValue === "string" || typeof defaultValue === "number" || typeof defaultValue === "boolean")) {
+          defaultValue = Object.toJSON(defaultValue);
+      }
       this.setCookie(name, defaultValue);
       return defaultValue;
     }
     else {
-      //return enyo.json.parse(cookie); 
       var cookieReturn;
-      //if (name === this.COUNTRY) {
-          //cookieReturn = cookie.evalJSON();
-      //} else {
-      if (typeof defaultValue !== "string") {
+      if (!(typeof defaultValue === "string" || typeof defaultValue === "number" || typeof defaultValue === "boolean")) {
+          Mojo.Log.error("GETTING OBJECT FOR PREFERENCE");
           cookieReturn = cookie.evalJSON();
       } else {
-          cookieReturn = cookie;
+          if (typeof defaultValue === "number") {
+              cookieReturn = parseInt(cookie, 10);
+          } else if (typeof defaultValue === "boolean") {
+              cookieReturn = (cookie == "true");
+          } else {
+              cookieReturn = cookie;
+          }
       }
       return cookieReturn;
+
       //return JSON.parse(cookie);
     }
   },
@@ -329,6 +336,10 @@ Preferences = {
     //enyo.log("setting " + name + " to " + value)
     //this.cookieFor(name).put(value)
     //enyo.setCookie(name, enyo.json.stringify(value));
+    if (!(typeof inValue === "string" || typeof defaultValue === "number" || typeof defaultValue === "boolean")) {
+        inValue = Object.toJSON(inValue);
+    }
+    
 
 
     var cookie = inName + "=" + encodeURIComponent(inValue);

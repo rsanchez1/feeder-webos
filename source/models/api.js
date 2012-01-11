@@ -513,4 +513,4 @@ var Api = Class.create({
   }
 })
 
-Api.BASE_URL = "https://www.google.com/reader/api/0/"
+Api.BASE_URL = "http://www.google.com/reader/api/0/"

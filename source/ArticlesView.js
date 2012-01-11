@@ -36,18 +36,16 @@ enyo.kind({
             ]},
             {kind: "Spinner", showing: true, className: "tfSpinner",}
         ]},
-        /*
-        {name: "emptyNotice", content: "There are no articles available.", className: "articleTitle itemLists", style: "font-weight: bold; padding-top: 20px; padding-left: 20px; font-size: 0.9rem;"},
-        */
+		{name: "emptyNotice", content: "There are no articles available.", className: "articleTitle itemLists", style: "font-weight: bold; padding-top: 20px; padding-left: 20px; font-size: 0.9rem;", flex: 1},
         {kind: "Scroller", flex: 1, components: [
-            {name: "articlesList", kind: "VirtualList", onSetupRow: "getListArticles", /*rowsPerScrollerPage: 50,*/ onAcquirePage: "refreshList", className: "itemLists", components: [
+            {name: "articlesList", kind: "ScrollingList", rowsPerScrollerPage: 12, onSetupRow: "getListArticles", className: "itemLists", components: [
                 {kind: "Divider", onclick: "articleDividerClick"},
                 {name: "articleItem", kind: "SwipeableItem", layoutKind: "VFlexLayout", onConfirm: "swipedArticle", confirmRequired: false, allowLeft: true, components: [
                     {name: "title", className: "articleTitle", kind: "HtmlContent"},
                     {name: "origin", className: "articleOrigin"},
                     {name: "starred"}
                 ], onclick: "articleItemClick"}
-            ]},
+            ]}
         ]},
         {kind: "Toolbar", components: [
             {kind: "GrabButton"},
@@ -77,7 +75,6 @@ enyo.kind({
         this.inherited(arguments);
         this.headerContentChanged();
         this.app = enyo.application.app;
-        this.$.articlesList.render();
     },
     headerContentChanged: function() {
         //this.$.header.setContent(this.headerContent);
@@ -100,8 +97,6 @@ enyo.kind({
         }
 		*/
 		this.articles = [];
-        enyo.log("CALLED RESET OFFLINE ARTICLES CHANGED");
-        this.$.articlesList.reset();
         if (Preferences.groupFoldersByFeed()) {
             this.offlineArticles.sort(this.originSortingFunction);
             this.offlineArticles = this.sortSortedArticlesByDate(this.offlineArticles);
@@ -112,9 +107,12 @@ enyo.kind({
                 this.offlineArticles.sort(function(a, b) {return b.sortDate - a.sortDate;});
             }
         }
-        enyo.log("CALLED REFRESH OFFLINE ARTICLES CHANGED");
-        //this.$.articlesList.refresh();
-        //this.refresh();
+        if (this.isRendered) {
+            this.$.articlesList.refresh();
+        } else {
+            this.isRendered = true;
+            this.$.articlesList.render();
+        }
         if (this.wasOfflineSet) {
             this.selectArticle(0);
         } else {
@@ -122,9 +120,9 @@ enyo.kind({
         }
 		//setTimeout(function() {enyo.log("REFRESHING LIST"); this.$.articlesList.refresh();}.bind(this), 3000);
 		if (!!this.offlineArticles.length) {
-			//this.$.emptyNotice.hide();
+			this.$.emptyNotice.hide();
 		} else {
-			//this.$.emptyNotice.show();
+			this.$.emptyNotice.show();
 		}
                 this.wasFolderChild = false;
 	},
@@ -135,14 +133,20 @@ enyo.kind({
         this.maxTop = 0;
         this.numberRendered = 0;
         scroller.adjustTop(0);
-        scroller.adjustBottom(10);
+        //scroller.adjustBottom(10);
         scroller.top = 0;
-        scroller.bottom = 10;
+        //scroller.bottom = 10;
 		this.offlineArticles = [];
         this.articles.items = [];
-        //this.$.articlesList.punt();
-        enyo.log("CALLED RESET ARTICLES CHANGED");
-        this.$.articlesList.reset();
+        this.$.articlesList.punt();
+        /*
+        if (this.isRendered) {
+            this.$.articlesList.refresh();
+        } else {
+            this.isRendered = true;
+            this.$.articlesList.render();
+        }
+        */
         if (this.articles.canMarkAllRead) {
             this.$.readAllButton.setIcon("images/read-footer.png");
         } else {
@@ -169,7 +173,6 @@ enyo.kind({
         this.checkAllArticlesOffline();
     },
     foundArticles: function() {
-        enyo.log("FOUND ARTICLES");
         if (Preferences.hideReadArticles()) {
             for (var i = this.articles.items.length; i--;) {
                 if (this.articles.items[i].isRead) {
@@ -200,16 +203,19 @@ enyo.kind({
                 this.articles.items = this.sortSortedArticlesByDate(this.articles.items);
             }
         }
-        enyo.log("CALLED REFRESH FOUND ARTICLES");
-        //this.$.articlesList.refresh();
-        this.refresh();
+        if (this.isRendered) {
+            this.$.articlesList.refresh();
+        } else {
+            this.isRendered = true;
+            this.$.articlesList.render();
+        }
         if (this.articles.items.length) {
             this.selectArticle(0);
         }
 		if (!!this.articles.items.length) {
-			//this.$.emptyNotice.hide();
+			this.$.emptyNotice.hide();
 		} else {
-			//this.$.emptyNotice.show();
+			this.$.emptyNotice.show();
 		}
         this.checkIfArticlesOffline();
     },
@@ -525,9 +531,7 @@ enyo.kind({
         if (count === 0) {
             this.$.spinner.hide();
             this.app.$.slidingPane.selectViewByName('feeds', true);
-            //this.$.articlesList.punt();
-            enyo.log("CALLED RESET MARKED ARTICLE READ");
-            this.$.articlesList.reset();
+            this.$.articlesList.punt();
         }
     },
 
@@ -561,9 +565,7 @@ enyo.kind({
             if (this.wasMarkingAllRead) {
                 this.wasMarkingAllRead = false;
                 this.app.$.slidingPane.selectViewByName('feeds', true);
-                //this.$.articlesList.punt();
-                enyo.log("CALLED RESET MARKED MULTIPLE ITEMS READ");
-                this.$.articlesList.reset();
+                this.$.articlesList.punt();
             }
         } else {
         }
@@ -573,16 +575,13 @@ enyo.kind({
         this.$.spinner.hide();
         if (!wasScrolling) {
             this.app.$.slidingPane.selectViewByName('feeds', true);
-            //this.$.articlesList.punt();
-            enyo.log("CALLED RESET MARKED ALL ARTICLES READ");
-            this.$.articlesList.reset();
+            this.$.articlesList.punt();
         }
         this.doAllArticlesRead(count, this.articles.id);
     },
 
     articleItemClick: function(inSender, inEvent) {
         this.articleClicked = true;
-        enyo.log(inEvent);
         this.selectArticle(inEvent.rowIndex);
     },
     headerClick: function(inSender, inEvent) {
@@ -627,22 +626,9 @@ enyo.kind({
                 }
                 articles.sort(this.originSortingFunction);
                 articles = this.sortSortedArticlesByDate(articles);
-                var scrollTop = 0;
-                var scrollBottom = scrollTop + this.numberRendered;
-                if (this.offlineArticles.length) {
-                    if (scrollBottom >= this.offlineArticles.length) {
-                        scrollBottom = this.offlineArticles.length - 1;
-                    }
-                } else {
-                    if (scrollBottom >= this.articles.items.length) {
-                        scrollBottom = this.articles.items.length - 1;
-                    }
-                }
                 var scroller = this.$.articlesList.$.scroller;
-                scroller.adjustTop(scrollTop);
-                scroller.adjustBottom(scrollBottom);
-                scroller.top = scrollTop;
-                scroller.bottom = scrollBottom;
+                scroller.adjustTop(0);
+                scroller.top = 0;
             } else {
                 for (var origin in this.itemsToHide) {
                     if (this.itemsToHide.hasOwnProperty(origin)) {
@@ -660,9 +646,7 @@ enyo.kind({
                 articles.sort(this.originSortingFunction);
                 articles = this.sortSortedArticlesByDate(articles);
             }
-            enyo.log("CALLED REFRESH HEADER CLICKED");
-            //this.$.articlesList.refresh();
-            this.refresh();
+            this.$.articlesList.refresh();
         }
     },
     articleDividerClick: function(inSender, inEvent) {
@@ -710,9 +694,7 @@ enyo.kind({
                 articles.sort(this.originSortingFunction);
                 articles = this.sortSortedArticlesByDate(articles);
             }
-            enyo.log("CALLED REFRESH ARTICLE DIVIDER CLICK");
-            //this.$.articlesList.refresh();
-            this.refresh();
+            this.$.articlesList.refresh();
         }
     },
     selectArticle: function(index) {
@@ -722,27 +704,18 @@ enyo.kind({
         //enyo.log("scrolling to: ", scrollTo);
         //this.$.scroller.scrollTo(-scrollTo, 0);
         if (!this.articleClicked) {
-            var scrollTop = index - Math.floor(this.numberRendered / 2);
+            //var scrollTop = index - Math.floor(this.numberRendered / 2);
+            //var rowsPerPage = enyo.application.app.isPhone ? 5 : 15;
+            var rowsPerPage = 12;
+            var scrollTop = Math.floor(index / rowsPerPage);
             if (scrollTop < 0){
                 scrollTop = 0;
             }
-            var scrollBottom = scrollTop + this.numberRendered;
-            if (!!this.offlineArticles && !!this.offlineArticles.length) {
-                if (scrollBottom >= this.offlineArticles.length) {
-                    scrollBottom = this.offlineArticles.length - 1;
-                }
-            } else {
-				if (!!this.articles.items && !!this.articles.items.length) {
-					if (scrollBottom >= this.articles.items.length) {
-						scrollBottom = this.articles.items.length - 1;
-					}
-				}
-            }
             var scroller = this.$.articlesList.$.scroller;
             scroller.adjustTop(scrollTop);
-            scroller.adjustBottom(scrollBottom);
+            //scroller.adjustBottom(scrollBottom);
             scroller.top = scrollTop;
-            scroller.bottom = scrollBottom;
+            //scroller.bottom = scrollBottom;
         } else {
             var info = enyo.fetchDeviceInfo();
             if (!!info) {
@@ -762,29 +735,21 @@ enyo.kind({
             article = this.articles.items[index];
             length = this.articles.items.length;
         } else {
-            enyo.log("CALLED REFRESH SELECT ARTICLE RETURN");
-			//this.$.articlesList.refresh();
-            this.refresh();
+			this.$.articlesList.refresh();
 			return;
 		}
         this.doArticleClicked(article, index, length - 1);
-        enyo.log("CALLED REFRESH SELECT ARTICLE");
-        //this.$.articlesList.refresh();
+        this.$.articlesList.refresh();
         this.$.articlesList.updateRow(index);
         this.$.articlesList.updateRow(previousIndex);
-        //this.refresh();
     },
     finishArticleRead: function(index) {
         this.$.articlesList.updateRow(index);
-        enyo.log("CALLED REFERESH FINISH ARTICLE READ");
-        //this.$.articlesList.refresh();
-        this.refresh();
+        this.$.articlesList.refresh();
     },
     finishArticleStarred: function(index, isStarred) {
         this.$.articlesList.updateRow(index);
-        enyo.log("CALLED REFRESH FINISH ARTICLE STARRED");
-        //this.$.articlesList.refresh();
-        this.refresh();
+        this.$.articlesList.refresh();
         var article;
         if (this.offlineArticles.length) {
             article = this.offlineArticles[index];
@@ -837,13 +802,12 @@ enyo.kind({
             var scroller = this.$.articlesList.$.scroller;
             this.maxTop = 0;
             scroller.adjustTop(0);
-            scroller.adjustBottom(10);
+            //scroller.adjustBottom(10);
             scroller.top = 0;
-            scroller.bottom = 10;
+            //scroller.bottom = 10;
+            this.articles.reset();
             this.articles.items = [];
-            //this.$.articlesList.punt();
-            enyo.log("CALLED RESET REFRESH CLICK");
-            this.$.articlesList.reset();
+            this.$.articlesList.punt();
             this.$.spinner.show();
             this.$.spinner.applyStyle("display", "inline-block");
             this.articles.findArticles(this.foundArticles.bind(this), function() {enyo.log("failed to find articles");});
@@ -858,9 +822,12 @@ enyo.kind({
         this.$.articlesList.removeClass("medium");
         this.$.articlesList.removeClass("large");
         this.$.articlesList.addClass(Preferences.getArticleListFontSize());
-        enyo.log("CALLED REFRESH CHOOSE FONT");
-        //this.$.articlesList.refresh();
-        this.refresh();
+        if (this.isRendered) {
+            this.$.articlesList.refresh();
+        } else {
+            this.isRendered = true;
+            this.$.articlesList.render();
+        }
     },
     originSortingFunction: function(a, b) {
         var originA = a.sortOrigin.toLowerCase();
@@ -937,22 +904,5 @@ enyo.kind({
 
     refreshArticles: function() {
         this.articlesChanged();
-    },
-
-    refreshList: function() {
-        enyo.log("ACQUIRED PAGE");
-        /*
-        (function() {
-            enyo.log("REFRESHING LIST");
-            //this.$.articlesList.refresh();
-        }.bind(this)).defer();
-        */
-    },
-
-    refresh: function() {
-        //this.$.articlesList.refresh();
-        enyo.log("CALLED UPDATED REFRESH");
-        //this.$.articlesList.$.scroller.updatePages();
-        this.$.articlesList.update();
-    },
+    }
 });
