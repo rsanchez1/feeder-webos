@@ -45,6 +45,21 @@ enyo.kind({
     },
 
     ready: function() {
+        var articleTestDiv = document.createElement("div");
+        var articleParentDiv = document.createElement("div");
+        (function() {
+        articleTestDiv.addClassName("articleTitle");
+        articleTestDiv.setStyle({position: "static", top: "-1000px", left: "-1000px"});
+        articleTestDiv.id = "articleTestDiv";
+        articleParentDiv.addClassName("enyo-item");
+        articleParentDiv.addClassName("enyo-swipeableitem");
+        articleParentDiv.addClassName("enyo-vflexbox");
+        articleParentDiv.style.cssText = "-webkit-box-align: stretch; -webkit-box-orient: vertical; -webkit-box-pack: start;";
+        articleParentDiv.appendChild(articleTestDiv);
+        document.body.appendChild(articleParentDiv);
+        }).defer();
+        enyo.log("DID STUFF WITH APPENDING");
+        this.addClass("testing-stuff");
         enyo.log("called ready method");
         enyo.keyboard.setManualMode(true);
        this.$.slidingPane.setCanAnimate(Preferences.enableAnimations());
@@ -85,6 +100,7 @@ enyo.kind({
             setTimeout(function() {this.$.login.openAtCenter();}.bind(this), 0);
         }}.bind(this), 100);
         Element.addClassName(document.body, Preferences.getColorScheme());
+        
     },
 
     checkLoggedIn: function() {
@@ -125,13 +141,13 @@ enyo.kind({
                 }
             );
         }
-        setTimeout(this.checkFeedsRefreshed.bind(this), 5000);
+        setTimeout(this.checkFeedsRefreshed.bind(this), 15000);
     },
 
     checkFeedsRefreshed: function() {
         enyo.log("CHECKING IF FEEDS SUCCESSFULLY REFRESHED");
         var numberOfItems = this.$.feedsView.getStickySourcesLength();
-        if (numberOfItems < 4) {
+        if (numberOfItems < 2) {
             enyo.log("feeds not successfully refreshed, refresh again");
             this.refreshFeeds();
         } else {
@@ -429,7 +445,7 @@ enyo.kind({
    },
 
    showHideArticlesChange: function() {
-       this.$.articlesView.refreshArticles();
+       this.$.articlesView.articlesChanged();
    },
 
    animationsChanged: function() {

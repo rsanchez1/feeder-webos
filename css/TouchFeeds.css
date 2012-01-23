@@ -26,8 +26,11 @@ body.light {
 }
 
 .dark .enyo-item {
-    border: 0 none;
     font-weight: normal;
+}
+
+.enyo-item {
+    border: 0 none;
 }
 
 .dark .enyo-item.unread-item {
@@ -197,14 +200,6 @@ body.light {
 .articleSummary.large h1, .articleSummary.large h2, .articleSummary.large h3 {
     font-size: 1.5rem !important;
     line-height: 1.8rem !important;
-}
-
-.firstRow {
-    border-top: none;
-}
-
-.lastRow {
-    border-bottom: none;
 }
 
 .articleTitle {
