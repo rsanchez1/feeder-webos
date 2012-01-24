@@ -25,10 +25,17 @@ var AllArticles = Class.create(ArticleContainer, {
 
   markAllRead: function(success) {
     this.api.markAllRead(this.id, function() {
-        enyo.log("marking all read");
       this.clearUnreadCount()
       this.items.each(function(item) {item.isRead = true})
       success()
     }.bind(this))
-  }
+  },
+
+  markMultipleArticlesRead: function(articles, success, error) {
+      this.api.markMultipleArticlesRead(articles, function() {
+          articles.each(function(item) {item.isRead = true});
+          success()
+      }.bind(this), error);
+  },
+  
 })

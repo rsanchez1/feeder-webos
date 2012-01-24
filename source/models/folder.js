@@ -41,6 +41,17 @@ var Folder = Class.create(ArticleContainer, {
     })
   },
 
+  markMultipleArticlesRead: function(articles, success, error) {
+      var self = this;
+      if (!self.subscriptions) {
+          self = self.folderParent;
+      }
+      this.api.markMultipleArticlesRead(articles, function() {
+          articles.each(function(item) {item.isRead = true});
+          success()
+      }.bind(this), error);
+  },
+  
   addUnreadCount: function(count) {
     var subscriptionItems;
     if (!this.subscriptions) {
