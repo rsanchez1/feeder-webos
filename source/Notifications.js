@@ -75,7 +75,7 @@ enyo.kind({
     },
 
     prepareFeeds: function() {
-        var watchedFeeds = Preferences.getWatchedFeeds()
+        var watchedFeeds = Preferences.getWatchedFeeds();
         this.subscriptionSources.each(function(subscription) {
             subscription.feedWatched = watchedFeeds.any(function(n) {return n == subscription.title.replace(/[^0-9a-zA-Z]/g, '').toLowerCase();});
         });

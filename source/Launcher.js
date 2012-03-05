@@ -18,11 +18,6 @@ enyo.kind({
         enyo.log("APPLICATION RELAUNCH");
         var appWindow = enyo.windows.fetchWindow("main");
         enyo.log("IS MAIN APP WINDOW OPEN: ", appWindow);
-        for (var i in this.$) {
-            if (this.$.hasOwnProperty(i)) {
-                enyo.log(i);
-            }
-        }
         if (!appWindow) {
             if (params.action == "alarmWakeup") {
                 enyo.log("ALARM WAKEUP");

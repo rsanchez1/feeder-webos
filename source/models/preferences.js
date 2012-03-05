@@ -28,6 +28,11 @@ Preferences = {
   ENABLE_ANIMATIONS: "enable-animations",
   TWITTER_SHARING_OPTION: "twitter-sharing-option",
   FACEBOOK_SHARING_OPTION: "facebook-sharing-option",
+  AUTH_TOKEN: "auth-token",
+  REFRESH_TOKEN: "refresh-token",
+  AUTH_TIMESTAMP: "auth-timestamp",
+  AUTH_EXPIRES: "auth-expires",
+  prefCache: {},
 
   facebookSharingOption: function() {
       return this.getCookie(this.FACEBOOK_SHARING_OPTION, "web");
@@ -118,7 +123,7 @@ Preferences = {
   },
 
   getInstapaperUsername: function() {
-    return this.getCookie(this.INSTAPAPER_USERNAME, null)
+    return this.getCookie(this.INSTAPAPER_USERNAME, "")
   },
 
   setInstapaperUsername: function(username) {
@@ -126,7 +131,7 @@ Preferences = {
   },
 
   getInstapaperPassword: function() {
-    return this.getCookie(this.INSTAPAPER_PASSWORD, null)
+    return this.getCookie(this.INSTAPAPER_PASSWORD, "")
   },
 
   setInstapaperPassword: function(password) {
@@ -261,6 +266,38 @@ Preferences = {
     this.setCookie(this.NOTIFICATIONS_INTERVAL, interval)
   },
 
+  getAuthToken: function() {
+      return this.getCookie(this.AUTH_TOKEN, "");
+  },
+
+  setAuthToken: function(authToken) {
+      this.setCookie(this.AUTH_TOKEN, authToken);
+  },
+
+  getRefreshToken: function() {
+      return this.getCookie(this.REFRESH_TOKEN, "");
+  },
+
+  setRefreshToken: function(refreshToken) {
+      this.setCookie(this.REFRESH_TOKEN, refreshToken);
+  },
+
+  getAuthTimestamp: function() {
+      return this.getCookie(this.AUTH_TIMESTAMP, 0);
+  },
+
+  setAuthTimestamp: function(timestamp) {
+      this.setCookie(this.AUTH_TIMESTAMP, timestamp);
+  },
+
+  getAuthExpires: function() {
+      return this.getCookie(this.AUTH_EXPIRES, 0);
+  },
+
+  setAuthExpires: function(authExpires) {
+      this.setCookie(this.AUTH_EXPIRES, authExpires);
+  },
+
   getWatchedFeeds: function() {
     return this.getCookie(this.NOTIFICATIONS_FEEDS, [])
   },
@@ -300,70 +337,105 @@ Preferences = {
 
   getCookie: function(name, defaultValue) {
     //var cookie = enyo.getCookie(name)
+    if (!!this.prefCache[name]) {
+        return this.prefCache[name];
+    }
+    if (!localStorage) {
 	var matches = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
 	var cookie = matches ? decodeURIComponent(matches[1]) : undefined;
-    
-
-    if (!cookie) {
-      //enyo.setCookie(name, enyo.json.stringify(defaultValue));
-      if (!(typeof defaultValue === "string" || typeof defaultValue === "number" || typeof defaultValue === "boolean")) {
-          defaultValue = Object.toJSON(defaultValue);
-      }
-      this.setCookie(name, defaultValue);
-      return defaultValue;
-    }
-    else {
-      var cookieReturn;
-      if (!(typeof defaultValue === "string" || typeof defaultValue === "number" || typeof defaultValue === "boolean")) {
-          Mojo.Log.error("GETTING OBJECT FOR PREFERENCE");
-          cookieReturn = cookie.evalJSON();
-      } else {
-          if (typeof defaultValue === "number") {
-              cookieReturn = parseInt(cookie, 10);
-          } else if (typeof defaultValue === "boolean") {
-              cookieReturn = (cookie == "true");
-          } else {
-              cookieReturn = cookie;
+        if (typeof cookie === "undefined") {
+          //enyo.setCookie(name, enyo.json.stringify(defaultValue));
+          if (!(typeof defaultValue === "string" || typeof defaultValue === "number" || typeof defaultValue === "boolean")) {
+              defaultValue = Object.toJSON(defaultValue);
           }
-      }
-      return cookieReturn;
+          this.setCookie(name, defaultValue);
+          return defaultValue;
+        }
+        else {
+          var cookieReturn;
+          if (!(typeof defaultValue === "string" || typeof defaultValue === "number" || typeof defaultValue === "boolean")) {
+              cookieReturn = cookie.evalJSON();
+          } else {
+              if (typeof defaultValue === "number") {
+                  cookieReturn = parseInt(cookie, 10);
+              } else if (typeof defaultValue === "boolean") {
+                  cookieReturn = (cookie == "true") || (cookie == true);
+              } else {
+                  cookieReturn = cookie;
+              }
+          }
+          this.prefCache[name] = coookieReturn;
+          return cookieReturn;
 
-      //return JSON.parse(cookie);
+          //return JSON.parse(cookie);
+        }
+    } else {
+        var value = localStorage.getItem(name);
+        if (value === null) {
+              if (!(typeof defaultValue === "string" || typeof defaultValue === "number" || typeof defaultValue === "boolean")) {
+                  storeValue = Object.toJSON(defaultValue);
+              } else {
+                  storeValue = defaultValue;
+              }
+              this.setCookie(defaultValue);
+            return defaultValue;
+        } else {
+              var cookieReturn;
+              var cookie = value;
+              if (!(typeof defaultValue === "string" || typeof defaultValue === "number" || typeof defaultValue === "boolean")) {
+                  cookieReturn = cookie.evalJSON();
+              } else {
+                  if (typeof defaultValue === "number") {
+                      cookieReturn = parseInt(cookie, 10);
+                  } else if (typeof defaultValue === "boolean") {
+                      cookieReturn = (cookie == "true") || (cookie == true);
+                  } else {
+                      cookieReturn = cookie;
+                  }
+              }
+              this.prefCache[name] = cookieReturn;
+              return cookieReturn;
+
+              //return JSON.parse(cookie);
+        }
     }
   },
 
   setCookie: function(inName, inValue) {
-    //enyo.log("setting " + name + " to " + value)
     //this.cookieFor(name).put(value)
     //enyo.setCookie(name, enyo.json.stringify(value));
-    if (!(typeof inValue === "string" || typeof defaultValue === "number" || typeof defaultValue === "boolean")) {
-        inValue = Object.toJSON(inValue);
-    }
-    
-
-
-    var cookie = inName + "=" + encodeURIComponent(inValue);
-    var p = {};
-    var exp = new Date(new Date().valueOf() + 2419200000);
-    if (typeof exp == "number") {
-        var d = new Date();
-        d.setTime(d.getTime() + exp*24*60*60*1000);
-        exp = d;
-    }
-    if (exp && exp.toUTCString) {
-        p.expires = exp.toUTCString();
-    }
-    var name, value;
-    for (name in p){
-        cookie += "; " + name;
-        value = p[name];
-        if (value !== true) {
-            cookie += "=" + value;
+    if (!localStorage) {
+        if (!(typeof inValue === "string" || typeof inValue === "number" || typeof inValue === "boolean")) {
+            inValue = Object.toJSON(inValue);
         }
+        var cookie = inName + "=" + encodeURIComponent(inValue);
+        var p = {};
+        var exp = new Date(new Date().valueOf() + 2419200000);
+        if (typeof exp == "number") {
+            var d = new Date();
+            d.setTime(d.getTime() + exp*24*60*60*1000);
+            exp = d;
+        }
+        if (exp && exp.toUTCString) {
+            p.expires = exp.toUTCString();
+        }
+        var name, value;
+        for (name in p){
+            cookie += "; " + name;
+            value = p[name];
+            if (value !== true) {
+                cookie += "=" + value;
+            }
+        }
+        document.cookie = cookie;
+        this.prefCache[inName] = inValue;
+    } else {
+        if (!(typeof inValue === "string" || typeof inValue === "number" || typeof inValue === "boolean")) {
+            inValue = Object.toJSON(inValue);
+        }
+        localStorage.setItem(inName, inValue);
+        this.prefCache[inName] = inValue;
     }
-    //
-    //console.log(cookie);
-    document.cookie = cookie;
     
   },
 

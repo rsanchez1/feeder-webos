@@ -15,7 +15,7 @@ var AllSources = Class.create({
 
     self.subscriptions.findAll(
       function() {
-        self.all.setUnreadCount(self.subscriptions.getUnreadCount())
+        //self.all.setUnreadCount(self.subscriptions.getUnreadCount())
         success()
       },
 
@@ -23,13 +23,17 @@ var AllSources = Class.create({
     )
   },
 
+  setAllUnreadCount: function(count) {
+      this.all.setUnreadCount(count);
+  },
+
   sortAndFilter: function(success, failure) {
     var self = this
     self.subscriptionSources.items.clear()
 
+    var hideReadFeeds = Preferences.hideReadFeeds()
     self.subscriptions.sort(
       function() {
-        var hideReadFeeds = Preferences.hideReadFeeds()
 
         self.subscriptions.items.each(function(subscription) {
           if(!hideReadFeeds || (hideReadFeeds && subscription.unreadCount)) {

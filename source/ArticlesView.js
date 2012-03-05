@@ -29,6 +29,18 @@ enyo.kind({
     itemsToHide: {},
     heights: [],
     wasOfflineSet: false,
+    isGettingStarredArticles: false,
+    rowsPerPage: 20,
+    lastTop: 0,
+    wasClicked: false,
+    shouldAdjust: false,
+    isMouseOver: false,
+    mouseY: 0,
+    didScrollToTop: false,
+    didScrollToBottom: false,
+    threshold: 0,
+    bottom: -9e9,
+    markedReadOnScroll: false,
     components: [
         {name: "header", kind: "PageHeader", components: [
             {name: "headerWrapper", className: "tfHeaderWrapper", components: [
@@ -37,9 +49,8 @@ enyo.kind({
             {kind: "Spinner", showing: true, className: "tfSpinner",}
         ]},
         {name: "emptyNotice", content: "There are no articles available.", className: "articleTitle itemLists", style: "font-weight: bold; padding-top: 20px; padding-left: 20px; font-size: 0.9rem;", flex: 1},
-        {kind: "Scroller", flex: 1, components: [
-            {name: "articlesList", kind: "ScrollingList", rowsPerScrollerPage: 8, onSetupRow: "getListArticles", className: "itemLists", components: [
-                {name: "articleContainer", components: [
+            {name: "articlesList", flex: 1, kind: "ScrollingList", rowsPerScrollerPage: 20, onSetupRow: "getListArticles", className: "itemLists", onmousemove: "articleListMouseMove", onmouseout: "articleListMouseOut", onmousewheel: "articleMouseWheel", components: [
+                {name: "articleContainer", onmousedown: "articleListClicked", components: [
                     {kind: "Divider", onclick: "articleDividerClick"},
                     {name: "articleItem", kind: "SwipeableItem", layoutKind: "VFlexLayout", onConfirm: "swipedArticle", confirmRequired: false, allowLeft: true, components: [
                         {name: "title", className: "articleTitle", kind: "HtmlContent"},
@@ -47,8 +58,7 @@ enyo.kind({
                         {name: "starred"}
                     ], onclick: "articleItemClick"}
                 ]}
-            ]}
-        ]},
+            ]},
         {kind: "Toolbar", components: [
             {kind: "GrabButton"},
            {name: "readAllButton", kind: "IconButton", icon: "images/read-footer.png", onclick: "readAllClick", style: "background-color: transparent !important; -webkit-border-image: none !important; position: absolute; left: 60px; top: 11px;"},
@@ -78,6 +88,25 @@ enyo.kind({
         this.headerContentChanged();
         this.app = enyo.application.app;
     },
+    ready: function() {
+        this.inherited(arguments);
+        if (!window.PalmSystem) {
+            enyo.log("not in webos, set up alternate scrolling");
+            //this.$.articlesList.$.scroller.setAccelerated(false);
+            setTimeout(this.scrollList.bind(this), 60);
+            this.$.articlesList.$.scroller.$.scroll.mousewheel = enyo.bind(this.$.articlesList.$.scroller.$.scroll, function(ev) {
+                if (!ev.preventDefault) {
+                    this.stop();
+                    this.y = this.y0 = this.y0 + ev.wheelDeltaY, this.start();
+                }
+            });
+        }
+    },
+    componentsReady: function() {
+        this.inherited(arguments);
+        this.$.articlesList.$.scroller.setAccelerated(false);
+    },
+
     headerContentChanged: function() {
         this.$.headerContent.setContent(Encoder.htmlDecode(this.headerContent));
     },
@@ -100,7 +129,7 @@ enyo.kind({
                 }
             }
             this.wasMarkingAllRead = true;
-            this.articles.markMultipleArticlesRead(articles, this.markedMultipleArticlesRead.bind(this, articles), function() {enyo.log("error marking multiple articles read");});
+            this.articles.markMultipleArticlesRead(articles, this.markedMultipleArticlesRead.bind(this, articles, true), function() {enyo.log("error marking multiple articles read");});
         }
     },
 
@@ -112,10 +141,16 @@ enyo.kind({
             this.maxTop = 0;
             scroller.adjustTop(0);
             scroller.top = 0;
+            /*
+            var el = this.$.articlesList.$.scroller.node.firstChild.firstChild;
+            el.style.cssText = "height: 2048px; -webkit-transform: translate3d(0px, 0px, 0px);";
+            */
             this.articles.reset();
             this.articles.items = [];
             this.$.articlesList.punt();
             this.articles.findArticles(this.foundArticles.bind(this), function() {enyo.log("failed to find articles");});
+        } else {
+            this.app.feedClicked("", {title: "Offline Articles", isOffline: true}, false);
         }
     },
 
@@ -142,7 +177,7 @@ enyo.kind({
                     data: dataToInsert
                 }, {
                     onSuccess: function(results) {
-                        enyo.windows.addBannerMessage("Saved all articles offline", "{}"); 
+                        Feeder.notify("Saved all articles offline"); 
                         this.$.spinner.hide(); 
                         this.checkIfArticlesOffline(); 
                         this.doChangedOffline();
@@ -175,7 +210,7 @@ enyo.kind({
             }
         }
         this.app.$.articlesDB.queries(queries, {onSuccess: function() {
-            enyo.windows.addBannerMessage("Deleted all articles offline", "{}"); 
+            Feeder.notify("Deleted all articles offline"); 
             this.$.spinner.hide(); 
             this.checkIfArticlesOffline(); 
             this.doChangedOffline();
@@ -213,7 +248,15 @@ enyo.kind({
      */
     offlineArticlesChanged: function() {
         this.articlesChangedHandler();
+        var scroller = this.$.articlesList.$.scroller;
         this.maxTop = 0;
+        this.numberRendered = 0;
+        scroller.adjustTop(0);
+        scroller.top = 0;
+        /*
+        var el = this.$.articlesList.$.scroller.node.firstChild.firstChild;
+        el.style.cssText = "height: 2048px; -webkit-transform: translate3d(0px, 0px, 0px);";
+        */
         for (var i = this.offlineArticles.length; i--;) {
             this.offlineArticles[i].sortDate = +(new Date(this.offlineArticles[i].displayDate));
             this.offlineArticles[i].sortOrigin = this.offlineArticles[i].origin.replace(/[^a-zA-Z 0-9 ]+/g,'');
@@ -258,6 +301,10 @@ enyo.kind({
         this.numberRendered = 0;
         scroller.adjustTop(0);
         scroller.top = 0;
+        /*
+        var el = this.$.articlesList.$.scroller.node.firstChild.firstChild;
+        el.style.cssText = "height: 2048px; -webkit-transform: translate3d(0px, 0px, 0px);";
+        */
         this.offlineArticles = [];
         this.articles.items = [];
         this.heights = [];
@@ -275,10 +322,20 @@ enyo.kind({
             this.overrodeHide = true;
             Preferences.setHideReadArticles(false);
         }
-        this.articles.findArticles(this.foundArticles.bind(this), function() {enyo.log("failed to find articles");});
+        //if (isGettingStarredArticles) {
+            //this.isGettingStarredArticles = true;
+            //this.articles.getStarredArticlesFor(this.foundArticles.bind(this), function() {enyo.log("failed to find starred articles");});
+        //} else {
+            this.articles.findArticles(this.foundArticles.bind(this), function() {enyo.log("failed to find articles");});
+        //}
     },
 
     articlesChangedHandler: function() {
+        this.itemsToMarkRead = [];
+        this.lastTop = 0;
+        this.bottom = -9e9;
+        this.articleListClicked();
+        this.shouldAdjust = true;
         this.$.articlesList.removeClass("small");
         this.$.articlesList.removeClass("medium");
         this.$.articlesList.removeClass("large");
@@ -289,34 +346,36 @@ enyo.kind({
     },
 
     foundArticles: function() {
-        if (Preferences.hideReadArticles()) {
-            for (var i = this.articles.items.length; i--;) {
-                if (this.articles.items[i].isRead) {
-                    this.articles.items.splice(i, 1);
+        if (!this.isGettingStarredArticles) {
+            if (Preferences.hideReadArticles()) {
+                for (var i = this.articles.items.length; i--;) {
+                    if (this.articles.items[i].isRead) {
+                        this.articles.items.splice(i, 1);
+                    }
                 }
             }
-        }
-        if (this.overrodeHide) {
-            Preferences.setHideReadArticles(this.originalHide);
-            this.overrodeHide = false;
+            if (this.overrodeHide) {
+                Preferences.setHideReadArticles(this.originalHide);
+                this.overrodeHide = false;
+            }
+            if (Preferences.groupFoldersByFeed()) {
+                for (var i = this.articles.items.length; i--;) {
+                    if (!!this.articles.items[i].displayDateAndTime) {
+                        this.articles.items[i].sortDateTime = +(new Date(this.articles.items[i].displayDateAndTime));
+                    }
+                    this.articles.items[i].sortDate = +(new Date(this.articles.items[i].displayDate));
+                    if (!this.articles.items[i].origin) {
+                        this.articles.items[i].origin = "Unsubscribed";
+                    }
+                    this.articles.items[i].sortOrigin = this.articles.items[i].origin.replace(/[^a-zA-Z 0-9 ]+/g,'');
+                }
+                if (this.articles.items.length && this.articles.showOrigin) {
+                    this.articles.items.sort(this.originSortingFunction);
+                    this.articles.items = this.sortSortedArticlesByDate(this.articles.items);
+                }
+            }
         }
         this.$.spinner.hide();
-        if (Preferences.groupFoldersByFeed()) {
-            for (var i = this.articles.items.length; i--;) {
-                if (!!this.articles.items[i].displayDateAndTime) {
-                    this.articles.items[i].sortDateTime = +(new Date(this.articles.items[i].displayDateAndTime));
-                }
-                this.articles.items[i].sortDate = +(new Date(this.articles.items[i].displayDate));
-                if (!this.articles.items[i].origin) {
-                    this.articles.items[i].origin = "Unsubscribed";
-                }
-                this.articles.items[i].sortOrigin = this.articles.items[i].origin.replace(/[^a-zA-Z 0-9 ]+/g,'');
-            }
-            if (this.articles.items.length && this.articles.showOrigin) {
-                this.articles.items.sort(this.originSortingFunction);
-                this.articles.items = this.sortSortedArticlesByDate(this.articles.items);
-            }
-        }
         if (this.isRendered) {
             this.$.articlesList.refresh();
         } else {
@@ -326,6 +385,7 @@ enyo.kind({
         if (this.articles.items.length) {
             this.selectArticle(0);
         }
+        globalArticles = this.articles;
         if (!!this.articles.items.length) {
                 this.$.emptyNotice.hide();
         } else {
@@ -376,6 +436,7 @@ enyo.kind({
         var articles = [];
         var inOfflineArticles = false;
         var testDiv = document.getElementById("articleTestDiv");
+        var subDiv = document.getElementById("articleSubDiv");
         testDiv.parentNode.setStyle({width: Element.measure(this.$.articlesList.node, "width") + "px"});
         if (!!this.offlineArticles.length) {
             inOfflineArticles = true;
@@ -428,8 +489,10 @@ enyo.kind({
                     }
                     if (this.articles.showOrigin && (Preferences.groupFoldersByFeed())) {
                         this.$.origin.setContent(!!r.displayDateAndTime ? r.displayDateAndTime : r.displayDate);
+                        subDiv.innerHTML = !!r.displayDateAndTime ? r.displayDateAndTime : r.displayDate;
                     } else {
                         this.$.origin.setContent(r.origin);
+                        subDiv.innerHTML = r.origin;
                     }
                     if (!r.altTitle) {
                         r.altTitle = r.title;
@@ -439,10 +502,14 @@ enyo.kind({
                         r.altTitle = r.altTitle.replace(/\W*\s(\S)*$/, "...");
                         testDiv.innerHTML = Encoder.htmlDecode(r.altTitle);
                     }
-                    testDiv.removeClassName("starred");
-                    testDiv.parentNode.removeClassName("unread-item");
-                    testDiv.parentNode.removeClassName("itemSelected");
-                    testDiv.innerHTML = "";
+                    this.heights[inIndex] = testDiv.parentNode.offsetHeight;
+                    if (inIndex != articles.length - 1) {
+                        testDiv.removeClassName("starred");
+                        testDiv.parentNode.removeClassName("unread-item");
+                        testDiv.parentNode.removeClassName("itemSelected");
+                        testDiv.innerHTML = "";
+                        subDiv.innerHTML = "";
+                    }
                     this.$.title.setContent(Encoder.htmlDecode(r.altTitle));
                     if ((inOfflineArticles || this.articles.showOrigin) && (Preferences.groupFoldersByFeed())) {
                         if (inIndex > 0 && articles[inIndex - 1].origin == r.origin) {
@@ -470,22 +537,27 @@ enyo.kind({
                         }
                     }
                     if (Preferences.markReadAsScroll()) {
-                        if (scroller.top > this.maxTop && !this.offlineArticles.length) {
-                            for (var i = this.maxTop; i < scroller.top; i++) {
-                                if (!articles[i].isRead) {
-                                    this.addToMarkReadQueue(articles[i], i);
+                        //just add them to mark read queue as they are rendered
+                        if (!articles[inIndex].isRead) {
+                            this.addToMarkReadQueue(articles[inIndex], inIndex);
+                        }
+                        /*
+                            if (scroller.top > this.maxTop && !this.offlineArticles.length) {
+                                for (var i = this.maxTop; i < scroller.top; i++) {
+                                    if (!articles[i].isRead) {
+                                    }
+                                }
+                                this.maxTop = scroller.top;
+                            }
+                            if (scroller.bottom >= articles.length - (this.$.articlesList.getLookAhead()) && !this.offlineArticles.length) {
+                                var count = this.articles.getUnreadCount();
+                                for (var i = this.maxTop; i < articles.length; i++) {
+                                    if (!articles[i].isRead && !articles[i].keepUnread) {
+                                        this.addToMarkReadQueue(articles[i], i);
+                                    }
                                 }
                             }
-                            this.maxTop = scroller.top;
-                        }
-                        if (scroller.bottom >= articles.length - (this.$.articlesList.getLookAhead()) && !this.offlineArticles.length) {
-                            var count = this.articles.getUnreadCount();
-                            for (var i = this.maxTop; i < articles.length; i++) {
-                                if (!articles[i].isRead && !articles[i].keepUnread) {
-                                    this.addToMarkReadQueue(articles[i], i);
-                                }
-                            }
-                        }
+                            */
                     }
                 }
                 return true;
@@ -497,13 +569,17 @@ enyo.kind({
     addToMarkReadQueue: function(article, index) {
         clearTimeout(this.markReadTimeout);
         if (!article.isRead) {
-            this.itemsToMarkRead.push({article: article, index: index});
+            if (!this.itemsToMarkRead.any(function(n) {return n.article.id == article.id;})) {
+                this.itemsToMarkRead.push({article: article, index: index});
+            }
         }
         this.markReadTimeout = setTimeout(function() {
             enyo.log("TRIGGERED MARK ARTICLE READ TIMEOUT");
             if (this.itemsToMarkRead.length == this.articles.items.length) {
-                var count = this.articles.getUnreadCount();
-                this.articles.markAllRead(this.markedAllArticlesRead.bind(this, count, true), function() {enyo.log("error marking all read");});
+                //var count = this.articles.getUnreadCount();
+                //this.articles.markAllRead(this.markedAllArticlesRead.bind(this, count, true), function() {enyo.log("error marking all read");});
+                this.markedReadOnScroll = true;
+                this.readAllClick();
             } else {
                 var articles = [];
                 for (var i = this.itemsToMarkRead.length; i--;) {
@@ -533,39 +609,50 @@ enyo.kind({
         }
     },
 
-    markedMultipleArticlesRead: function(articles) {
+    markedMultipleArticlesRead: function(articles, markedAllRead) {
         if (!this.articles) {
             return;
         }
-        var apiArticles = this.articles.items;
-        var unreadCountObj = {};
-        var count = 0;
-        for (var i = articles.length; i--;) {
-            var index = articles[i].index;
-            var article = apiArticles[index];
-            this.doArticleMultipleRead(article, index);
-            enyo.log("GETTING UNREAD COUNT FOR SUBSCRIPTION FOR ARTICLE");
-            if (!unreadCountObj[article.subscriptionId]) {
-                unreadCountObj[article.subscriptionId] = 0;
-            }
-            unreadCountObj[article.subscriptionId] = this.app.getUnreadCountForSubscription(article.subscriptionId);
-            enyo.log("GOT UNREAD COUNT FOR SUBSCRIPTION IN ARTICLE");
-        }
-        for (var i in unreadCountObj) {
-            if (unreadCountObj.hasOwnProperty(i)) {
-                count += unreadCountObj[i];
-            }
-        }
-        //var count = this.articles.getUnreadCount();
-        enyo.log("COUNT FOR MARKED MULTIPLE: " + count);
-        if (count === 0) {
+        if (!!markedAllRead) {
             this.$.spinner.hide()
-            if (this.wasMarkingAllRead) {
-                this.wasMarkingAllRead = false;
+            if (!this.markedReadOnScroll) {
                 this.app.$.slidingPane.selectViewByName('feeds', true);
-                this.$.articlesList.punt();
+            } else {
+                this.markedReadOnScroll = false;
             }
+            this.$.articlesList.punt();
+            this.doAllArticlesRead(articles.length, this.articles.id, true, articles);
         } else {
+            var apiArticles = this.articles.items;
+            var unreadCountObj = {};
+            var count = 0;
+            for (var i = articles.length; i--;) {
+                var index = articles[i].index;
+                var article = apiArticles[index];
+                this.doArticleMultipleRead(article, index);
+                enyo.log("GETTING UNREAD COUNT FOR SUBSCRIPTION FOR ARTICLE");
+                if (!unreadCountObj[article.subscriptionId]) {
+                    unreadCountObj[article.subscriptionId] = 0;
+                }
+                unreadCountObj[article.subscriptionId] = this.app.getUnreadCountForSubscription(article.subscriptionId);
+                enyo.log("GOT UNREAD COUNT FOR SUBSCRIPTION IN ARTICLE");
+            }
+            for (var i in unreadCountObj) {
+                if (unreadCountObj.hasOwnProperty(i)) {
+                    count += unreadCountObj[i];
+                }
+            }
+            //var count = this.articles.getUnreadCount();
+            enyo.log("COUNT FOR MARKED MULTIPLE: " + count);
+            if (count === 0) {
+                this.$.spinner.hide()
+                if (this.wasMarkingAllRead) {
+                    this.wasMarkingAllRead = false;
+                    this.app.$.slidingPane.selectViewByName('feeds', true);
+                    this.$.articlesList.punt();
+                }
+            } else {
+            }
         }
     },
 
@@ -579,6 +666,7 @@ enyo.kind({
     },
 
     articleItemClick: function(inSender, inEvent) {
+        this.wasClicked = true;
         this.articleClicked = true;
         this.selectArticle(inEvent.rowIndex);
     },
@@ -627,6 +715,10 @@ enyo.kind({
                 var scroller = this.$.articlesList.$.scroller;
                 scroller.adjustTop(0);
                 scroller.top = 0;
+                /*
+                var el = this.$.articlesList.$.scroller.node.firstChild.firstChild;
+                el.style.cssText = "height: 2048px; -webkit-transform: translate3d(0px, 0px, 0px);";
+                */
             } else {
                 for (var origin in this.itemsToHide) {
                     if (this.itemsToHide.hasOwnProperty(origin)) {
@@ -695,19 +787,41 @@ enyo.kind({
             this.$.articlesList.refresh();
         }
     },
+    articleListClicked: function(thing, event) {
+        this.wasClicked = false;
+        if (this.shouldAdjust) {
+            setTimeout(function() {
+                if (!this.wasClicked) {
+                    /*
+                    var el = this.$.articlesList.$.scroller.node.firstChild.firstChild;
+                    el.style.cssText = "height: 2048px; -webkit-transform: translate3d(0px, " + (-this.lastTop) + "px, 0px);";
+                    */
+                }
+                this.wasClicked = true;
+            }.bind(this), 100);
+            this.shouldAdjust = false;
+        }
+    },
+    setTranslate: function(pixels) {
+        return;
+        enyo.log("PIXEL TRANSFORM");
+        enyo.log(pixels);
+        var style = "translate3d(0px, " + (-pixels) + "px, 0px) !important";
+        globalStyle = style;
+        var el = this.$.articlesList.$.scroller.node.firstChild.firstChild;
+        globalEl = el;
+        el.style.webkitTransform = style;
+        this.lastTop = pixels;
+        this.shouldAdjust = true;
+    },
+    getHalfHeight: function() {
+        return this.$.articlesList.node.offsetHeight * .70;
+    },
     selectArticle: function(index) {
+        var time = new Date;
         this.selectedRow = index;
         var previousIndex = this.app.$.singleArticleView.getIndex();
-        if (!this.articleClicked) {
-            var rowsPerPage = 8;
-            var scrollTop = Math.floor(index / rowsPerPage);
-            if (scrollTop < 0){
-                scrollTop = 0;
-            }
-            var scroller = this.$.articlesList.$.scroller;
-            scroller.adjustTop(scrollTop);
-            scroller.top = scrollTop;
-        } else {
+        if (!(!this.articleClicked && previousIndex > -1 && index > -1)) {
             var info = enyo.fetchDeviceInfo();
             if (!!info) {
                 var height = info.screenHeight;
@@ -715,6 +829,72 @@ enyo.kind({
                     enyo.application.app.$.slidingPane.selectViewByName('singleArticle', true);
                 }
             }
+        } else {
+            (function() {
+                var list = this.$.articlesList.node;
+                var x = this.findX();
+                var y = this.findY();
+                var topRow = document.elementFromPoint(x + 10, y + 10).up("#main_articlesView_articlesList_list_client");
+                if (!!topRow) {
+                    topRow = topRow.getAttribute("rowindex");
+                    if (!!topRow) {
+                    } else {
+                        topRow = 0;
+                    }
+                } else {
+                    topRow = 0;
+                }
+                if (index < topRow) {
+                    //scroll up to reveal row
+                    enyo.log("SCROLL UP TO REVEAL ROW");
+                    var pageHeightTotals = 0;
+                    for (var i = index; i < topRow; i++) {
+                        pageHeightTotals += this.heights[i];
+                    }
+                    this.scrollBy(pageHeightTotals + this.getHalfHeight());
+                } else {
+                    var bottomRow = document.elementFromPoint(x + 10, y + list.offsetHeight - 10).up("#main_articlesView_articlesList_list_client");
+                    if (!!bottomRow) {
+                        bottomRow = bottomRow.getAttribute("rowindex");
+                        if (!!bottomRow) {
+                        } else {
+                            bottomRow = 99999;
+                        }
+                    } else {
+                        bottomRow = 99999;
+                    }
+                    if (index > bottomRow) {
+                        //scroll down to reveal row
+                        enyo.log("SCROLL DOWN TO REVEAL ROW");
+                        var pageHeightTotals = 0;
+                        for (var i = bottomRow; i < index; i++) {
+                            pageHeightTotals += this.heights[i];
+                        }
+                        this.scrollBy(-pageHeightTotals - this.getHalfHeight());
+                    } else {
+                        var pageHeightTotals = 0;
+                        for (var i = 0; i < index + 1; i++) {
+                            pageHeightTotals += this.heights[i];
+                        }
+                        var halfHeight = this.getHalfHeight();
+                        if (pageHeightTotals + this.heights[index + 1] > halfHeight) {
+                            if (index > previousIndex) {
+                                //go down
+                                this.scrollBy(-this.heights[previousIndex]);
+                            } else {
+                                //go up
+                                this.scrollBy(this.heights[previousIndex]);
+                            }
+                        } else {
+                            if (index > previousIndex) {
+                                this.scrollBy(-1);
+                            } else {
+                                this.scrollBy(1);
+                            }
+                        }
+                    }
+                }
+            }.bind(this)).defer();
         }
         this.articleClicked = false;
         var article;
@@ -729,10 +909,20 @@ enyo.kind({
             this.$.articlesList.refresh();
             return;
         }
+        enyo.log("BENCHMARK");
+        enyo.log(new Date - time);
         this.doArticleClicked(article, index, length - 1);
-        this.$.articlesList.refresh();
-        this.$.articlesList.updateRow(index);
-        this.$.articlesList.updateRow(previousIndex);
+        if (!window.PalmSystem) {
+            this.$.articlesList.refresh();
+            this.$.articlesList.updateRow(index);
+            this.$.articlesList.updateRow(previousIndex);
+        } else {
+            setTimeout(function() {
+                this.$.articlesList.refresh();
+                this.$.articlesList.updateRow(index);
+                this.$.articlesList.updateRow(previousIndex);
+            }.bind(this), 300);
+        }
     },
     finishArticleRead: function(index) {
         this.$.articlesList.updateRow(index);
@@ -831,5 +1021,198 @@ enyo.kind({
                 this.articlesChanged();
             }
         }
+    },
+
+    articleListMouseMove: function(inSource, inEvent) {
+        enyo.log("article mouse move");
+        this.isMouseOver = true;
+        var elY = this.findY(this);
+        var y = inEvent.pageY - elY;
+        this.mouseY = y;
+        /*
+        var el = this.$.articlesList.$.scroller.node.firstChild.firstChild;
+        if (el.style.cssText.indexOf("important") > -1) {
+            el.style.cssText = "height: 2048px; -webkit-transform: translate3d(0px, " + (-this.lastTop) + "px, 0px);";
+        }
+        */
+    },
+
+    findY: function() {
+        var list = this.$.articlesList.node;
+        var curtop = 0;
+        do {
+            curtop += list.offsetTop;
+        } while (list = list.offsetParent);
+        return curtop;
+    },
+
+    findX: function() {
+        var el = enyo.$.main.$.articlesView.$.articlesList.node.offsetParent;
+        var match = el.style.cssText.match(/translate3d\(-{0,1}(\d+)px/);
+        var translate3dx = 0;
+        if (!!match) {
+            translate3dx = +match[1];
+        }
+        return Element.measure(el, "width") - translate3dx;
+        var list = this.$.articlesList.node;
+        var curtop = 0;
+        do {
+            curtop += list.offsetLeft;
+        } while (list = list.offsetParent);
+        return curtop;
+    },
+
+    articleListMouseOut: function() {
+        this.isMouseOver = false;
+    },
+
+    scrollList: function() {
+        if (this.isMouseOver && !window.PalmSystem) {
+            if (!!this.$.articlesList.node) {
+                var height = this.$.articlesList.node.offsetHeight;
+                var y = this.mouseY;
+                //if (y < 180) {
+                if (y < 60) { // decide between stuff
+                    if (!this.didScrollToTop) {
+                        if (y < 60) {
+                            enyo.log(this.threshold);
+                            this.threshold++;
+                            if (this.threshold > 5) {
+                                this.scrollBy(20);
+                            }
+                        }/* else if (y < 120) {
+                            this.scrollBy(10);
+                        } else {
+                            this.scrollBy(5);
+                        }
+                        */
+                        if (this.getScrollY() > this.getTopBoundary()) {
+                            this.didScrollToTop = true;
+                        }
+                    }
+                } else {
+                    this.didScrollToTop = false;
+                }
+                //if (height - y < 180) {
+                if (height - y < 180) {
+                    if (!this.didScrollToBottom) {
+                        var del = height - y;
+                        if (del < 60) {
+                            this.threshold++;
+                            if (this.threshold > 5) {
+                                this.scrollBy(-20);
+                            }
+                        }/* else if (del < 120) {
+                            this.scrollBy(-10);
+                        } else {
+                            this.scrollBy(-5);
+                        }
+                        */
+                        if (this.getScrollY() < this.getBottomBoundary()) {
+                            this.didScrollToBottom = true;
+                        }
+                    }
+                } else {
+                    this.didScrollToBottom = false;
+                }
+                //if (!((y < 180) || (height - y < 180))) {
+                if (!((y < 60) || (height - y < 60))) { 
+                    this.threshold = 0;
+                }
+            }
+        }
+        setTimeout(this.scrollList.bind(this), 60);
+    },
+
+    articleMouseWheel: function(inSource, inEvent) {
+        var del = inEvent.wheelDeltaY;
+        inEvent.stopPropagation();
+        inEvent.preventDefault();
+        inEvent.wheelDeltaY = 0;
+        this.scrollBy(inEvent.wheelDeltaY / 3);
+        return -1;
+    },
+
+    scrollBy: function(amount) {
+        var scroller = this.$.articlesList.$.scroller;
+        var scroll = scroller.$.scroll;
+        var y = scroll.y;
+        this.shouldAdjust = false;
+        if (amount < 0) {
+            if (y + amount < this.bottom) {
+                amount = this.bottom - y - 1;
+            }
+        } else {
+            if (y + amount > 0) {
+                amount = -y;
+            }
+        }
+        scroll.mousewheel({wheelDeltaY: amount});
+        setTimeout(function() {
+            var bottomBoundary = scroll.bottomBoundary;
+            if (bottomBoundary == -9e9) {
+                return;
+            }
+            if (this.bottom == -9e9) {
+                this.bottom = bottomBoundary;
+                return;
+            }
+            if (bottomBoundary < this.bottom) {
+                this.bottom = bottomBoundary;
+            }
+        }.bind(this), 1000/15);
+    },
+
+    getTopBoundary: function() {
+        return this.$.articlesList.$.scroller.$.scroll.topBoundary;
+    },
+
+    getBottomBoundary: function() { 
+        return this.$.articlesList.$.scroller.$.scroll.bottomBoundary;
+    },
+
+    getScrollY: function() {
+        return this.$.articlesList.$.scroller.$.scroll.y;
+    },
+
+    oldSelectArticle: function() {
+        //keeping this in just in case it's useful later
+            var rowsPerPage = this.rowsPerPage;
+            var page = Math.floor(index / rowsPerPage);
+            if (page < 0) {
+                page = 0;
+            }
+            var scroller = this.$.articlesList.$.scroller;
+            scroller.adjustTop(page);
+            scroller.top = page;
+            if ((index / rowsPerPage) < 1) {
+                var pageHeightTotals = 0;
+                var tempHeights = this.heights;
+                for (var i = 0; i <  index + 1; i++) {
+                    pageHeightTotals += this.heights[i];
+                    tempHeights[tempHeights.length] = this.heights[i];
+                }
+                var halfHeight = this.getHalfHeight();
+                if (pageHeightTotals + this.heights[index + 1] > halfHeight) {
+                    var newHeight = 0;
+                    while (pageHeightTotals > halfHeight) {
+                        var height = tempHeights.shift();
+                        pageHeightTotals -= height;
+                        newHeight += height;
+                    }
+                    this.setTranslate(newHeight);
+                }
+            } else {
+                var pageHeightTotals = 0;
+                for (var i = page * rowsPerPage; i < index + 1; i++) {
+                    pageHeightTotals += this.heights[i];
+                }
+                var top = -(this.getHalfHeight() - pageHeightTotals);
+                if (top > 0) {
+                    this.setTranslate(top);
+                } else {
+                    this.setTranslate(0);
+                }
+            }
     },
 });

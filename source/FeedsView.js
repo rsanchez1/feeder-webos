@@ -29,7 +29,7 @@ enyo.kind({
             {name: "searchQuery", kind: "Input", flex: 1, className: "enyo-input", style: "border-width: 7px 14px 7px 14px !important; margin-left: -8px;", onfocus: "searchFocused", onblur: "searchBlurred", onkeypress: "searchKey", hint: "Tap Here To Search"},
             {kind: "Button", caption: "Search", onclick: "searchClick"}
         ]},
-        {kind: "Scroller", flex: 1, className: "itemLists", components: [
+        {name: "feedsScroller", kind: "Scroller", flex: 1, className: "itemLists", horizontal: false, autoHorizontal: false, components: [
             {name: "stickySourcesList", kind: "VirtualRepeater", onSetupRow: "setupStickySources", className: "itemLists", components: [
                 {name: "stickyItem", kind: "Item", layoutKind: "VFlexLayout", components: [
                     {name: "stickyTitle", style: "display: inline-block; width: 85%; margin-left: 5px;"},
@@ -74,6 +74,20 @@ enyo.kind({
     ready: function() {
         this.app = enyo.application.app;
         this.$.sourcesDivider.hide();
+        if (!window.PalmSystem) {
+            this.$.notificationButton.setIcon("images/icon_options.png");
+            this.$.feedsScroller.setVertical(false);
+            this.$.feedsScroller.setAutoVertical(false);
+            (function() {
+                var client = this.$.feedsScroller.node.firstChild.firstChild;
+                client.style.overflowY = "scroll";
+                client.style.height = "101%";
+            }.bind(this)).defer();
+        } else {
+            if (this.app.isPhone) {
+                this.$.notificationButton.hide();
+            }
+        }
     },
     showSpinnerChanged: function() {
         if (this.showSpinner) {
@@ -148,7 +162,6 @@ enyo.kind({
             }
         }
 
-/*
         if (this.changeId !== "") {
             var index = 0;
             for (var i = this.subscriptionSources.items.length; i--;) {
@@ -159,9 +172,8 @@ enyo.kind({
             this.$.subscriptionSourcesList.renderRow(index);
             this.changeId = "";
         } else {
-            */
             this.$.subscriptionSourcesList.render();
-        //}
+        }
     },
     setupSubscriptionSources: function(inSender, inIndex) {
         if (!!this.subscriptionSources.items) {
@@ -194,7 +206,7 @@ enyo.kind({
     },
     subscriptionItemClick: function(inSender, inEvent) {
         var tappedSub = this.subscriptionSources.items[inEvent.rowIndex];
-        if (!!tappedSub.subscriptions && !Preferences.combineFolders()) {
+        if (!!tappedSub.subscriptions && !Preferences.combineFolders() && true) {
             if (this.openedFolders.any(function(n) {return n == tappedSub.id;})) {
                 this.closeFolder(tappedSub);
                 for (var i = this.openedFolders.length; i--;) {
@@ -269,6 +281,7 @@ enyo.kind({
         this.doFeedClicked(new Search(this.app.api, query));
         this.$.searchQuery.setValue("");
         enyo.keyboard.hide();
+        this.$.searchQuery.forceBlur();
     },
     searchFocused: function(source, event) {
         Element.setStyle(this.$.searchQuery.node, {marginLeft: 0});
@@ -298,7 +311,12 @@ enyo.kind({
         this.$.stickySourcesList.render();
     },
     addFeedClick: function(source, inEvent) {
-        this.$.addFeedPopup.openAtEvent(inEvent);
+        if (!!inEvent) {
+            this.$.addFeedPopup.openAtEvent(inEvent);
+        } else {
+            this.$.addFeedPopup.openAtCenter();
+        }
+        this.$.feedInput.forceFocus();
     },
     confirmClick: function() {
         this.$.feedSpinner.show();

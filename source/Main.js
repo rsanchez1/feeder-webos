@@ -2,6 +2,8 @@ enyo.kind({
     name: "TouchFeeds.Main",
     kind: enyo.VFlexBox,
     loggedIn: false,
+    sortAndFilterTimeout: false,
+    keyWasDown: false,
     components: [
         {name: "slidingPane", kind: "SlidingPane", fixedWidth: true, flex: 1, onSelectView: "slidingSelected", components: [
             {name: "feeds", width: "320px", fixedWidth: true, components: [
@@ -22,6 +24,11 @@ enyo.kind({
             {name: "loginLabel", caption: "Login", onclick: "showLogin"},
             {name: "preferenesLabel", caption: "Preferences", onclick: "showPreferences"},
             {name: "helpLabel", caption: "Help", onclick: "feedsHeaderClicked"}
+        ]},
+        {kind: "Menu", name: "chromeMenu", lazy: false, components: [
+            {name: "loginLabelChrome", caption: "Login", onclick: "showLogin"},
+            {name: "preferenesLabelChrome", caption: "Preferences", onclick: "showPreferences"},
+            {name: "helpLabelChrome", caption: "Help", onclick: "feedsHeaderClicked"}
         ]},
         {kind: "onecrayon.Database", name: "articlesDB", database: "ext:TouchFeedsArticles", version: 1, debug: false},
         {kind: "ApplicationEvents", onWindowRotated: "windowRotated", onApplicationRelaunch: "applicationRelaunch", onUnload: "cleanup", onBack: "backSwipe", onForward: "forwardSwipe"}
@@ -45,22 +52,26 @@ enyo.kind({
     },
 
     ready: function() {
-        var articleTestDiv = document.createElement("div");
-        var articleParentDiv = document.createElement("div");
         (function() {
-        articleTestDiv.addClassName("articleTitle");
-        articleTestDiv.setStyle({position: "static", top: "-1000px", left: "-1000px"});
-        articleTestDiv.id = "articleTestDiv";
-        articleParentDiv.addClassName("enyo-item");
-        articleParentDiv.addClassName("enyo-swipeableitem");
-        articleParentDiv.addClassName("enyo-vflexbox");
-        articleParentDiv.style.cssText = "-webkit-box-align: stretch; -webkit-box-orient: vertical; -webkit-box-pack: start;";
-        articleParentDiv.appendChild(articleTestDiv);
-        document.body.appendChild(articleParentDiv);
+            var articleTestDiv = document.createElement("div");
+            var articleSubDiv = document.createElement("div");
+            var articleParentDiv = document.createElement("div");
+            articleTestDiv.addClassName("articleTitle");
+            articleTestDiv.id = "articleTestDiv";
+            articleSubDiv.id = "articleSubDiv";
+            articleSubDiv.addClassName("articleOrigin");
+            articleParentDiv.addClassName("enyo-item");
+            articleParentDiv.addClassName("enyo-swipeableitem");
+            articleParentDiv.addClassName("enyo-vflexbox");
+            articleParentDiv.style.cssText = "-webkit-box-align: stretch; -webkit-box-orient: vertical; -webkit-box-pack: start;";
+            articleParentDiv.setStyle({position: "static", top: "-1000px", left: "-1000px"});
+            articleParentDiv.appendChild(articleTestDiv);
+            articleParentDiv.appendChild(articleSubDiv);
+            document.body.appendChild(articleParentDiv);
+            var messageDiv = document.createElement("div");
+            messageDiv.id = "touchfeedsBannerMessage";
+            document.body.appendChild(messageDiv);
         }).defer();
-        enyo.log("DID STUFF WITH APPENDING");
-        this.addClass("testing-stuff");
-        enyo.log("called ready method");
         enyo.keyboard.setManualMode(true);
        this.$.slidingPane.setCanAnimate(Preferences.enableAnimations());
        var orientation = enyo.getWindowOrientation();
@@ -91,35 +102,341 @@ enyo.kind({
                 }.bind(this)
             });
         }).bind(this).defer();
-        if (this.credentials.email && this.credentials.password) {
-            enyo.log("Login API");
-            this.api.login(this.credentials, this.loginSuccess.bind(this), this.loginFailure.bind(this));
-            setTimeout(this.checkLoggedIn.bind(this), 5000);
-        } else {
-            enyo.log("get login information from user");
-            setTimeout(function() {this.$.login.openAtCenter();}.bind(this), 0);
+        if (!window.PalmSystem) {
+            if (this.api.isAuthTokenValid()) {
+                this.loginSuccess();
+            } else {
+                //should check refresh token here
+                if (!!Preferences.getAuthTimestamp() && !!Preferences.getAuthExpires()) {
+                    //this means the token expired, reauthorize
+                    this.api.failureCheck(this.loginSuccess.bind(this), this.loginFailure.bind(this), {status: 401});
+                } else {
+                    setTimeout(function() {this.$.login.openAtCenter();}.bind(this), 0);
+                }
+            }
+        } else { 
+            if (this.credentials.email && this.credentials.password) {
+                enyo.log("Login API");
+                this.api.login(this.credentials, this.loginSuccess.bind(this), this.loginFailure.bind(this));
+                setTimeout(this.checkLoggedIn.bind(this), 5000);
+            } else {
+                enyo.log("get login information from user");
+                setTimeout(function() {this.$.login.openAtCenter();}.bind(this), 0);
+            }
         }}.bind(this), 100);
         Element.addClassName(document.body, Preferences.getColorScheme());
+        setTimeout(this.checkStyle.bind(this), 5000);
+
+        if (!window.PalmSystem) {
+            //keyboard shortcuts google reader
+            document.onkeyup = function(ev) {
+                this.wasKeyDown = false;
+            }.bind(this);
+            document.onkeydown = function(ev) {
+                if (this.isAnythingFocused()) {
+                    return;
+                }
+                var key = ev.which;
+                if (key == 38) {
+                    this.$.articlesView.scrollBy(12);
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                    return -1;
+                }
+                if (key == 40) {
+                    this.$.articlesView.scrollBy(-12);
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                    return -1;
+                }
+                if (this.wasKeyDown) {
+                    return;
+                }
+                this.wasKeyDown = true;
+                if (key == 74) {
+                    //j
+                    this.$.singleArticleView.nextClick();
+                }
+                if (key == 75) {
+                    //k
+                    this.$.singleArticleView.previousClick();
+                }
+                if (key == 83) {
+                    //s
+                    this.$.singleArticleView.starClick();
+                }
+                if (key == 77) {
+                    //m
+                    this.$.singleArticleView.readClick();
+                }
+                if (key == 86) {
+                    //v
+                    this.$.singleArticleView.sourceClick();
+                }
+                if (key == 69) {
+                    //e
+                }
+                if (key == 82) {
+                    //r
+                    this.$.feedsView.refreshClick();
+                    this.$.articlesView.refreshClick();
+                }
+                if (key == 191) {
+                    ///
+                    this.$.feedsView.$.searchQuery.forceFocus();
+                    this.$.slidingPane.selectViewByName('feeds', true);
+                }
+                if (key == 65) {
+                    //a
+                    this.$.feedsView.addFeedClick();
+                }
+                if (key == 79) {
+                    //o
+                    this.$.singleArticleView.offlineClick();
+                }
+                if (key == 70) {
+                    //f
+                    this.$.singleArticleView.fetchClick();
+                }
+            }.bind(this);
+        }
         
+    },
+
+    componentsReady: function() {
+    },
+
+    isAnythingFocused: function() { 
+        if (!!this.$.feedsView.$.searchQuery && this.$.feedsView.$.searchQuery.hasFocus()) {
+            return true;
+        }
+        if (!!this.$.feedsView.$.feedInput && this.$.feedsView.$.feedInput.hasFocus()) {
+            return true;
+        }
+        if (!!this.$.login.$.email && this.$.login.$.email.hasFocus()) {
+            return true;
+        }
+        if (!!this.$.login.$.password && this.$.login.$.password.hasFocus()) {
+            return true;
+        }
+        if (!!this.$.login.$.captcha && this.$.login.$.captcha.hasFocus()) {
+            return true;
+        }
+        return false;
+    },
+
+    checkStyle: function() {
+        return;
+        //this.$.node.style.cssText = "-webkit-box-pack: start !important; -webkit-box-align: stretch !important; -webkit-box-orient: vertical !important; -webkit-box-sizing: border-box !important;";
+        enyo.log("************************************************************************");
+        enyo.log("************************************************************************");
+        enyo.log("************************************************************************");
+        enyo.log("************************************************************************");
+        var feed = document.getElementById("main_feeds");
+        var article = document.getElementById("main_articles");
+        var single = document.getElementById("main_singleArticle");
+        var body = document.getElementById("popupLayer");
+        var main = document.getElementById("main");
+        var mainPane = document.getElementById("main_slidingPane");
+        var mainPaneClient = document.getElementById("main_slidingPane_client");
+        var bodyReal = document.body;
+        enyo.log("FEED STYLE: ", feed.style.cssText);
+        enyo.log("ARTICLE STYLE: ", article.style.cssText);
+        enyo.log("SINGLE STYLE: ", single.style.cssText);
+        enyo.log("BODY STYLE: ", body.style.cssText);
+        enyo.log("MAIN STYLE: ", main.style.cssText);
+        enyo.log("MAIN PANE STYLE: ", mainPane.style.cssText);
+        enyo.log("MAIN PANE CLIENT STYLE: ", mainPaneClient.style.cssText);
+        enyo.log("BODY REAL STYLE: ", bodyReal.style.cssText);
+        setTimeout(this.checkStyle.bind(this), 15000);
+
+
+        return;
+        var st = this.measure(feed, "-webkit-transform");
+        enyo.log("3D TRANSFORM FEEDS: ", st);
+        st = this.measure(article, "-webkit-transform");
+        enyo.log("3D TRANSFORM ARTICLES: ", st);
+        st = this.measure(single, "-webkit-transform");
+        enyo.log("3D TRANSFORM SINGLE ARTICLE: ", st);
+        st = this.measure(body, "-webkit-transform");
+        enyo.log("3D TRASFORM BODY: ", st);
+        st = this.measure(main, "-webkit-transform");
+        enyo.log("3D TRANSFORM MAIN: ", st);
+        st = this.measure(mainPane, "-webkit-transform");
+        enyo.log("3D TRANSFORM MAIN PANE: ", st);
+        st = this.measure(mainPaneClient, "-webkit-transform");
+        enyo.log("3D TRANSFORM MAIN PANE CLIENT", st);
+        st = this.measure(bodyReal, "-webkit-transform");
+        enyo.log("3D TRANSFORM BODY", st);
+        enyo.log("************************************************************************");
+
+        var st = this.measure(feed, "left");
+        enyo.log("LEFT FEEDS: ", st);
+        st = this.measure(article, "left");
+        enyo.log("LEFT ARTICLES: ", st);
+        st = this.measure(single, "left");
+        enyo.log("LEFT SINGLE ARTICLE: ", st);
+        st = this.measure(body, "left");
+        enyo.log("LEFT BODY: ", st);
+        st = this.measure(main, "left");
+        enyo.log("LEFT MAIN: ", st);
+        st = this.measure(mainPane, "left");
+        enyo.log("LEFT MAIN PANE: ", st);
+        st = this.measure(mainPaneClient, "left");
+        enyo.log("LEFT MAIN PANE CLIENT", st);
+        st = this.measure(bodyReal, "left");
+        enyo.log("LEFT BODY", st);
+        enyo.log("************************************************************************");
+
+        var st = this.measure(feed, "right");
+        enyo.log("RIGHT FEEDS: ", st);
+        st = this.measure(article, "right");
+        enyo.log("RIGHT ARTICLES: ", st);
+        st = this.measure(single, "right");
+        enyo.log("RIGHT SINGLE ARTICLE: ", st);
+        st = this.measure(body, "right");
+        enyo.log("RIGHT BODY: ", st);
+        st = this.measure(main, "right");
+        enyo.log("RIGHT MAIN: ", st);
+        st = this.measure(mainPane, "right");
+        enyo.log("RIGHT MAIN PANE: ", st);
+        st = this.measure(mainPaneClient, "right");
+        enyo.log("RIGHT MAIN PANE CLIENT", st);
+        st = this.measure(bodyReal, "right");
+        enyo.log("RIGHT BODY", st);
+        enyo.log("************************************************************************");
+
+        var st = this.measure(feed, "margin-left");
+        enyo.log("MARGIN LEFT FEEDS: ", st);
+        st = this.measure(article, "margin-left");
+        enyo.log("MARGIN LEFT ARTICLES: ", st);
+        st = this.measure(single, "margin-left");
+        enyo.log("MARGIN LEFT SINGLE ARTICLE: ", st);
+        st = this.measure(body, "margin-left");
+        enyo.log("MARGIN LEFT BODY: ", st);
+        st = this.measure(main, "margin-left");
+        enyo.log("MARGIN LEFT MAIN: ", st);
+        st = this.measure(mainPane, "margin-left");
+        enyo.log("MARGIN LEFT MAIN PANE: ", st);
+        st = this.measure(mainPaneClient, "margin-left");
+        enyo.log("MARGIN LEFT MAIN PANE CLIENT", st);
+        st = this.measure(bodyReal, "margin-left");
+        enyo.log("MARGIN LEFT BODY", st);
+        enyo.log("************************************************************************");
+
+        var st = this.measure(feed, "margin-right");
+        enyo.log("MARGIN RIGHT FEEDS: ", st);
+        st = this.measure(article, "margin-right");
+        enyo.log("MARGIN RIGHT ARTICLES: ", st);
+        st = this.measure(single, "margin-right");
+        enyo.log("MARGIN RIGHT SINGLE ARTICLE: ", st);
+        st = this.measure(body, "margin-right");
+        enyo.log("MARGIN RIGHT BODY: ", st);
+        st = this.measure(main, "margin-right");
+        enyo.log("MARGIN RIGHT MAIN: ", st);
+        st = this.measure(mainPane, "margin-right");
+        enyo.log("MARGIN RIGHT MAIN PANE: ", st);
+        st = this.measure(mainPaneClient, "margin-right");
+        enyo.log("MARGIN RIGHT MAIN PANE CLIENT", st);
+        st = this.measure(bodyReal, "margin-right");
+        enyo.log("MARGIN RIGHT BODY", st);
+        enyo.log("************************************************************************");
+
+
+        var st = this.measure(feed, "padding-left");
+        enyo.log("PADDING LEFT FEEDS: ", st);
+        st = this.measure(article, "padding-left");
+        enyo.log("PADDING LEFT ARTICLES: ", st);
+        st = this.measure(single, "padding-left");
+        enyo.log("PADDING LEFT SINGLE ARTICLE: ", st);
+        st = this.measure(body, "padding-left");
+        enyo.log("PADDING LEFT BODY: ", st);
+        st = this.measure(main, "padding-left");
+        enyo.log("PADDING LEFT MAIN: ", st);
+        st = this.measure(mainPane, "padding-left");
+        enyo.log("PADDING LEFT MAIN PANE: ", st);
+        st = this.measure(mainPaneClient, "padding-left");
+        enyo.log("PADDING LEFT MAIN PANE CLIENT", st);
+        st = this.measure(bodyReal, "padding-left");
+        enyo.log("PADDING LEFT BODY", st);
+        enyo.log("************************************************************************");
+
+        var st = this.measure(feed, "padding-right");
+        enyo.log("PADDING RIGHT FEEDS: ", st);
+        st = this.measure(article, "padding-right");
+        enyo.log("PADDING RIGHT ARTICLES: ", st);
+        st = this.measure(single, "padding-right");
+        enyo.log("PADDING RIGHT SINGLE ARTICLE: ", st);
+        st = this.measure(body, "padding-right");
+        enyo.log("PADDING RIGHT BODY: ", st);
+        st = this.measure(main, "padding-right");
+        enyo.log("PADDING RIGHT MAIN: ", st);
+        st = this.measure(mainPane, "padding-right");
+        enyo.log("PADDING RIGHT MAIN PANE: ", st);
+        st = this.measure(mainPaneClient, "padding-right");
+        enyo.log("PADDING RIGHT MAIN PANE CLIENT", st);
+        st = this.measure(bodyReal, "padding-right");
+        enyo.log("PADDING RIGHT BODY", st);
+        enyo.log("************************************************************************");
+
+        var st = this.measure(feed, "width");
+        enyo.log("WIDTH FEEDS: ", st);
+        st = this.measure(article, "width");
+        enyo.log("WIDTH ARTICLES: ", st);
+        st = this.measure(single, "width");
+        enyo.log("WIDTH SINGLE ARTICLE: ", st);
+        st = this.measure(body, "width");
+        enyo.log("WIDTH BODY: ", st);
+        st = this.measure(main, "width");
+        enyo.log("WIDTH MAIN: ", st);
+        st = this.measure(mainPane, "width");
+        enyo.log("WIDTH MAIN PANE: ", st);
+        st = this.measure(mainPaneClient, "width");
+        enyo.log("WIDTH MAIN PANE CLIENT", st);
+        st = this.measure(bodyReal, "width");
+        enyo.log("WIDTH BODY", st);
+        enyo.log("************************************************************************");
+
+
+        enyo.log("          ");
+        enyo.log("BODY CHILDREN INSPECT");
+        var length = bodyReal.children.length;
+        enyo.log(Element.inspect(bodyReal));
+        for (var i = 0; i < length; i++) {
+            enyo.log("          ");
+            enyo.log(Element.inspect(bodyReal.children[i]));
+        }
+        enyo.log("          ");
+
+        setTimeout(this.checkStyle.bind(this), 15000);
+    },
+
+    measure: function(el, prop) {
+        return document.defaultView.getComputedStyle(el, null).getPropertyValue(prop);
     },
 
     checkLoggedIn: function() {
         enyo.log("checking if logged in");
+        /*
         if (!this.loggedIn) {
             this.api.login(this.credentials, this.loginSuccess.bind(this), this.loginFailure.bind(this));
             setTimeout(this.checkLoggedIn.bind(this), 5000);
         }
+        */
     },
 
     loginSuccess: function() {
         enyo.log("logged in successfully");
         this.loggedIn = true;
         setTimeout(function() {
-        this.sources = new AllSources(this.api);
-        this.refreshFeeds();
+            this.sources = new AllSources(this.api);
+            this.refreshFeeds();
         }.bind(this), 100);
         this.$.loginLabel.setCaption("Logout");
-        enyo.application.launcher.$.appDashboard.setAlarm();
+        this.$.loginLabelChrome.setCaption("Logout");
+        if (!!enyo.application.launcher) {
+            enyo.application.launcher.$.appDashboard.setAlarm();
+        }
     },
 
     refreshFeeds: function(callback) {
@@ -165,6 +482,12 @@ enyo.kind({
                 if (!!success) {
                     success();
                 }
+                var count = 0;
+                for (var i = 0; i < this.sources.subscriptionSources.items.length; i++) {
+                    count += this.sources.subscriptionSources.items[i].unreadCount;
+                }
+                this.sources.setAllUnreadCount(count);
+
                 this.$.feedsView.setStickySources(this.sources.stickySources);
                 this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
                 if (!!enyo.application.launcher.messageTapped) {
@@ -189,13 +512,35 @@ enyo.kind({
         );
     },
 
-    sortAndFilter: function() {
+    sortAndFilter: function(article) {
         enyo.log("sortin and filterin");
-        this.sources.sortAndFilter(function() {
-            enyo.log("finished sorting");
-            this.$.feedsView.setStickySources(this.sources.stickySources);
-            this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
-        }.bind(this), function() {enyo.log("error sorting and filtering");});
+        if (!!this.sortAndFilterTimeout) {
+            clearTimeout(this.sortAndFilterTimeout);
+            this.sortAndFilterTimeout = 0;
+            article = null;
+        }
+        var timeout = 2500;
+        if (!window.PalmSystem) {
+            timeout = 0;
+        }
+        this.sortAndFilterTimeout = setTimeout(function() {
+            this.sources.sortAndFilter(function() {
+                this.sortAndFilterTimeout = 0;
+                var count = 0;
+                for (var i = 0; i < this.sources.subscriptionSources.items.length; i++) {
+                    count += this.sources.subscriptionSources.items[i].unreadCount;
+                }
+                this.sources.setAllUnreadCount(count);
+                enyo.log("finished sorting");
+                /*
+                if (!!article) {
+                    this.feedsView.setChangeId(article.subscriptionId);
+                }
+                */
+                this.$.feedsView.setStickySources(this.sources.stickySources);
+                this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
+            }.bind(this), function() {this.sortAndFilterTimeout = 0; enyo.log("error sorting and filtering");});
+        }.bind(this), timeout);
     },
 
     getSubscriptionSources: function() {
@@ -245,9 +590,14 @@ enyo.kind({
         if (this.loggedIn) {
             this.sources = null;
             this.loggedIn = false;
+            Preferences.setAuthToken("");
+            Preferences.setRefreshToken("");
+            Preferences.setAuthTimestamp(0);
+            Preferences.setAuthExpires(0);
             this.credentials.password = false;
             this.credentials.save();
             this.$.loginLabel.setCaption("Login");
+            this.$.loginLabelChrome.setCaption("Login");
             this.$.login.openAtCenter();
             this.$.feedsView.setStickySources([]);
             this.$.feedsView.setSubscriptionSources([]);
@@ -305,49 +655,35 @@ enyo.kind({
     },
 
     selectArticle: function(thing, index) {
-        enyo.log("selecting article: ", index);
         this.$.articlesView.selectArticle(index);
     },
     starredArticle: function(thing, index, isStarred) {
         this.$.articlesView.finishArticleStarred(index, isStarred);
     },
     readArticle: function(thing, article, index, isRead) {
-        enyo.log("received read event");
         if (isRead) {
-            enyo.log("mark article read");
-            enyo.log(article.subscriptionId);
             this.sources.articleRead(article.subscriptionId);
         } else {
-            enyo.log("mark article not read");
             this.sources.articleNotRead(article.subscriptionId);
         }
         this.$.articlesView.finishArticleRead(index);
         //this.$.feedsView.refreshLists();
-        this.sources.sortAndFilter(function() {
-            this.$.feedsView.setStickySources(this.sources.stickySources);
-            this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
-        }.bind(this), function() {enyo.log("error sorting and filtering");});
+        this.sortAndFilter(article);
     },
     articleRead: function(thing, article, index) {
         this.sources.articleRead(article.subscriptionId);
         this.$.articlesView.finishArticleRead(index);
-        this.sources.sortAndFilter(function() {
-            this.$.feedsView.setChangeId(article.subscriptionId);
-            this.$.feedsView.setStickySources(this.sources.stickySources);
-            this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
-        }.bind(this), function() {enyo.log("error sorting and filtering");});
+        this.sortAndFilter(article);
     },
+
     articleMultipleRead: function(thing, article, index) {
         enyo.log("article mulitiple read");
         //this.sources.articleMultipleRead(article.subscriptionId);
         this.sources.articleRead(article.subscriptionId);
         this.$.articlesView.finishArticleRead(index);
-        this.sources.sortAndFilter(function() {
-            this.$.feedsView.setChangeId(article.subscriptionId);
-            this.$.feedsView.setStickySources(this.sources.stickySources);
-            this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
-        }.bind(this), function() {enyo.log("error sorting and filtering");});
+        this.sortAndFilter(article);
     },
+
     getUnreadCountForSubscription: function(subscriptionId) {
         enyo.log("getting unread count for subscription from main");
         return this.sources.getUnreadCountForSubscription(subscriptionId);
@@ -355,16 +691,18 @@ enyo.kind({
     articleStarred: function() {
         this.$.singleArticleView.articleStarred();
     },
-    markedAllRead: function(thing, count, id) {
+    markedAllRead: function(thing, count, id, isMultiple, articles) {
         if (id == "user/-/state/com.google/reading-list") {
             this.sources.nukedEmAll();
         } else {
             this.sources.markedAllRead(count);
         }
-        this.sources.sortAndFilter(function() {
-            this.$.feedsView.setStickySources(this.sources.stickySources);
-            this.$.feedsView.setSubscriptionSources(this.sources.subscriptionSources);
-        }.bind(this), function() {enyo.log("error sorting and filtering");});
+        if (isMultiple === true && !!articles && !!articles.length) {
+            for (var i = articles.length; i--;) {
+                this.sources.articleRead(articles[i].subscriptionId);
+            }
+        }
+        this.sortAndFilter();
         //this.refreshFeeds();
     },
 	changeOffline: function() {
@@ -373,7 +711,9 @@ enyo.kind({
 			onSuccess: function (results) {
 				enyo.log("got results successfully");
                                 this.offlineArticles = results;
-                                this.$.feedsView.setStickySources(this.sources.stickySources);
+                                if (!!this.sources) {
+                                    this.$.feedsView.setStickySources(this.sources.stickySources);
+                                }
 				if (this.$.articlesView.offlineArticles.length) {
 					this.$.articlesView.setOfflineArticles(results);
 				}
@@ -428,7 +768,16 @@ enyo.kind({
    },
 
    notificationClicked: function() {
-       this.$.notifications.openAtCenter();
+       if (!window.PalmSystem) {
+           this.$.chromeMenu.openAtControl(this.$.feedsView.$.notificationButton, {});
+       } else {
+            var numberOfItems = this.$.feedsView.getStickySourcesLength();
+            if (numberOfItems < 2) {
+                Feeder.notify("Error: subscriptions not available.");
+            } else {
+               this.$.notifications.openAtCenter();
+            }
+       }
    },
 
    groupChange: function() {

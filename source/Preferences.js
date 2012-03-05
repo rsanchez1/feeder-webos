@@ -51,7 +51,7 @@ enyo.kind({
                     ]}
                 ]}
             ]},
-            {style: "padding: 5px;", layoutKind: "HFlexLayout", pack: "center", components: [
+            {name: "twitterToggleContainer", style: "padding: 5px;", layoutKind: "HFlexLayout", pack: "center", components: [
                 {content: "Share to Twitter using:", flex: 3, style: "padding-top: 15px;"},
                 {kind: "Button", flex: 1, components: [
                     {kind: "ListSelector", name: "twitterToggle", onChange: "twitterToggle", items: [
@@ -60,7 +60,7 @@ enyo.kind({
                     ]}
                 ]}
             ]},
-            {style: "padding: 5px;", layoutKind: "HFlexLayout", pack: "center", components: [
+            {name: "facebookToggleContainer", style: "padding: 5px;", layoutKind: "HFlexLayout", pack: "center", components: [
                 {content: "Share to Facebook using:", flex: 3, style: "padding-top: 15px;"},
                 {kind: "Button", flex: 1, components: [
                     {kind: "ListSelector", name: "facebookToggle", onChange: "facebookToggle", items: [
@@ -127,6 +127,17 @@ enyo.kind({
                 this.$.preferencesScroller.applyStyle("height", "200px");
             }
         }
+        if (!window.PalmSystem) {
+            this.$.preferencesScroller.setVertical(false);
+            this.$.preferencesScroller.setAutoVertical(false);
+            this.$.twitterToggleContainer.hide();
+            this.$.facebookToggleContainer.hide();
+            (function() {
+                var client = this.$.preferencesScroller.node.firstChild.firstChild;
+                client.style.overflowY = "scroll";
+                client.style.height = "100%";
+            }.bind(this)).defer();
+        }
     },
 
     colorChanged: function(inSender, inValue, inOldValue) {
@@ -153,6 +164,9 @@ enyo.kind({
     },
 
     combineToggle: function(inSender, inValue, inOldValue) {
+        enyo.log("CHANGING COMBINE FOLDER SETTINGS");
+        enyo.log(inValue);
+        enyo.log(inOldValue);
         Preferences.setCombineFolders(inValue);
         this.doCombineChange();
     },

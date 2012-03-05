@@ -137,6 +137,12 @@ body.light {
     line-height: 1.3rem;
     min-height: 100%;
     font-family: "Arial";
+    -webkit-user-select: text !important;
+    cursor: auto !important;
+}
+
+.articleSummary.chromeWeb {
+    min-height: 0;
 }
 
 .summaryWrapper {
@@ -172,8 +178,22 @@ body.light {
     padding: 0 0 15px 0 !important;
 }
 
+.articleSummary table {
+    width: 100% !important;
+    table-layout: fixed !important;
+}
+
+.articleSummary table p {
+    padding: 0 !important;
+}
+
+.articleSummary table img {
+    padding: 0 !important;
+}
+
 .articleSummary * {
     border: 0 none;
+    white-space: normal !important;
 }
 
 .articleSummary img {
@@ -340,6 +360,10 @@ body.light {
     background: #a8a8a8 url(../images/icon_bell.png) -1px -1px no-repeat;
 }
 
+.touchFeedsSummary li.option .icon {
+    background: #a8a8a8 url(../images/icon_options.png) -1px -1px no-repeat;
+}
+
 .touchFeedsSummary li.refresh .icon {
     background: #a8a8a8 url(../images/refresh.png) -1px -1px no-repeat;
 }
@@ -438,8 +462,12 @@ body.light {
 }
 
 .articleSpinner {
-    left: 94%
+    left: 94%;
     top: 70px;
+}
+
+.articleSpinner.chromeWeb {
+    left: 90%;
 }
 
 .articleSpinner.phone {
@@ -450,4 +478,33 @@ body.light {
 .articleAnchorSpan {
     color: blue;
     text-decoration: underline;
+}
+
+#touchfeedsBannerMessage {
+    font-family:Arial,Helvetica,sans-serif;
+    position:fixed;
+    bottom:0px;
+    left:0px;
+    opacity: 0;
+    z-index: -1;
+    width:100%;
+    text-align:center;
+    font-weight:bold;
+    height: 25px;
+    font-size: 20px;
+    color:white;
+    padding:10px 0px 10px 0px;
+    background-color:#000;
+}
+
+body {
+    background-color: #000;
+}
+
+#main {
+    background-color: #d8d8d8;
+}
+
+#main_feeds .enyo-scroller-scrollee {
+    height: 101%;
 }

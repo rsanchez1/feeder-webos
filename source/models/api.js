@@ -1,18 +1,102 @@
 var Api = Class.create({
+
   login: function(credentials, success, failure) {
     var authSuccess = function(response) {
+        enyo.log("LOGIN SUCCESS");
+        enyo.log(response.responseText);
       var authMatch = response.responseText.match(/Auth\=(.*)/)
       this.auth = authMatch ? authMatch[1] : ''
       success(this.auth)
     }.bind(this)
 
+    var parameters = {service: "reader", Email: credentials.email, Passwd: credentials.password}
+
+    if (!!credentials.loginToken && !!credentials.loginCaptcha) {
+        parameters.logintoken = credentials.loginToken;
+        parameters.logincaptcha = credentials.loginCaptcha;
+    }
+
     new Ajax.Request("https://www.google.com/accounts/ClientLogin", {
       method: "get",
-      parameters: {service: "reader", Email: credentials.email, Passwd: credentials.password},
+      parameters: parameters,
       onSuccess: authSuccess,
       onFailure: failure
     })
   },
+
+
+  isAuthTokenValid: function() {
+      if (!this.auth) {
+          this.auth = Preferences.getAuthToken();
+          if (!this.auth) {
+              enyo.log("NO AUTH TOKEN");
+              return false;
+          }
+      }
+      if (!Preferences.getRefreshToken()) {
+          enyo.log("NO REFRESH TOKEN");
+          return false;
+      }
+      if (!Preferences.getAuthTimestamp()) {
+          enyo.log("NO AUTH TIMESTAMP");
+          return false;
+      }
+      if ((this.getTimestamp() - Preferences.getAuthTimestamp()) > (Preferences.getAuthExpires() - 100)) {
+          enyo.log("TIMESTAMP EXPIRED");
+          return false;
+      }
+      return true;
+  },
+
+  failureCheck: function(success, failure, response) {
+      //success will just be the original function bound with all original arguments, failure will be the failure callback for that function
+      if (!window.PalmSystem) {
+          if (response.status === 401 || !(this.isAuthTokenValid())) {
+              //the auth key is possibly unauthorized, request a refresh
+            new Ajax.Request("https://accounts.google.com/o/oauth2/token", {
+                method: "post",
+                parameters: {
+                    client_id: "663702953261.apps.googleusercontent.com", 
+                    client_secret: "afyCoEy45sGAMO9uUDyaiuwb", 
+                    refresh_token: Preferences.getRefreshToken(), 
+                    grant_type: "refresh_token"
+                }, 
+                onSuccess: function(response) {
+                    enyo.log("SUCCESSFULLY REAUTHORIZED APP");
+                    globalResp = response;
+                    var resp = JSON.parse(response.responseText);
+                    Preferences.setAuthToken(resp.access_token);
+                    this.setAuthToken(resp.access_token);
+                    Preferences.setAuthExpires(resp.expires_in);
+                    //Preferences.setRefreshToken(resp.refresh_token);
+                    Preferences.setAuthTimestamp(this.getTimestamp());
+                    enyo.log("CALLING METHOD AGAIN AFTER REFRESHING TOKEN");
+                    success();
+                }.bind(this), 
+                onFailure: function(response) {
+                    enyo.log("FAILED TO REAUTHORIZE APP");
+                    failure();
+                }.bind(this)
+            });
+              
+          } else {
+              failure();
+          }
+      } else {
+          enyo.log("FAILURE ON WEBOS");
+          enyo.log(response.responseText);
+      }
+      return;
+  },
+
+  setAuthToken: function(auth) {
+      this.auth = auth;
+  },
+
+    getTimestamp: function() {
+            var d = new Date();
+            return (Math.round(d.getTime() / 1000) - (d.getTimezoneOffset() * 60));
+    },
 
   getPage: function(url, success, failure) {
     new Ajax.Request("http://text.readitlaterlist.com/v2/text?apikey=bO4T9t12g998dH78aMd964aLh6pab0VQ&mode=less&url=" + url, {
@@ -20,8 +104,6 @@ var Api = Class.create({
       parameters: {},
       onFailure: failure,
       onSuccess: function(response) {
-          enyo.log("got page success");
-          enyo.log(response);
           success(response.responseText);
       },
       on403: function(response) {
@@ -32,21 +114,25 @@ var Api = Class.create({
   },
 
   getTags: function(success, failure) {
+      var boundFunc = this.getTags.bind(this, success, failure);
+      var authFailure = this.failureCheck.bind(this, boundFunc, failure);
     new Ajax.Request(Api.BASE_URL + "tag/list", {
       method: "get",
       parameters: {output: "json"},
       requestHeaders: this._requestHeaders(),
-      onFailure: failure,
+      onFailure: authFailure,
       onSuccess: function(response) {success(response.responseText.evalJSON().tags)}
     })
   },
 
   getSortOrder: function(success, failure) {
+      var boundFunc = this.getSortOrder.bind(this, success, failure);
+      var authFailure = this.failureCheck.bind(this, boundFunc, failure);
     new Ajax.Request(Api.BASE_URL + "preference/stream/list", {
       method: "get",
       parameters: {output: "json"},
       requestHeaders: this._requestHeaders(),
-      onFailure: failure,
+      onFailure: authFailure,
       onSuccess: function(response) {
         var prefs = response.responseText.evalJSON()
         var sortOrder = {}
@@ -128,11 +214,13 @@ var Api = Class.create({
   searchSubscriptions: function(query, success, failure) {
     var self = this
 
+      var boundFunc = this.searchSubscriptions.bind(this, query, success, failure);
+      var authFailure = this.failureCheck.bind(this, boundFunc, failure);
     new Ajax.Request(Api.BASE_URL + "feed-finder", {
       method: "get",
       parameters: {q: query, output: "json"},
       requestHeaders: this._requestHeaders(),
-      onFailure: failure,
+      onFailure: authFailure,
       onSuccess: function(response) {
         var subscriptions = response.responseText.evalJSON().items
         success(subscriptions)
@@ -147,11 +235,13 @@ var Api = Class.create({
         quickadd: url
       }
 
+      var boundFunc = this.addSubscription.bind(this, url, success, failure);
+      var authFailure = this.failureCheck.bind(this, boundFunc, failure);
       new Ajax.Request(Api.BASE_URL + "subscription/quickadd", {
         method: "post",
         parameters: parameters,
         requestHeaders: this._requestHeaders(),
-        onFailure: failure,
+        onFailure: authFailure,
         onSuccess: function(response) {
           var json = response.responseText.evalJSON()
 
@@ -169,11 +259,13 @@ var Api = Class.create({
   getAllSubscriptions: function(success, failure) {
     var self = this
 
+      var boundFunc = this.getAllSubscriptions.bind(this, success, failure);
+      var authFailure = this.failureCheck.bind(this, boundFunc, failure);
     new Ajax.Request(Api.BASE_URL + "subscription/list", {
       method: "get",
       parameters: {output: "json"},
       requestHeaders: this._requestHeaders(),
-      onFailure: failure,
+      onFailure: authFailure,
       onSuccess: function(response) {
         var subscriptions = response.responseText.evalJSON().subscriptions
         self.cacheTitles(subscriptions)
@@ -196,11 +288,13 @@ var Api = Class.create({
   },
 
   getUnreadCounts: function(success, failure) {
+      var boundFunc = this.getUnreadCounts.bind(this, success, failure);
+      var authFailure = this.failureCheck.bind(this, boundFunc, failure);
     new Ajax.Request(Api.BASE_URL + "unread-count", {
       method: "get",
       parameters: {output: "json"},
       requestHeaders: this._requestHeaders(),
-      onFailure: failure,
+      onFailure: authFailure,
       onSuccess: function(response) {
         var json = response.responseText.evalJSON()
 
@@ -265,6 +359,8 @@ var Api = Class.create({
   },
 
   _getArticles: function(id, exclude, continuation, success, failure) {
+      var boundFunc = this._getArticles.bind(this, id, exclude, continuation, success, failure);
+      var authFailure = this.failureCheck.bind(this, boundFunc, failure);
     var parameters = {output: "json", n: 5000}
 
     if(id != "user/-/state/com.google/starred" &&
@@ -285,7 +381,7 @@ var Api = Class.create({
       method: "get",
       parameters: parameters,
       requestHeaders: this._requestHeaders(),
-      onFailure: failure,
+      onFailure: authFailure,
       onSuccess: function(response) {
         var articles = response.responseText.evalJSON()
         success(articles.items, articles.id, articles.continuation)
@@ -301,12 +397,14 @@ var Api = Class.create({
           s: id
         }
 
+      var boundFunc = this.markAllRead.bind(this, id, success, failure);
+      var authFailure = this.failureCheck.bind(this, boundFunc, failure);
         new Ajax.Request(Api.BASE_URL + "mark-all-as-read", {
           method: "post",
           parameters: parameters,
           requestHeaders: this._requestHeaders(),
           onSuccess: success,
-          onFailure: failure
+          onFailure: authFailure
         })
       }.bind(this),
 
@@ -314,10 +412,66 @@ var Api = Class.create({
     )
   },
 
+  getStarredArticlesFor: function(id, success, failure) {
+      var r = "";
+      if (Preferences.isOldestFirst()) {
+          r = "&r=o";
+      }
+
+      var boundFunc = this.getStarredArticlesFor.bind(this, id, success, failure);
+      var authFailure = this.failureCheck.bind(this, boundFunc, failure);
+      new Ajax.Request(Api.BASE_URL + "stream/items/ids?s=" + escape(id) + "&s=user/-/state/com.google/starred&n=1000&merge=true&includeAllDirectStreamIds=true" + r + "&output=json", {
+          method: "get",
+          parameters: {},
+          requestHeaders: this._requestHeaders(),
+          onSuccess: this.starredItemsFound.bind(this, success, failure, id),
+          onFailure: authFailure 
+      });
+  },
+
+  starredItemsFound: function(success, failure, id, response) {
+      var self = this;
+      var items = response.responseText.evalJSON();
+      if (!!items && !!items.itemRefs) {
+          items = items.itemRefs;
+          if (items.length) {
+              self._getEditToken(
+                function(token) {
+                    var parameters = {
+                        T: token,
+                        i: items.findAll(function(n) {return n.directStreamIds.any(function(n) {return n == id;}) && true && n.directStreamIds.any(function(n) {return n.endsWith("state/com.google/starred");})}).map(function(n) {return n.id;})
+                    }
+
+                    if (parameters.i.length > 0) {
+
+                          var boundFunc = self.starredItemsFound.bind(self, success, failure, id, response);
+                          var authFailure = self.failureCheck.bind(self, boundFunc, failure);
+                        new Ajax.Request(Api.BASE_URL + "stream/items/contents", {
+                            method: "post",
+                            parameters: parameters,
+                            requestHeaders: self._requestHeaders(),
+                            onFailure: authFailure,
+                            onSuccess: function(response) {
+                                var articles = response.responseText.evalJSON();
+                                success(articles.items, articles.id, !!articles.continuation ? articles.continuation : null);
+                            }
+                        });
+                    } else {
+                        success([], "", false)
+                    }
+                });
+          } else {
+              success([], "", false)
+          }
+      } else {
+          success([], "", false)
+      }
+  },
+
   search: function(query, id, success, failure) {
     var parameters = {
       q: query,
-      num: 50,
+      num: 1000,
       output: "json"
     }
 
@@ -325,12 +479,14 @@ var Api = Class.create({
       parameters.s = id
     }
 
+      var boundFunc = this.search.bind(this, query, id, success, failure);
+      var authFailure = this.failureCheck.bind(this, boundFunc, failure);
     new Ajax.Request(Api.BASE_URL + "search/items/ids", {
       method: "get",
       parameters: parameters,
       requestHeaders: this._requestHeaders(),
       onSuccess: this.searchItemsFound.bind(this, success, failure),
-      onFailure: failure
+      onFailure: authFailure 
     })
   },
 
@@ -346,11 +502,13 @@ var Api = Class.create({
             i: ids.map(function(n) {return n.id})
           }
 
+          var boundFunc = self.searchItemsFound.bind(self, success, failure, response);
+          var authFailure = self.failureCheck.bind(self, boundFunc, failure);
           new Ajax.Request(Api.BASE_URL + "stream/items/contents", {
             method: "post",
             parameters: parameters,
             requestHeaders: self._requestHeaders(),
-            onFailure: failure,
+            onFailure: authFailure,
             onSuccess: function(response) {
               var articles = response.responseText.evalJSON()
               success(articles.items, articles.id, articles.continuation)
@@ -449,12 +607,14 @@ var Api = Class.create({
         if(addTag) parameters.a = addTag
         if(removeTag) parameters.r = removeTag
 
+          var boundFunc = this._editTag.bind(this, articleId, subscriptionId, addTag, removeTag, success, failure);
+          var authFailure = this.failureCheck.bind(this, boundFunc, failure);
         new Ajax.Request(Api.BASE_URL + "edit-tag", {
           method: "post",
           parameters:  parameters,
           requestHeaders: this._requestHeaders(),
           onSuccess: success,
-          onFailure: failure
+          onFailure: authFailure 
         })
       }.bind(this),
 
@@ -474,13 +634,15 @@ var Api = Class.create({
             }
 
             var postParams = params.join("&");
+              var boundFunc = this.markMultipleArticlesRead.bind(this, articles, success, failure);
+              var authFailure = this.failureCheck.bind(this, boundFunc, failure);
 
             new Ajax.Request(Api.BASE_URL + "edit-tag", {
                 method: "post",
                 parameters: postParams,
                 requestHeaders: this._requestHeaders(),
                 onSuccess: success,
-                onFailure: failure
+                onFailure: authFailure
             })
         }.bind(this),
 
@@ -489,7 +651,12 @@ var Api = Class.create({
   },
 
   _requestHeaders: function() {
-    return {Authorization:"GoogleLogin auth=" + this.auth}
+      //if (!!Preferences.getAuthToken()) {
+      if (!window.PalmSystem) {
+          return {Authorization: "Bearer " + this.auth};
+      } else {
+        return {Authorization:"GoogleLogin auth=" + this.auth}
+      }
   },
 
   _getEditToken: function(success, failure) {
@@ -498,10 +665,12 @@ var Api = Class.create({
       success(this.editToken)
     }
     else {
+      var boundFunc = this._getEditToken.bind(this, success, failure);
+      var authFailure = this.failureCheck.bind(this, boundFunc, failure);
       new Ajax.Request(Api.BASE_URL + "token", {
         method: "get",
-        requestHeaders: {Authorization:"GoogleLogin auth=" + this.auth},
-        onFailure: failure,
+        requestHeaders: this._requestHeaders(),
+        onFailure: authFailure,
         onSuccess: function(response) {
           this.editToken = response.responseText
           this.editTokenTime = new Date().getTime()
