@@ -119,7 +119,7 @@ enyo.kind({
     readAllClick: function() {
         if (!this.offlineArticles.length) {
             this.$.spinner.show();
-            this.articles.markAllRead(this.markedAllArticlesRead.bind(this, this.articles.items.length, false);
+            this.articles.markAllRead(this.markedAllArticlesRead.bind(this, this.articles.items.length, false));
         }
         return;
         if (!this.offlineArticles.length) {

@@ -794,9 +794,10 @@ enyo.kind({
         "<h2>Contact</h2>" +
         "<p>If you have any questions, contact <a href='mailto:support@sanchezapps.com'>support@sanchezapps.com</a>." +
         "<h2>Changelog</h2>" +
-        "<p>Current Version: 1.3.5. You can view the full changelog history <a href='http://sanchezapps.com/touchfeeds-changelog'>here</a>.</p>" +
+        "<p>Current Version: 1.3.6. You can view the full changelog history <a href='http://sanchezapps.com/touchfeeds-changelog'>here</a>.</p>" +
         "<ul class='gestureGuide'>" +
-        "<li>Fixed issue with articles not showing up if Mark Read on Scroll is enabled</li>" +
+        "<li>Changed how mark all articles read works</li>" +
+        "<li>Fixed removal of images/links in Single Article View</li>" +
         "</ul>"+
         "<h2>Special Thanks</h2>" +
         "<ul class='gestureGuide'>" +
