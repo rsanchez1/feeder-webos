@@ -124,6 +124,15 @@ enyo.kind({
             };
 
 
+        } else {
+            /*
+            (function() {
+                var client = this.$.articleScroller.node.firstChild.firstChild;
+                //client.style.overflowY = "scroll";
+                client.style.overflow = "-webkit-palm-overflow";
+                client.style.height = "100%";
+            }.bind(this)).defer();
+            */
         }
     },
     articleChanged: function() {
@@ -217,13 +226,15 @@ enyo.kind({
         var anchorOnFocus = this.anchorOnFocus;
         $A(this.$.summary.node.getElementsByTagName("a")).each(function(anchor) {
             enyo.log("found anchor");
+            /*
             if ((anchor.href.indexOf("ads") >= 0 && (anchor.href.indexOf("ads") - anchor.href.indexOf("uploads") !== 4)) || anchor.href.indexOf("auslieferung") >= 0 || anchor.href.indexOf("da.feedsportal.com") >= 0) {
                 enyo.log(anchor.href);
                 enyo.log("found advertisement link, remove");
                 Element.remove(anchor);
             } else {
+                */
                 anchor.onfocus = anchorOnFocus.bind(anchor);
-            }
+            //}
         });
         var imageClickEvent = this.imageClickEvent;
         var imageOnload = this.imageOnload;

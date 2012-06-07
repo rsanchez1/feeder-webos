@@ -119,6 +119,11 @@ enyo.kind({
     readAllClick: function() {
         if (!this.offlineArticles.length) {
             this.$.spinner.show();
+            this.articles.markAllRead(this.markedAllArticlesRead.bind(this, this.articles.items.length, false);
+        }
+        return;
+        if (!this.offlineArticles.length) {
+            this.$.spinner.show();
             var articles = [];
             var items = this.articles.items;
             for (var i = items.length; i--;) {

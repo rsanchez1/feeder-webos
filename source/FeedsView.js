@@ -86,6 +86,14 @@ enyo.kind({
         } else {
             if (this.app.isPhone) {
                 this.$.notificationButton.hide();
+                /*
+                (function() {
+                    var client = this.$.feedsScroller.node.firstChild.firstChild;
+                    //client.style.overflowY = "scroll";
+                    client.style.overflow = "-webkit-palm-overflow";
+                    client.style.height = "101%";
+                }.bind(this)).defer();
+                */
             }
         }
     },

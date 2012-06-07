@@ -623,6 +623,18 @@ var Api = Class.create({
   },
 
   markMultipleArticlesRead: function(articles, success, failure) {
+      var boundFunc = this.markMultipleArticlesRead.bind(this, articles, success, failure);
+      var authFailure = this.failureCheck.bind(this, boundFunc, failure);
+      /*
+      var processArticles = articles.splice(0, 49); // it seems that if you mark less than 50 articles read at the same time, you won't accidentally mark all read
+      var checkSuccess = function() {
+          if (articles.length) {
+              this.markMultipleArticlesRead(articles, success, failure);
+          } else {
+              success();
+          }
+      }.bind(this);
+      */
       this._getEditToken(
         function(token) {
             var params = ["T="+escape(token)];
@@ -634,8 +646,6 @@ var Api = Class.create({
             }
 
             var postParams = params.join("&");
-              var boundFunc = this.markMultipleArticlesRead.bind(this, articles, success, failure);
-              var authFailure = this.failureCheck.bind(this, boundFunc, failure);
 
             new Ajax.Request(Api.BASE_URL + "edit-tag", {
                 method: "post",
